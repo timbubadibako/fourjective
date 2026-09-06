@@ -1,0 +1,12 @@
+{
+  "name": "fourjective-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fourjective Digital Yearbook & Portfolio Platform",
+  "scripts": {
+    "dev:be": "cd fourjective-be-main && npm run dev",
+    "dev:fe": "cd fourjective-fe-main && npm run dev",
+    "build:fe": "cd fourjective-fe-main && npm run build",
+    "seed:be": "cd fourjective-be-main && npm run seed"
+  }
+}

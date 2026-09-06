@@ -1,0 +1,13 @@
+# Environment variables
+.env
+
+# Node.js dependencies
+/node_modules
+.node_modules
+# VSC's temp file (often created by the Code Runner extension)
+.tempCodeRunnerFile.js
+
+# Specific files you want to ignore
+AdminGenerate.js
+
+/uploads

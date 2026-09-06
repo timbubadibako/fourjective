@@ -1,0 +1,10 @@
+{
+  "name": "fourjective-fe",
+  "scripts": {
+    "compress-images": "node scripts/compress-images.js"
+  },
+  "devDependencies": {
+    "sharp": "^0.33.0",
+    "glob": "^10.3.10"
+  }
+}

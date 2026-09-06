@@ -1,0 +1,279 @@
+"use client";
+
+// import type { Metadata } from "next";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import localFont from "next/font/local";
+import "./globals.css";
+import Navbar from "./components/nav";
+import PopUpNav from "./components/pop-up-nav";
+import path from "path";
+
+const poppins = localFont({
+  src: [
+    {
+      path: "./fonts/Poppins/Poppins-Thin.ttf",
+      weight: "200",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Poppins/Poppins-ThinItalic.ttf",
+      weight: "200",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Poppins/Poppins-Light.ttf",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Poppins/Poppins-LightItalic.ttf",
+      weight: "300",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Poppins/Poppins-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Poppins/Poppins-Italic.ttf",
+      weight: "400",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Poppins/Poppins-Medium.ttf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Poppins/Poppins-MediumItalic.ttf",
+      weight: "500",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Poppins/Poppins-SemiBold.ttf",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Poppins/Poppins-SemiBoldItalic.ttf",
+      weight: "600",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Poppins/Poppins-Bold.ttf",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Poppins/Poppins-BoldItalic.ttf",
+      weight: "700",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Poppins/Poppins-ExtraBold.ttf",
+      weight: "800",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Poppins/Poppins-ExtraBoldItalic.ttf",
+      weight: "800",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Poppins/Poppins-Black.ttf",
+      weight: "900",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Poppins/Poppins-BlackItalic.ttf",
+      weight: "900",
+      style: "italic",
+    },
+  ],
+  variable: "--font-poppins",
+});
+
+const playtimes = localFont({
+  src: [
+    {
+      path: "./fonts/Playtimes/Playtimes.ttf",
+      weight: "400",
+      style: "normal",
+    },
+  ],
+  variable: "--font-playtimes",
+});
+
+const leagueSpartan = localFont({
+  src: [
+    {
+      path: "./fonts/LeagueSpartan/LeagueSpartan-Thin.ttf",
+      weight: "100",
+      style: "thin",
+    },
+    {
+      path: "./fonts/LeagueSpartan/LeagueSpartan-ExtraLight.ttf",
+      weight: "200",
+      style: "extralight",
+    },
+    {
+      path: "./fonts/LeagueSpartan/LeagueSpartan-Light.ttf",
+      weight: "300",
+      style: "light",
+    },
+    {
+      path: "./fonts/LeagueSpartan/LeagueSpartan-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/LeagueSpartan/LeagueSpartan-Medium.ttf",
+      weight: "500",
+      style: "medium",
+    },
+    {
+      path: "./fonts/LeagueSpartan/LeagueSpartan-SemiBold.ttf",
+      weight: "600",
+      style: "semibold",
+    },
+    {
+      path: "./fonts/LeagueSpartan/LeagueSpartan-Bold.ttf",
+      weight: "700",
+      style: "bold",
+    },
+    {
+      path: "./fonts/LeagueSpartan/LeagueSpartan-ExtraBold.ttf",
+      weight: "800",
+      style: "extrabold",
+    },
+    {
+      path: "./fonts/LeagueSpartan/LeagueSpartan-Black.ttf",
+      weight: "900",
+      style: "black",
+    },
+  ],
+  variable: "--font-leagueSpartan",
+});
+
+const lexendZetta = localFont({
+  src: [
+    {
+      path: "./fonts/LexendZetta/LexendZetta-Thin.ttf",
+      weight: "100",
+      style: "thin",
+    },
+    {
+      path: "./fonts/LexendZetta/LexendZetta-ExtraLight.ttf",
+      weight: "200",
+      style: "extralight",
+    },
+    {
+      path: "./fonts/LexendZetta/LexendZetta-Light.ttf",
+      weight: "300",
+      style: "light",
+    },
+    {
+      path: "./fonts/LexendZetta/LexendZetta-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/LexendZetta/LexendZetta-Medium.ttf",
+      weight: "500",
+      style: "medium",
+    },
+    {
+      path: "./fonts/LexendZetta/LexendZetta-SemiBold.ttf",
+      weight: "600",
+      style: "semibold",
+    },
+    {
+      path: "./fonts/LexendZetta/LexendZetta-Bold.ttf",
+      weight: "700",
+      style: "bold",
+    },
+    {
+      path: "./fonts/LexendZetta/LexendZetta-ExtraBold.ttf",
+      weight: "800",
+      style: "extrabold",
+    },
+    {
+      path: "./fonts/LexendZetta/LexendZetta-Black.ttf",
+      weight: "900",
+      style: "black",
+    },
+  ],
+  variable: "--font-lexendZetta",
+});
+
+const kronaOne = localFont({
+  src: [
+    {
+      path: "./fonts/Krona_One/KronaOne.ttf",
+      weight: "400",
+    },
+  ],
+  variable: "--font-kronaOne",
+});
+// export const metadata: Metadata = {
+//   title: "Fourjectiv",
+//   description: "Generated by create next app",
+// };
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  const [isNavVisible, setIsNavVisible] = useState(false);
+  const pathname = usePathname();
+
+  const toggleNav = () => {
+    setIsNavVisible((prev) => !prev);
+    document.body.style.overflow = isNavVisible ? "auto" : "hidden";
+  };
+
+  useEffect(() => {
+    setIsNavVisible(false);
+    document.body.style.overflow = "auto";
+  }, [pathname]);
+
+  return (
+    <html lang="en">
+      <head>
+        {/* Preconnect to API domain */}
+        <link rel="preconnect" href="https://api.fourjectiv.com" />
+        <link rel="dns-prefetch" href="https://api.fourjectiv.com" />
+
+        {/* Preload critical fonts */}
+        <link
+          rel="preload"
+          href="/fonts/Poppins/Poppins-Regular.ttf"
+          as="font"
+          type="font/ttf"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/Poppins/Poppins-SemiBold.ttf"
+          as="font"
+          type="font/ttf"
+          crossOrigin="anonymous"
+        />
+      </head>
+      <body
+        className={`${poppins.variable} ${playtimes.variable} ${lexendZetta.variable} ${leagueSpartan.variable} ${kronaOne.variable} antialiased`}
+      >
+        {pathname !== "/login" && !pathname.includes("/dashboard") && (
+          <>
+            <Navbar toggleNav={toggleNav} />
+            <PopUpNav isNavVisible={isNavVisible} toggleNav={toggleNav} />
+          </>
+        )}
+        {children}
+      </body>
+    </html>
+  );
+}
