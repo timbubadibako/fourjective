@@ -1,45 +1,90 @@
-# Architecture & ERD — Fourjective
+# 🏗️ Architecture, ERD & Technical Specifications — Fourjective
 
-Dokumentasi arsitektur sistem, skema database, dan alur pemrosesan data Fourjective.
+**Nama Proyek**: Fourjective — Premium Digital Yearbook Platform & Agency Backpanel  
+**Versi**: 2.0.0  
 
-## 🏗️ System Architecture
+---
+
+## 1. High-Level Architecture (HLD)
 
 ```text
-+-----------------------------------+        HTTP REST API        +-----------------------------------+
-|      Frontend (Next.js 16)        |  ------------------------>  |       Backend (Express.js)        |
-|  - App Router & React 19          |    JSON & Multipart Form    |  - Sequelize ORM                  |
-|  - Virtual Flipbook (page-flip)   |                             |  - SQLite (Dev) / MySQL (Prod)    |
-|  - Tailwind CSS 4 & MUI           |  <------------------------  |  - Poppler Utils (pdftoppm)       |
-+-----------------------------------+      Image Paths & JWT      +-----------------------------------+
+[Public Visitors / Calon Klien]           [Sekolah Klien (Client Portal)]            [Tim Admin (Agency Backpanel)]
+               │                                         │                                         │
+               ▼                                         ▼                                         ▼
++----------------------------------------------------------------------------------------------------------+
+|                                    Frontend Layer (Next.js 16 App Router)                                |
+|  - Public Showcase & Services Gallery                 - Virtual Flipbook Reader (page-flip 3D)           |
+|  - Quotation / Price Estimator                        - Client Portal (Status Tracker & Proofing)        |
+|  - Admin Backpanel Dashboard                          - Responsive Tailwind CSS 4 & MUI                  |
++----------------------------------------------------------------------------------------------------------+
+                                                     │
+                                            HTTP REST API (JSON)
+                                                     │
+                                                     ▼
++----------------------------------------------------------------------------------------------------------+
+|                                   Backend Layer (Express.js Server)                                      |
+|  - Auth Middleware (JWT & Bypass Mode)                 - Multer Multipart Upload Handler                 |
+|  - Portfolio Controller                                - PDF-to-JPG CLI Converter (pdftoppm)             |
+|  - Production Tracker Controller                       - Sequelize ORM Layer                             |
++----------------------------------------------------------------------------------------------------------+
+                                                     │
+                                           Database Driver Layer
+                                                     │
+                                                     ▼
++----------------------------------------------------------------------------------------------------------+
+|                                             Database Layer                                               |
+|  - SQLite3 (`database.sqlite` - Local Development)                                                       |
+|  - MySQL 8.0 (Production Database)                                                                       |
++----------------------------------------------------------------------------------------------------------+
 ```
 
 ---
 
-## 🗄️ Database Schema (Sequelize Models)
+## 2. Entity Relationship Diagram (ERD) & Schema Specification
 
-### 1. `Admin` Model
+### 2.1 Existing Models
+
+#### 1. `Admin` Entity
 - `id` (INTEGER, Primary Key, Auto Increment)
 - `email` (STRING, Unique, IsEmail)
 - `password` (STRING, Hashed via bcryptjs)
 - `created_at` (DATE)
 - `updated_at` (DATE)
 
-### 2. `Portfolio` Model
+#### 2. `Portfolio` Entity
 - `id` (INTEGER, Primary Key, Auto Increment)
 - `namaSekolah` (STRING, Required)
 - `tahun` (INTEGER, Required)
-- `cover` (STRING, Path ke file gambar cover)
-- `images` (JSON, Array string path file `page-*.jpg` hasil konversi PDF)
+- `cover` (STRING, Relative path file gambar cover)
+- `images` (JSON, Array relative path file `page-*.jpg` hasil pemecahan PDF)
 - `namaAkun` (STRING, Email admin pembuat)
 - `tanggalCreate` (DATE, Default NOW)
-- `password` (STRING, Optional hashed password proteksi)
+- `password` (STRING, Optional hashed password proteksi portofolio)
 
 ---
 
-## 🔄 Alur Konversi PDF ke Gambar (PDF-to-JPG Workflow)
+### 2.2 Proposed Models (Upcoming Proposal for Client Meeting)
 
-1. Admin mengunggah file **Cover** dan file **PDF** portofolio melalui form `/dashboard/create-portfolio`.
-2. Controller `portfolioController.js` membuat folder tujuan `uploads/<namaSekolah>_<tahun>_<timestamp>/`.
-3. Backend memanggil perintahkan CLI OS `pdftoppm -jpeg <pdfPath> page-<timestamp>` melalui `child_process.exec`.
-4. `pdftoppm` mengekstrak setiap halaman PDF menjadi `page-<timestamp>-1.jpg`, `page-<timestamp>-2.jpg`, dst.
-5. Master file PDF dihapus, dan daftar relative path file JPG disimpan ke kolom `images` (JSON) di database.
+#### 3. `ProductionOrder` Entity (Planned for Client Portal & Production Tracker)
+- `id` (INTEGER, Primary Key, Auto Increment)
+- `namaSekolah` (STRING, Required)
+- `tahun` (INTEGER, Required)
+- `status` (ENUM: `'DRAFT'`, `'PHOTOSHOOT'`, `'EDITING'`, `'PROOFING'`, `'PRINTING'`, `'DELIVERY'`, `'COMPLETED'`)
+- `progressPercent` (INTEGER, 0 - 100)
+- `accessCode` (STRING, Password/Kunci akses sekolah)
+- `estimatedCompletion` (DATE)
+
+---
+
+## 3. PDF-to-JPG Conversion Pipeline Workflow
+
+```text
+[Admin Upload PDF & Cover] ──> [Multer saves files to temp/] ──> [Create folder: uploads/<Sekolah>_<Tahun>_<Timestamp>/]
+                                                                                              │
+[Database Record Created] <── [Extract page-*.jpg Array] <── [pdftoppm -jpeg <PDF> page-*] <──┘
+```
+
+1. Request multipart form-data diterima oleh endpoint `/api/portfolios`.
+2. Folder terpisah `uploads/<sanitizedNamaSekolah>_<tahun>_<timestamp>/` dibuat secara otomatis.
+3. Perintah CLI `pdftoppm -jpeg` mengekstrak setiap halaman dokumen PDF menjadi file gambar terpisah `page-<timestamp>-1.jpg`, `page-<timestamp>-2.jpg`, dst.
+4. Master PDF dihapus untuk menghemat ruang penyimpanan, dan array path gambar dikembalikan ke frontend untuk merender majalah 3D `page-flip`.

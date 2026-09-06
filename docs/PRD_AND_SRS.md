@@ -1,31 +1,34 @@
 # 📄 Product Requirement Document (PRD) & Software Requirement Specification (SRS)
 
-**Nama Proyek**: Fourjective — Digital Yearbook & Portfolio Platform  
-**Status**: Active / Handover Phase  
-**Versi**: 1.0.0  
+**Nama Proyek**: Fourjective — Premium Digital Yearbook Platform & Agency Backpanel  
+**Status**: Handover & Upgrade Planning Phase  
+**Versi**: 2.0.0 (Upgraded Roadmap)  
 
 ---
 
 ## 1. Product Requirement Document (PRD)
 
-### 1.1 Visi Produk
-Fourjective adalah platform web showcase dan manajemen portofolio digital interaktif yang dirancang khusus untuk agensi/production house Fourjective dalam menampilkan hasil karya **Buku Tahunan Sekolah (Digital Yearbook)**, foto, video, dan pernak-pernik (*merchandise*) ke sekolah-sekolah dan klien potensial.
+### 1.1 Visi & Filosofi Brand (Brand Foundation)
+**Fourjective** adalah agensi kreatif buku tahunan premium (*Premium Creative Yearbook Agency*) yang berfokus pada **Digital & Interactive Yearbook**. Fourjective tidak hanya memproduksi buku fisik premium, tetapi juga menghadirkan pengalaman digital modern melingkupi:
+- **Virtual Flipbook 3D**: Membaca majalah/buku digital dengan animasi fisik pembalik halaman.
+- **Aftermovie & Video Showcase**: Integrasi video kenangan sekolah.
+- **Merchandise & Photography**: Pameran katalog produk pendukung dan hasil karya fotografi.
 
-### 1.2 Problem Statement
-- **Katalog Fisik Terbatas**: Membawa sampel cetak buku tahunan fisik ke klien membutuhkan biaya besar dan jangkauan terbatas.
-- **Pengalaman Membaca Kurang Interaktif**: Portofolio PDF statis biasa kurang menarik dan tidak memberikan sensasi membaca buku tahunan yang sesungguhnya.
-- **Kerahasiaan Karya**: Beberapa sekolah meminta portofolio buku tahunan mereka dilindungi dengan kata sandi agar hanya siswa/pihak berwenang yang dapat mengaksesnya.
+### 1.2 Problem Statement & Strategi Re-Architecture
+- **Keterbatasan Legacy System**: Sistem awal yang dibangun pengembang sebelumnya hanya berupa CRUD portofolio sederhana yang nilai kegunaannya (*business value*) bagi agensi maupun klien belum maksimal.
+- **Kebutuhan Transparansi Produksi**: Sekolah yang memesan buku tahunan sering mengalami kebingungan mengenai status alur produksi (Photoshoot -> Layouting -> Proofing -> Printing -> Delivery).
+- **Kebutuhan Penawaran Cepat**: Calon komite sekolah membutuhkan estimasi harga paket buku tahunan secara cepat sebelum melakukan konsultasi.
 
-### 1.3 Target Pengguna
-1. **Pengunjung Umum & Calon Klien**: Siswa, komite sekolah, atau organisasi yang ingin melihat portofolio hasil karya Fourjective.
-2. **Klien Berkata Sandi**: Pihak sekolah tertentu yang mendapatkan password khusus untuk melihat portofolio digital sekolah mereka.
-3. **Admin Fourjective**: Tim internal yang mengelola, menambah, memperbarui, dan menghapus portofolio buku tahunan.
+### 1.3 Target Persona & User Journey
 
-### 1.4 Fitur Utama (*Core Features*)
-1. **Public Showcase & Gallery**: Halaman landing page interaktif, tentang kami, daftar layanan, dan galeri portofolio.
-2. **Virtual Flipbook Reader**: Fitur pembaca majalah/buku digital 3D dengan animasi pembalik halaman (*page-flip*) dari file PDF yang dikonversi otomatis menjadi seri gambar JPG.
-3. **Proteksi Password Portofolio**: Opsi mengunci portofolio sekolah tertentu dengan password.
-4. **Admin Dashboard (CRUD)**: Panel autentikasi admin untuk manajemen data portofolio, unggah cover gambar, unggah PDF, dan pengaturan password.
+#### 1. Pengunjung Publik & Calon Klien Komite Sekolah
+- **Journey**: Mengakses landing page `/` -> Mengakses katalog layanan `/services` -> Eksplorasi galeri portofolio `/portofolio` -> Menggunakan *Price Estimator / Quotation Calculator* untuk menghitung perkiraan biaya paket -> Menghubungi tim Fourjective via WhatsApp.
+
+#### 2. Komite Sekolah Klien (Client Portal)
+- **Journey**: Login/Akses terproteksi dengan password sekolah -> Membaca *Draft Proofing* buku tahunan sekolah di Virtual Flipbook -> Memantau timeline & status produksi (*Photoshoot*, *Editing*, *Cetak*, *Pengiriman*) -> Menyebarkan link flipbook digital resmi ke alumni sekolah.
+
+#### 3. Tim Admin Fourjective (Agency Backpanel)
+- **Journey**: Login Admin -> Mengelola portofolio publik/terkunci -> Mengelola *pipeline* produksi buku sekolah -> Mengatur penawaran harga & paket -> Mengonversi dokumen PDF cetak menjadi flipbook digital otomatis.
 
 ---
 
@@ -33,43 +36,30 @@ Fourjective adalah platform web showcase dan manajemen portofolio digital intera
 
 ### 2.1 Kebutuhan Fungsional (*Functional Requirements*)
 
-#### FR-01: Autentikasi Admin
-- System HARUS menyediakan halaman login khusus Admin (`/login`).
-- System HARUS memverifikasi identitas Admin via JWT token dengan masa aktif token terkonfigurasi.
+#### FR-01: Public Showcase & Interactive Flipbook
+- System HARUS merender daftar portofolio publik di halaman galeri.
+- System HARUS mengonversi file PDF buku tahunan menjadi seri gambar JPG (`page-*.jpg`) dan merendernya dalam animasi pembalik majalah `page-flip` 3D.
+- System HARUS mendukung penyajian aset video (*Aftermovie*) dan galeri foto resolusi tinggi.
 
-#### FR-02: Manajemen Portofolio (CRUD)
-- Admin HARUS dapat menambahkan portofolio baru dengan mengunggah gambar Cover, file PDF, nama sekolah, tahun, dan optional password.
-- System HARUS mengonversi setiap halaman PDF yang diunggah menjadi file gambar `page-*.jpg` secara otomatis di backend.
-- Admin HARUS dapat memperbarui metadata, mengganti Cover/PDF, atau memperbarui status password portofolio.
-- Admin HARUS dapat menghapus data portofolio beserta seluruh file gambar pendukungnya dari server storage.
+#### FR-02: Client Portal & Password Protection
+- System HARUS mendukung penguncian portofolio sekolah tertentu menggunakan password khusus.
+- System HARUS menyediakan halaman *Client Portal* bagi perwakilan sekolah untuk memantau status alur produksi buku tahunan mereka.
 
-#### FR-03: Public Showcase & Virtual Flipbook
-- System HARUS menampilkan daftar portofolio publik di halaman galeri.
-- System HARUS memuat gambar halaman buku ke dalam slider `page-flip` secara responsif di layar desktop maupun seluler.
-- System HARUS meminta input password jika pengunjung mencoba membuka portofolio yang dilindungi kata sandi, kecuali jika diakses oleh Admin yang memiliki token terautentikasi.
-
-### 2.2 Kebutuhan Non-Fungsional (*Non-Functional Requirements*)
-
-#### NFR-01: Performa & Optimasi Render
-- Waktu kompilasi halaman Next.js HARUS kurang dari 1.5 detik pada lingkungan development.
-- Komponen gambar HARUS memanfaatkan pengoptimalan format Next.js (`AVIF`/`WebP`) dan caching static asset.
-
-#### NFR-02: Keamanan (Security)
-- Content Security Policy (CSP) HARUS diatur ketat tetapi mengizinkan domain API lokal/staging yang sah.
-- Kata sandi admin dan password portofolio HARUS di-hash menggunakan `bcryptjs` sebelum disimpan ke database.
-
-#### NFR-03: Kompatibilitas Sistem Backend
-- Backend HARUS mendukung pustaka sistem `poppler-utils` (`pdftoppm`) di lingkungan Linux/macOS.
-- Backend HARUS mendukung pengoperasian database fleksibel (SQLite untuk development lokal dan MySQL untuk staging/production).
+#### FR-03: Agency Backpanel & Production Management
+- Admin HARUS dapat melakukan manajemen CRUD (Create, Read, Update, Delete) data portofolio.
+- Admin HARUS dapat mengunggah file gambar Cover dan file PDF dokumen cetak.
+- Admin HARUS dapat memperbarui status tahapan produksi untuk setiap sekolah klien (misal: *Photoshoot Done*, *Editing 50%*, *In Printing*, *Shipped*).
+- Admin HARUS dapat mengonfigurasi kalkulator penawaran harga paket (Quotation Estimator).
 
 ---
 
-## 3. User Stories & Product Backlog
+## 3. Product Backlog & Upgraded Roadmap
 
-| ID | User Story | Prioritas | Status |
+| ID | User Story | Modul | Status |
 | :--- | :--- | :---: | :---: |
-| **US-01** | Sebagai Admin, saya ingin login ke sistem agar dapat mengelola portofolio sekolah. | High | Done |
-| **US-02** | Sebagai Admin, saya ingin mengunggah file PDF buku tahunan agar otomatis terkonversi menjadi halaman gambar. | High | Done |
-| **US-03** | Sebagai Pengunjung, saya ingin melihat galeri portofolio dengan efek majalah (*flipbook*) agar pengalaman membaca lebih menarik. | High | Done |
-| **US-04** | Sebagai Sekolah Klien, saya ingin portofolio kami dilindungi password agar tidak sembarang orang bisa melihatnya. | Medium | Done |
-| **US-05** | Sebagai Pengembang, saya ingin menggunakan database SQLite untuk pengujian lokal tanpa memerlukan server MySQL terpisah. | High | Done |
+| **US-01** | Sebagai Admin, saya ingin login ke Backpanel agar dapat mengelola portofolio & data produksi. | Auth | Done (Bypass Mode Active) |
+| **US-02** | Sebagai Admin, saya ingin mengunggah file PDF agar otomatis terkonversi menjadi majalah gambar `page-*.jpg`. | Portfolio | Done |
+| **US-03** | Sebagai Pengunjung, saya ingin membaca portofolio dengan animasi pembalik majalah 3D. | Public Showcase | Done |
+| **US-04** | Sebagai Sekolah Klien, saya ingin portofolio kami dikunci dengan password khusus sekolah. | Security | Done |
+| **US-05** | Sebagai Calon Klien, saya ingin kalkulator estimasi paket harga buku tahunan agar dapat memperkirakan anggaran sekolah. | Quotation | Planned (Client Proposal) |
+| **US-06** | Sebagai Sekolah Klien, saya ingin portal pemantauan status produksi (Photoshoot -> Design -> Cetak -> Pengiriman). | Client Portal | Planned (Client Proposal) |
