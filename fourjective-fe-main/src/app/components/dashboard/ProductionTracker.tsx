@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, Clock, Camera, FileEdit, Printer, Truck, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Camera, FileEdit, Clock, Printer, Truck } from "lucide-react";
 
 export type ProductionOrder = {
   id: string;
@@ -22,7 +21,7 @@ const initialOrders: ProductionOrder[] = [
     jumlahSiswa: 320,
     stage: "PROOFING",
     progress: 75,
-    deadline: "15 Oct 2025",
+    deadline: "15 Okt 2025",
   },
   {
     id: "2",
@@ -49,16 +48,16 @@ const initialOrders: ProductionOrder[] = [
     jumlahSiswa: 360,
     stage: "PHOTOSHOOT",
     progress: 20,
-    deadline: "10 Dec 2025",
+    deadline: "10 Des 2025",
   },
 ];
 
 const STAGES = [
-  { key: "PHOTOSHOOT", label: "Pemotretan", icon: Camera, color: "bg-blue-500" },
-  { key: "LAYOUTING", label: "Desain & Layout", icon: FileEdit, color: "bg-indigo-500" },
-  { key: "PROOFING", label: "Persetujuan Proofing", icon: Clock, color: "bg-amber-500" },
-  { key: "PRINTING", label: "Proses Cetak", icon: Printer, color: "bg-purple-500" },
-  { key: "DELIVERY", label: "Pengiriman & Flipbook", icon: Truck, color: "bg-emerald-500" },
+  { key: "PHOTOSHOOT", label: "Pemotretan", icon: Camera },
+  { key: "LAYOUTING", label: "Desain Layout", icon: FileEdit },
+  { key: "PROOFING", label: "Proofing Klien", icon: Clock },
+  { key: "PRINTING", label: "Proses Cetak", icon: Printer },
+  { key: "DELIVERY", label: "Pengiriman", icon: Truck },
 ];
 
 export function ProductionTracker() {
@@ -81,12 +80,10 @@ export function ProductionTracker() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-slate-800">Status Alur Produksi Buku Tahunan</h2>
-          <p className="text-sm text-slate-500">Pantau tahapan pengerjaan buku sekolah dari Pemotretan hingga Pengiriman.</p>
-        </div>
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-base font-bold text-slate-900">Alur Produksi Buku Tahunan</h2>
+        <p className="text-xs text-slate-500">Status pengerjaan fisik & digital per sekolah.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
@@ -95,61 +92,57 @@ export function ProductionTracker() {
           const StageIcon = stage.icon;
 
           return (
-            <div key={stage.key} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <div className="mb-3 flex items-center justify-between">
+            <div key={stage.key} className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm">
+              <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-2.5">
                 <div className="flex items-center gap-2">
-                  <div className={`flex h-7 w-7 items-center justify-center rounded-md ${stage.color} text-white`}>
-                    <StageIcon className="h-4 w-4" />
-                  </div>
-                  <span className="text-sm font-bold text-slate-700">{stage.label}</span>
+                  <StageIcon className="h-4 w-4 text-slate-600" />
+                  <span className="text-xs font-bold text-slate-800">{stage.label}</span>
                 </div>
-                <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-700">
+                <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-600">
                   {stageOrders.length}
                 </span>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {stageOrders.map((order) => (
-                  <div key={order.id} className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition-all hover:shadow-md">
-                    <h4 className="font-bold text-slate-800 text-sm">{order.namaSekolah}</h4>
-                    <p className="text-xs text-slate-500 mt-0.5">{order.jumlahSiswa} Siswa • Angkatan {order.tahun}</p>
+                  <div key={order.id} className="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3">
+                    <h4 className="font-bold text-slate-900 text-xs">{order.namaSekolah}</h4>
+                    <p className="text-[11px] text-slate-500 mt-0.5">{order.jumlahSiswa} Siswa • {order.tahun}</p>
 
-                    <div className="mt-3">
-                      <div className="flex items-center justify-between text-xs font-medium text-slate-600 mb-1">
+                    <div className="mt-2.5">
+                      <div className="flex items-center justify-between text-[10px] font-semibold text-slate-500 mb-1">
                         <span>Progres</span>
                         <span>{order.progress}%</span>
                       </div>
-                      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
                         <div
-                          className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-300"
+                          className="h-full bg-slate-900 transition-all duration-300"
                           style={{ width: `${order.progress}%` }}
                         />
                       </div>
                     </div>
 
-                    <div className="mt-3 flex items-center justify-between text-xs text-slate-400 border-t pt-2">
-                      <span>Deadline: {order.deadline}</span>
+                    <div className="mt-2.5 flex items-center justify-between text-[10px] text-slate-400 border-t border-slate-200/60 pt-2">
+                      <span>Target: {order.deadline}</span>
                     </div>
 
-                    <div className="mt-2 pt-1">
-                      <select
-                        value={order.stage}
-                        onChange={(e) => handleStageChange(order.id, e.target.value as ProductionOrder["stage"])}
-                        className="w-full rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-700 font-medium focus:outline-none"
-                      >
-                        {STAGES.map((s) => (
-                          <option key={s.key} value={s.key}>
-                            Pindah ke: {s.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                    <select
+                      value={order.stage}
+                      onChange={(e) => handleStageChange(order.id, e.target.value as ProductionOrder["stage"])}
+                      className="mt-2 w-full rounded border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 focus:outline-none"
+                    >
+                      {STAGES.map((s) => (
+                        <option key={s.key} value={s.key}>
+                          Pindah: {s.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 ))}
 
                 {stageOrders.length === 0 && (
-                  <div className="rounded-lg border border-dashed border-slate-200 p-4 text-center text-xs text-slate-400">
-                    Tidak ada proyek di tahap ini
+                  <div className="rounded-lg border border-dashed border-slate-200 p-3 text-center text-[11px] text-slate-400">
+                    Kosong
                   </div>
                 )}
               </div>

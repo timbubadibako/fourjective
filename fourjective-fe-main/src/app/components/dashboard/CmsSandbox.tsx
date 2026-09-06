@@ -1,18 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Sparkles,
-  Save,
-  Check,
-  Eye,
-  Type,
-  FileText,
-  MessageSquare,
-  PhoneCall,
-  Layout,
-  RefreshCw,
-} from "lucide-react";
+import { Save, Check, Eye, Type, PhoneCall, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function CmsSandbox() {
@@ -26,62 +15,53 @@ export function CmsSandbox() {
   const [livePreview, setLivePreview] = useState(true);
   const [saved, setSaved] = useState(false);
 
-  // Testimonials Sandbox state
   const [testimonials, setTestimonials] = useState([
-    { id: 1, name: "Komite SMAN 1 Jakarta", text: "Hasil flipbook digital sangat keren dan memudahkan siswa membaca kenangan di mana saja!", school: "Angkatan 2025" },
-    { id: 2, name: "Ketua OSIS Taruna Nusantara", text: "Kualitas cetak fisik dan cetak hard cover sangat mewah, pengerjaan cepat dan tepat waktu.", school: "Angkatan 2025" },
+    { id: 1, name: "Komite SMAN 1 Jakarta", text: "Hasil flipbook digital sangat memuaskan dan memudahkan siswa membaca kenangan di mana saja!", school: "Angkatan 2025" },
+    { id: 2, name: "Ketua OSIS Taruna Nusantara", text: "Kualitas cetak fisik dan hard cover sangat mewah, pengerjaan tepat waktu.", school: "Angkatan 2025" },
   ]);
 
   const handleSaveCMS = () => {
     setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    setTimeout(() => setSaved(false), 2000);
   };
 
   return (
     <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/20">
-            <Layout className="h-6 w-6" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-slate-800">CMS Landing Page & Content Sandbox</h2>
-            <p className="text-xs text-slate-500">Kelola teks hero, penawaran layanan, kontak, dan isi testimoni untuk tampilan halaman depan.</p>
-          </div>
+      <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div>
+          <h2 className="text-base font-bold text-slate-900">CMS Landing Page & Sandbox</h2>
+          <p className="text-xs text-slate-500">Kelola konten judul hero, penawaran layanan, kontak, dan testimoni.</p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Button
             variant="outline"
             onClick={() => setLivePreview(!livePreview)}
-            className="flex items-center gap-2 text-xs font-semibold"
+            className="flex items-center gap-1.5 text-xs font-semibold"
           >
-            <Eye className="h-4 w-4" />
+            <Eye className="h-3.5 w-3.5" />
             {livePreview ? "Sembunyikan Live Preview" : "Tampilkan Live Preview"}
           </Button>
 
           <Button
             onClick={handleSaveCMS}
-            className="flex items-center gap-2 bg-purple-600 text-white hover:bg-purple-700 text-xs font-bold"
+            className="flex items-center gap-1.5 bg-slate-900 text-white hover:bg-slate-800 text-xs font-bold"
           >
-            {saved ? <Check className="h-4 w-4 text-emerald-400" /> : <Save className="h-4 w-4" />}
-            {saved ? "Konten Disimpan!" : "Simpan Perubahan CMS"}
+            {saved ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Save className="h-3.5 w-3.5" />}
+            {saved ? "Disimpan!" : "Simpan Perubahan"}
           </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Editor Form Column */}
-        <div className="space-y-6 lg:col-span-6">
-          {/* Section 1: Hero Banner Settings */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
-            <div className="mb-4 flex items-center gap-2 text-purple-700 border-b pb-3">
-              <Type className="h-5 w-5" />
-              <h3 className="text-sm font-bold uppercase tracking-wider">Hero Banner & Headline</h3>
+        <div className="space-y-5 lg:col-span-6">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-2.5 text-slate-800">
+              <Type className="h-4 w-4" />
+              <h3 className="text-xs font-bold uppercase tracking-wider">Hero Banner & Teks Utama</h3>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Judul Utama Hero (Headline)
@@ -90,7 +70,7 @@ export function CmsSandbox() {
                   type="text"
                   value={heroTitle}
                   onChange={(e) => setHeroTitle(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-800 focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-slate-900 focus:border-slate-500 focus:outline-none"
                 />
               </div>
 
@@ -102,71 +82,69 @@ export function CmsSandbox() {
                   rows={3}
                   value={heroSubtitle}
                   onChange={(e) => setHeroSubtitle(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-700 focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs text-slate-700 focus:border-slate-500 focus:outline-none"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Teks Tombol Aksi (CTA)
+                  Teks Tombol CTA
                 </label>
                 <input
                   type="text"
                   value={ctaText}
                   onChange={(e) => setCtaText(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-slate-800 focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-900 focus:border-slate-500 focus:outline-none"
                 />
               </div>
             </div>
           </div>
 
-          {/* Section 2: Contact & Social Info */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
-            <div className="mb-4 flex items-center gap-2 text-purple-700 border-b pb-3">
-              <PhoneCall className="h-5 w-5" />
-              <h3 className="text-sm font-bold uppercase tracking-wider">Kontak & Telepon Agensi</h3>
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-2.5 text-slate-800">
+              <PhoneCall className="h-4 w-4" />
+              <h3 className="text-xs font-bold uppercase tracking-wider">Informasi Kontak</h3>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Nomor WhatsApp Resmi
+                  Nomor WhatsApp
                 </label>
                 <input
                   type="text"
                   value={whatsappNumber}
                   onChange={(e) => setWhatsappNumber(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-800 focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-900 focus:border-slate-500 focus:outline-none"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Email Agensi
+                  Email Official
                 </label>
                 <input
                   type="email"
                   value={emailContact}
                   onChange={(e) => setEmailContact(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-800 focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-900 focus:border-slate-500 focus:outline-none"
                 />
               </div>
             </div>
           </div>
 
-          {/* Section 3: Testimonial Editor */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
-            <div className="mb-4 flex items-center gap-2 text-purple-700 border-b pb-3">
-              <MessageSquare className="h-5 w-5" />
-              <h3 className="text-sm font-bold uppercase tracking-wider">Testimoni Klien Sekolah</h3>
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-2.5 text-slate-800">
+              <MessageSquare className="h-4 w-4" />
+              <h3 className="text-xs font-bold uppercase tracking-wider">Testimoni Klien</h3>
             </div>
 
             <div className="space-y-3">
               {testimonials.map((t, idx) => (
-                <div key={t.id} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-slate-700">Testimoni #{idx + 1}</span>
-                    <span className="text-[10px] font-semibold text-purple-600">{t.school}</span>
+                <div key={t.id} className="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-bold text-slate-800">Testimoni #{idx + 1}</span>
+                    <span className="text-[10px] font-semibold text-slate-500">{t.school}</span>
                   </div>
                   <input
                     type="text"
@@ -194,57 +172,42 @@ export function CmsSandbox() {
           </div>
         </div>
 
-        {/* Live Preview Column */}
         {livePreview && (
           <div className="lg:col-span-6">
-            <div className="sticky top-6 rounded-2xl border border-slate-200/80 bg-slate-950 p-6 text-white shadow-xl">
-              <div className="mb-4 flex items-center justify-between border-b border-slate-800 pb-3">
-                <div className="flex items-center gap-2">
-                  <span className="h-3 w-3 rounded-full bg-rose-500"></span>
-                  <span className="h-3 w-3 rounded-full bg-amber-500"></span>
-                  <span className="h-3 w-3 rounded-full bg-emerald-500"></span>
-                  <span className="ml-2 text-xs font-bold text-slate-400">Live Sandbox Preview (Tampilan Halaman Depan)</span>
-                </div>
-                <Sparkles className="h-4 w-4 text-purple-400 animate-pulse" />
+            <div className="sticky top-6 rounded-xl border border-slate-800 bg-slate-950 p-6 text-white shadow-xl">
+              <div className="mb-4 border-b border-slate-800 pb-3">
+                <span className="text-xs font-bold text-slate-400">Live Sandbox Preview</span>
               </div>
 
-              {/* Simulated Hero Component */}
-              <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-6 backdrop-blur-sm">
-                <span className="inline-block rounded-full bg-purple-500/20 px-3 py-1 text-[10px] font-bold tracking-wider text-purple-300 uppercase mb-3">
-                  ★ Fourjective Creative Studio
-                </span>
+              <div className="rounded-lg border border-slate-800 bg-slate-900 p-5">
+                <h1 className="text-lg font-bold leading-tight text-white">{heroTitle}</h1>
+                <p className="mt-2 text-xs leading-relaxed text-slate-300">{heroSubtitle}</p>
 
-                <h1 className="text-xl font-extrabold leading-tight text-white">{heroTitle}</h1>
-                <p className="mt-3 text-xs leading-relaxed text-slate-300">{heroSubtitle}</p>
-
-                <div className="mt-6 flex flex-wrap items-center gap-3">
-                  <button className="rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-purple-500/30">
+                <div className="mt-5 flex items-center gap-2">
+                  <button className="rounded-lg bg-white px-3.5 py-1.5 text-xs font-bold text-slate-900">
                     {ctaText}
                   </button>
-                  <button className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-xs font-bold text-slate-300">
+                  <button className="rounded-lg border border-slate-700 bg-slate-800 px-3.5 py-1.5 text-xs font-bold text-slate-300">
                     Lihat Galeri 3D
                   </button>
                 </div>
               </div>
 
-              {/* Simulated Testimonials Carousel */}
-              <div className="mt-6 space-y-3 border-t border-slate-800 pt-4">
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Preview Testimoni Klien</p>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="mt-5 space-y-2 border-t border-slate-800 pt-4">
+                <p className="text-[11px] font-bold text-slate-400">Preview Testimoni</p>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {testimonials.map((t) => (
-                    <div key={t.id} className="rounded-lg border border-slate-800 bg-slate-900/50 p-3">
-                      <p className="text-[11px] italic text-slate-300">"{t.text}"</p>
-                      <p className="mt-2 text-xs font-bold text-purple-400">{t.name}</p>
-                      <p className="text-[9px] text-slate-500">{t.school}</p>
+                    <div key={t.id} className="rounded-md border border-slate-800 bg-slate-900/60 p-2.5">
+                      <p className="text-[10px] italic text-slate-300">"{t.text}"</p>
+                      <p className="mt-1.5 text-[11px] font-bold text-white">{t.name}</p>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Simulated Footer Contacts */}
-              <div className="mt-6 border-t border-slate-800 pt-4 flex items-center justify-between text-[11px] text-slate-400">
-                <span>WhatsApp: <strong className="text-emerald-400">{whatsappNumber}</strong></span>
-                <span>Email: <strong className="text-indigo-400">{emailContact}</strong></span>
+              <div className="mt-4 border-t border-slate-800 pt-3 flex items-center justify-between text-[10px] text-slate-400">
+                <span>WhatsApp: <strong className="text-white">{whatsappNumber}</strong></span>
+                <span>Email: <strong className="text-white">{emailContact}</strong></span>
               </div>
             </div>
           </div>

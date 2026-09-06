@@ -1,11 +1,14 @@
 "use client";
 
-import { BookOpen, ShieldCheck, Layers, Sparkles } from "lucide-react";
+import { BookOpen, Lock, Layers, Activity } from "lucide-react";
 import { Portfolio } from "@/services/api";
 
 export function OverviewCards({ portfolios }: { portfolios: Portfolio[] }) {
   const totalPortfolios = portfolios.length;
-  const protectedPortfolios = portfolios.filter(p => p.password && p.password.trim() !== "").length;
+  const protectedPortfolios = portfolios.filter(
+    (p) => p.password && p.password.trim() !== ""
+  ).length;
+
   const totalImages = portfolios.reduce((acc, p) => {
     try {
       const parsed = typeof p.images === "string" ? JSON.parse(p.images) : p.images;
@@ -15,55 +18,53 @@ export function OverviewCards({ portfolios }: { portfolios: Portfolio[] }) {
     }
   }, 0);
 
+  const metrics = [
+    {
+      label: "Total Portofolio",
+      value: totalPortfolios,
+      caption: "Katalog sekolah terbit",
+      icon: BookOpen,
+    },
+    {
+      label: "Terproteksi Password",
+      value: protectedPortfolios,
+      caption: "Akses terbatas sekolah",
+      icon: Lock,
+    },
+    {
+      label: "Halaman Flipbook 3D",
+      value: totalImages,
+      caption: "File gambar terkonversi",
+      icon: Layers,
+    },
+    {
+      label: "Proyek Produksi",
+      value: "4 Sekolah",
+      caption: "Dalam alur pengerjaan",
+      icon: Activity,
+    },
+  ];
+
   return (
-    <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {/* Total Portfolios Card */}
-      <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:shadow-md">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Portofolio</p>
-          <h3 className="mt-1 text-2xl font-extrabold text-slate-800">{totalPortfolios}</h3>
-          <p className="mt-1 text-xs text-slate-400">Tersedia di katalog</p>
-        </div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-          <BookOpen className="h-6 w-6" />
-        </div>
-      </div>
-
-      {/* Protected Portfolios Card */}
-      <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:shadow-md">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Portofolio Terproteksi</p>
-          <h3 className="mt-1 text-2xl font-extrabold text-slate-800">{protectedPortfolios}</h3>
-          <p className="mt-1 text-xs text-amber-600 font-medium">Kunci Password Sekolah</p>
-        </div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
-          <ShieldCheck className="h-6 w-6" />
-        </div>
-      </div>
-
-      {/* Total Converted Pages Card */}
-      <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:shadow-md">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Halaman Flipbook</p>
-          <h3 className="mt-1 text-2xl font-extrabold text-slate-800">{totalImages}</h3>
-          <p className="mt-1 text-xs text-emerald-600 font-medium">Render 3D Pembalik Majalah</p>
-        </div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
-          <Layers className="h-6 w-6" />
-        </div>
-      </div>
-
-      {/* Production Status Card */}
-      <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:shadow-md">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Proyek Produksi Aktif</p>
-          <h3 className="mt-1 text-2xl font-extrabold text-slate-800">4 Sekolah</h3>
-          <p className="mt-1 text-xs text-purple-600 font-medium">Dalam Alur Produksi</p>
-        </div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-50 text-purple-600">
-          <Sparkles className="h-6 w-6" />
-        </div>
-      </div>
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {metrics.map((m, i) => {
+        const Icon = m.icon;
+        return (
+          <div
+            key={i}
+            className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+          >
+            <div>
+              <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">{m.label}</p>
+              <h3 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">{m.value}</h3>
+              <p className="mt-1 text-xs text-slate-400">{m.caption}</p>
+            </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-100 bg-slate-50 text-slate-700">
+              <Icon className="h-4 w-4" />
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
