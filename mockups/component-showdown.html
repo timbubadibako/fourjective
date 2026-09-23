@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FOURJECTIVE // Component Showdown & Design System Arena</title>
+
+  <!-- Typography Stack: Syne (Ultra Heavy Display) + Plus Jakarta Sans (Modern Body) + JetBrains Mono (Tech/Spec) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Syne', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            void: '#09090B',
+            surface: '#121215',
+            elevated: '#18181D',
+            hairline: '#27272E',
+            subtle: '#8E8E9A',
+            brand: {
+              orange: '#FF6E00',
+              lime: '#D4FF00',
+              pink: '#FF007A',
+              cyan: '#00F0FF',
+              yellow: '#FAC443',
+              purple: '#534CC3',
+              acid: '#BFFF04',
+              cream: '#FAF6F0',
+            }
+          },
+          boxShadow: {
+            'brutal': '4px 4px 0px #000000',
+            'brutal-lg': '6px 6px 0px #000000',
+            'brutal-xl': '8px 8px 0px #000000',
+            'brutal-orange': '5px 5px 0px #FF6E00',
+            'brutal-lime': '5px 5px 0px #D4FF00',
+            'brutal-pink': '5px 5px 0px #FF007A',
+            'brutal-cyan': '5px 5px 0px #00F0FF',
+            'brutal-combo': '4px 4px 0px #000, 8px 8px 0px #FF007A',
+            'glass-glow': '0 0 25px rgba(255, 110, 0, 0.6)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- GSAP Core & ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <style>
+    /* Halftone Pop-Comic Pattern */
+    .bg-halftone {
+      background-image: radial-gradient(#27272E 1.5px, transparent 1.5px);
+      background-size: 18px 18px;
+    }
+    .bg-halftone-cmyk {
+      background-image: 
+        radial-gradient(#FF007A 1.8px, transparent 1.8px),
+        radial-gradient(#00F0FF 1.8px, transparent 1.8px);
+      background-size: 24px 24px, 24px 24px;
+      background-position: 0 0, 12px 12px;
+    }
+    .bg-halftone-lime {
+      background-image: radial-gradient(#D4FF00 1.8px, transparent 1.8px);
+      background-size: 16px 16px;
+    }
+    .bg-wireframe-grid {
+      background-size: 32px 32px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    }
+    .bg-paper-grid {
+      background-size: 28px 28px;
+      background-image: 
+        linear-gradient(to right, rgba(0, 0, 0, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
+    }
+
+    /* Holographic Shimmer Foil */
+    .bg-holo-shimmer {
+      background: linear-gradient(135deg, #FF007A 0%, #00F0FF 25%, #D4FF00 50%, #FF6E00 75%, #FF007A 100%);
+      background-size: 250% 250%;
+      animation: holo-anim 5s ease infinite;
+    }
+    @keyframes holo-anim {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* 3D Comic Extrusion text shadows */
+    .comic-extrusion {
+      text-shadow: 
+        3px 3px 0px #000000,
+        6px 6px 0px #FF007A,
+        9px 9px 0px #00F0FF,
+        12px 12px 0px #D4FF00;
+    }
+    .comic-extrusion-sm {
+      text-shadow: 
+        2.5px 2.5px 0px #000000,
+        5px 5px 0px #FF007A,
+        7.5px 7.5px 0px #00F0FF;
+    }
+    .comic-extrusion-orange {
+      text-shadow: 
+        3px 3px 0px #000000,
+        6px 6px 0px #FF6E00,
+        9px 9px 0px #FAC443;
+    }
+
+    /* Jagged Comic Starburst Shape */
+    .comic-starburst {
+      clip-path: polygon(50% 0%, 65% 28%, 98% 35%, 75% 58%, 79% 91%, 50% 75%, 21% 91%, 25% 58%, 2% 35%, 35% 28%);
+    }
+
+    /* Masking tape sticker effect */
+    .tape-strip {
+      background: rgba(255, 255, 230, 0.45);
+      backdrop-filter: blur(4px);
+      border-left: 2px dashed rgba(0,0,0,0.3);
+      border-right: 2px dashed rgba(0,0,0,0.3);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    /* Neo-Brutalist Button Animation */
+    .btn-arcade {
+      transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .btn-arcade:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px #000000;
+    }
+    .btn-arcade:active {
+      transform: translate(2px, 2px);
+      box-shadow: 0px 0px 0px #000000;
+    }
+
+    /* Rotating Badges */
+    @keyframes spin-slow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .spin-slow {
+      animation: spin-slow 16s linear infinite;
+    }
+
+    /* Floating Mascots */
+    @keyframes float-idle {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(2deg); }
+    }
+    .float-idle {
+      animation: float-idle 4s ease-in-out infinite;
+    }
+    .float-idle-delayed {
+      animation: float-idle 4.5s ease-in-out 1.5s infinite;
+    }
+
+    /* Word Scrubbing */
+    .scrub-word {
+      opacity: 0.15;
+      transition: opacity 0.12s ease, color 0.12s ease;
+      display: inline-block;
+    }
+
+    /* Accordion Panels */
+    .showdown-accordion-panel {
+      transition: flex 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .showdown-accordion-panel:hover {
+      flex: 2.8 !important;
+    }
+
+    /* Glow in glass */
+    .glow-pill-btn {
+      background: linear-gradient(135deg, #FF6E00 0%, #FFA04D 100%);
+      box-shadow: 0 0 22px rgba(255, 110, 0, 0.6);
+      transition: all 0.25s ease;
+    }
+    .glow-pill-btn:hover {
+      box-shadow: 0 0 35px rgba(255, 110, 0, 0.95), 0 0 10px #FF6E00;
+      transform: scale(1.04);
+    }
+  </style>
+</head>
+<body class="bg-[#09090B] text-white font-sans antialiased selection:bg-[#FF6E00] selection:text-black">
+
+  <!-- ================= TOP ARENA CONTROL BAR ================= -->
+  <header class="sticky top-0 z-[120] bg-[#121215]/95 backdrop-blur-md border-b-2 border-black px-4 sm:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-[#FF6E00] text-black font-black font-mono text-sm flex items-center justify-center border border-black shadow-[2px_2px_0px_#000]">
+        4J
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-display font-black text-sm tracking-tight text-white">FOURJECTIVE DESIGN SYSTEM</span>
+          <span class="bg-[#FF6E00] text-black font-mono font-bold text-[10px] px-2 py-0.5 rounded-full">SHOWDOWN LAB</span>
+        </div>
+        <p class="text-[11px] font-mono text-zinc-400">Komparasi Komponen: Y2K Brutalist &bull; Pop Comic &bull; Loon Art &bull; Studio 3D</p>
+      </div>
+    </div>
+
+    <!-- Quick Jump Tabs -->
+    <nav class="flex items-center gap-2 font-mono text-xs overflow-x-auto py-1">
+      <a href="#arena-navbars" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-[#FF6E00] hover:text-black transition-colors border border-white/10">01. NAV SHOWDOWN</a>
+      <a href="#arena-heroes" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-[#FF6E00] hover:text-black transition-colors border border-white/10">02. HERO SHOWDOWN</a>
+      <a href="#arena-manifesto" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-[#FF6E00] hover:text-black transition-colors border border-white/10">03. MANIFESTO</a>
+      <a href="#arena-layanan" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-[#FF6E00] hover:text-black transition-colors border border-white/10">04. LAYANAN</a>
+      <a href="#arena-themes" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-[#FF6E00] hover:text-black transition-colors border border-white/10">05. 5 THEMES</a>
+      <a href="#arena-stickers" class="px-3 py-1.5 rounded-lg bg-[#FF6E00] text-black font-bold border border-black shadow-[2px_2px_0px_#000]">06. STICKER VAULT</a>
+    </nav>
+  </header>
+
+  <!-- ================= ARENA HERO BANNER ================= -->
+  <section class="py-12 px-6 max-w-7xl mx-auto border-b border-white/10 text-center relative overflow-hidden">
+    <div class="inline-flex items-center gap-2 font-mono text-xs font-bold text-[#FF6E00] uppercase tracking-widest px-4 py-1.5 rounded-full bg-white/5 border border-white/10 mb-4">
+      <span class="w-2 h-2 rounded-full bg-[#FF6E00] animate-ping"></span>
+      CREATIVE FREEDOM // POP COMIC &bull; ART &bull; GRAFFITI &bull; Y2K
+    </div>
+    <h1 class="font-display font-black text-4xl sm:text-6xl md:text-7xl uppercase tracking-tight leading-[0.95] max-w-5xl mx-auto mb-6">
+      THE FOURJECTIVE<br/><span class="text-[#FF6E00] underline decoration-wavy decoration-[#FAC443]">COMPONENT SHOWDOWN</span>
+    </h1>
+    <p class="font-sans text-sm sm:text-base md:text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+      Uji coba langsung dan pilih kombinasi terbaik dari referensi <strong>Abank Irenk (Y2K Brutalist/Pop Comic)</strong>, <strong>Loon Art (Tactile Nostalgia)</strong>, dan <strong>Fourjective Studio (3D Mesh + 4K Cinema)</strong>.
+    </p>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 01. NAVBAR SHOWDOWN ARENA                                                -->
+  <!-- ========================================================================= -->
+  <section id="arena-navbars" class="py-16 px-6 max-w-7xl mx-auto border-b border-white/10 space-y-12">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/10 pb-6">
+      <div>
+        <span class="font-mono text-xs font-bold text-[#FF6E00]">[SHOWDOWN 01 // NAVIGATION DOCK]</span>
+        <h2 class="font-display font-black text-3xl sm:text-5xl uppercase tracking-tight mt-1">3 Pilihan Filosofi Navbar</h2>
+      </div>
+      <p class="font-mono text-xs text-zinc-400 max-w-md">
+        Klik dan uji responsivitas, tombol fisik, bayangan brutalist, atau glow di masing-masing varian.
+      </p>
+    </div>
+
+    <!-- OPTION 1: Neo-Y2K Street Capsule (TERPILIH OLEH USER) -->
+    <div class="p-6 sm:p-8 rounded-3xl bg-[#121215] border-2 border-black shadow-[6px_6px_0px_#FAC443] space-y-6 relative overflow-hidden">
+      <div class="absolute top-0 right-0 bg-[#FAC443] text-black font-mono font-black text-xs px-4 py-1 rounded-bl-xl border-l-2 border-b-2 border-black flex items-center gap-1 shadow-sm">
+        <i data-lucide="check-check" class="w-4 h-4"></i> TERPILIH // WINNER
+      </div>
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <span class="font-mono text-xs font-bold bg-[#FAC443] text-black px-3 py-1 rounded-full border border-black shadow-[2px_2px_0px_#000]">
+            VARIAN A &bull; TERPILIH
+          </span>
+          <h3 class="font-display font-bold text-xl text-white">The Neo-Y2K Street Capsule (Pop Comic &bull; Abank Irenk Twist)</h3>
+        </div>
+        <span class="font-mono text-xs text-zinc-400">Style: Hard outline, offset shadow, arcade click button, sticker stamp</span>
+      </div>
+
+      <!-- Live Interactive Navbar Component A -->
+      <div class="p-8 rounded-2xl bg-[#09090B] border border-white/10 flex justify-center items-center relative overflow-hidden bg-halftone min-h-[140px]">
+        <nav class="bg-[#18181D] border-2 border-black rounded-full px-6 py-2.5 flex items-center gap-6 sm:gap-8 shadow-[4px_4px_0px_#000000] relative">
+          <!-- Stamp Sticker -->
+          <div class="absolute -top-3 -left-3 bg-[#FAC443] text-black font-mono font-black text-[9px] px-2 py-0.5 rounded border border-black rotate-[-6deg] shadow-[2px_2px_0px_#000]">
+            ★ VOL.26
+          </div>
+
+          <!-- Brand Logo -->
+          <div class="flex items-center gap-2 group cursor-pointer">
+            <div class="w-8 h-8 rounded-full bg-[#FF6E00] text-black font-display font-black text-xs flex items-center justify-center border-2 border-black shadow-[2px_2px_0px_#000] group-hover:rotate-12 transition-transform">
+              4J
+            </div>
+            <span class="font-display font-black text-sm tracking-tight text-white group-hover:text-[#FF6E00] transition-colors">
+              FOURJECTIVE
+            </span>
+          </div>
+
+          <!-- Links -->
+          <div class="hidden md:flex items-center gap-6 font-mono text-xs font-bold text-zinc-300">
+            <a href="#arena-heroes" class="hover:text-[#FF6E00] transition-colors">Manifesto</a>
+            <a href="#arena-layanan" class="hover:text-[#FF6E00] transition-colors">Layanan</a>
+            <a href="#arena-themes" class="hover:text-[#FF6E00] transition-colors">5 Themes</a>
+            <a href="#arena-stickers" class="hover:text-[#FF6E00] transition-colors">Zine Lab</a>
+          </div>
+
+          <!-- Arcade Push Button -->
+          <a href="https://wa.me/6285157386631" target="_blank" class="btn-arcade bg-[#FF6E00] text-black font-mono font-black text-xs px-5 py-2 rounded-full border-2 border-black shadow-[3px_3px_0px_#000000] flex items-center gap-1.5">
+            <span>KONSULTASI</span>
+            <span>&rarr;</span>
+          </a>
+        </nav>
+      </div>
+      <div class="font-mono text-xs text-zinc-400 flex items-center gap-2">
+        <i data-lucide="check" class="w-4 h-4 text-[#FF6E00]"></i>
+        <span>Kelebihan: Punya karakter "street art & comic rebel" yang kuat, tombol punya rasa fisik arcade saat diklik.</span>
+      </div>
+    </div>
+
+    <!-- OPTION 2: Floating Dark Glass Pill (GPT-Taste) -->
+    <div class="p-6 sm:p-8 rounded-3xl bg-[#121215] border border-white/15 space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <span class="font-mono text-xs font-bold bg-white/10 text-zinc-300 px-3 py-1 rounded-full border border-white/20">
+            VARIAN B
+          </span>
+          <h3 class="font-display font-bold text-xl text-white">Floating Dark Glass Pill (GPT-Taste &bull; Cinematic Luxury)</h3>
+        </div>
+        <span class="font-mono text-xs text-zinc-400">Style: Deep glassmorphism, halo glow button, ultra-clean hairline</span>
+      </div>
+
+      <!-- Live Interactive Navbar Component B -->
+      <div class="p-8 rounded-2xl bg-[#09090B] border border-white/10 flex justify-center items-center relative overflow-hidden min-h-[140px]">
+        <nav class="bg-[#121215]/85 backdrop-blur-2xl border border-white/15 px-7 py-3 rounded-full flex items-center gap-8 shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+          <div class="flex items-center gap-2.5">
+            <span class="w-8 h-8 rounded-full bg-[#FF6E00] text-black font-display font-black text-xs flex items-center justify-center shadow-[0_0_15px_rgba(255,110,0,0.5)]">
+              4J
+            </span>
+            <span class="font-display font-bold text-sm tracking-tight text-white">
+              FOURJECTIVE
+            </span>
+          </div>
+
+          <div class="hidden md:flex items-center gap-6 text-xs font-semibold text-zinc-400">
+            <a href="#" class="hover:text-white transition-colors">Portofolio</a>
+            <a href="#" class="hover:text-white transition-colors">Spesifikasi</a>
+            <a href="#" class="hover:text-white transition-colors">Filosofi</a>
+            <a href="#" class="hover:text-white transition-colors">AR Tech</a>
+          </div>
+
+          <a href="https://wa.me/6285157386631" target="_blank" class="glow-pill-btn text-black font-extrabold text-xs px-5 py-2.5 rounded-full border border-white/30 flex items-center gap-2">
+            <span>Konsultasi</span>
+            <span>&rarr;</span>
+          </a>
+        </nav>
+      </div>
+      <div class="font-mono text-xs text-zinc-400 flex items-center gap-2">
+        <i data-lucide="check" class="w-4 h-4 text-[#FF6E00]"></i>
+        <span>Kelebihan: Sangat elegan dan mahal, tombol bersinar di malam hari. Tapi minim unsur kartun/graffiti jika berdiri sendiri.</span>
+      </div>
+    </div>
+
+    <!-- OPTION 3: Loon Art Warm Paper Zine Strip -->
+    <div class="p-6 sm:p-8 rounded-3xl bg-[#121215] border border-white/15 space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <span class="font-mono text-xs font-bold bg-[#DDD6FE] text-black px-3 py-1 rounded-full border border-black shadow-[2px_2px_0px_#000]">
+            VARIAN C
+          </span>
+          <h3 class="font-display font-bold text-xl text-white">Warm Paper Zine Strip (Loon Art Aesthetic)</h3>
+        </div>
+        <span class="font-mono text-xs text-zinc-400">Style: Warm cream `#FAF6F0`, brutalist drop-shadow, nostalgic badge</span>
+      </div>
+
+      <!-- Live Interactive Navbar Component C -->
+      <div class="p-8 rounded-2xl bg-[#FAF6F0] text-[#18181B] border border-black flex justify-center items-center relative overflow-hidden min-h-[140px] bg-paper-grid">
+        <nav class="bg-white border-2 border-[#18181B] rounded-xl px-6 py-2.5 flex items-center gap-8 shadow-[4px_4px_0px_#18181B]">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded bg-[#FDE047] text-black font-display font-black text-xs flex items-center justify-center border border-black shadow-[1.5px_1.5px_0px_#000]">
+              4J
+            </span>
+            <span class="font-display font-black text-sm tracking-tight text-[#18181B]">
+              fourjective.lab
+            </span>
+          </div>
+
+          <div class="hidden md:flex items-center gap-6 font-mono text-xs font-bold text-zinc-600">
+            <span class="hover:text-black cursor-pointer">01. Karya</span>
+            <span class="hover:text-black cursor-pointer">02. Paket BTS</span>
+            <span class="hover:text-black cursor-pointer">03. Rekomendasi</span>
+          </div>
+
+          <button class="bg-[#18181B] text-white font-mono text-xs font-bold px-4 py-2 rounded-lg hover:bg-[#FF6E00] hover:text-black border border-black transition-colors shadow-[2px_2px_0px_#000]">
+            [Pesan Jadwal]
+          </button>
+        </nav>
+      </div>
+      <div class="font-mono text-xs text-zinc-400 flex items-center gap-2">
+        <i data-lucide="check" class="w-4 h-4 text-[#FF6E00]"></i>
+        <span>Kelebihan: Sangat ramah, bersahabat, dan bernuansa kertas zine/majalah analog.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 02. HERO SECTION SHOWDOWN ARENA                                          -->
+  <!-- ========================================================================= -->
+  <section id="arena-heroes" class="py-16 px-6 max-w-7xl mx-auto border-b border-white/10 space-y-12">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/10 pb-6">
+      <div>
+        <span class="font-mono text-xs font-bold text-[#FF6E00]">[SHOWDOWN 02 // HERO STAGE]</span>
+        <h2 class="font-display font-black text-3xl sm:text-5xl uppercase tracking-tight mt-1">3 Konsep Hero Section</h2>
+      </div>
+      <p class="font-mono text-xs text-zinc-400 max-w-md">
+        Uji interaksi fisika kanvas, stiker maskot kartun, dan respons optical mix-blend.
+      </p>
+    </div>
+
+    <!-- HERO OPTION 1: The Y2K Pop-Comic & Street Art Studio (HYPER-VIBRANT Y2K ART MASTERPIECE) -->
+    <div class="p-6 sm:p-8 rounded-3xl bg-[#0D0D11] border-2 border-black shadow-[8px_8px_0px_#FF007A,14px_14px_0px_#00F0FF] space-y-6 relative overflow-hidden">
+      <!-- Street Banner Header -->
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <span class="font-mono text-xs font-black bg-[#D4FF00] text-black px-3.5 py-1 rounded-full border-2 border-black shadow-[3px_3px_0px_#000] rotate-[-2deg]">
+            ★ Y2K HYPER-CHROMATIC EDITION
+          </span>
+          <h3 class="font-display font-black text-xl sm:text-2xl text-white tracking-tight">The 3D Kinetic Canvas &bull; Pop-Comic Street Art Studio</h3>
+        </div>
+        <div class="flex items-center gap-2 font-mono text-xs">
+          <span class="px-2.5 py-0.5 rounded bg-[#FF007A] text-white font-black border border-black shadow-[2px_2px_0px_#000]">120 FPS MESH</span>
+          <span class="px-2.5 py-0.5 rounded bg-[#00F0FF] text-black font-black border border-black shadow-[2px_2px_0px_#000]">CMYK ART</span>
+          <span class="px-2.5 py-0.5 rounded bg-[#D4FF00] text-black font-black border border-black shadow-[2px_2px_0px_#000]">ACID STREET</span>
+        </div>
+      </div>
+
+      <!-- Live Interactive Hero Simulation (Option 1 - The Ultimate Art Edition) -->
+      <div id="hero-demo-1" class="relative w-full h-[740px] rounded-3xl overflow-hidden bg-[#070709] border-4 border-black shadow-[10px_10px_0px_#000] flex flex-col justify-between p-4 sm:p-8 select-none bg-comic-dots">
+        <!-- Live Multi-Chromatic Verlet Canvas Background -->
+        <canvas id="showdown-mesh-canvas" class="absolute inset-0 block w-full h-full cursor-crosshair z-0"></canvas>
+
+        <!-- ART ELEMENT 1: Diagonal Caution Hazard Tape Across Top Right with Gloss Tape -->
+        <div class="absolute -top-1 -right-8 z-30 pointer-events-none rotate-[5deg] bg-[#FAC443] text-black font-mono font-black text-[11px] tracking-widest px-10 py-1.5 border-2 border-black shadow-[4px_4px_0px_#000] uppercase flex items-center gap-2 select-none">
+          <span class="text-[#FF007A]">⚠</span>
+          <span>HIGH CREATIVE VOLTAGE</span>
+          <span>//</span>
+          <span>100% RAW YOUTH</span>
+        </div>
+
+        <!-- ART ELEMENT 2: Holographic Shimmer Decal (Top Left Corner) -->
+        <div class="absolute top-20 left-6 z-20 pointer-events-none rotate-[-6deg] hidden lg:block">
+          <div class="relative">
+            <!-- Masking Tape Holding the Sticker -->
+            <div class="tape-strip w-20 h-5 absolute -top-2.5 left-6 rotate-[-4deg] z-10"></div>
+            <!-- Holographic Rainbow Foil Badge -->
+            <div class="bg-holo-shimmer text-black font-mono font-black text-[10px] px-4 py-2 rounded-lg border-2 border-black shadow-[4px_4px_0px_#000] uppercase flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
+              <span>4J STREET LAB // CLASS OF 2026</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ART ELEMENT 3: Starburst Boom Badge (Top Right Edge) -->
+        <div class="absolute top-24 right-8 z-20 pointer-events-none rotate-[8deg] hidden sm:block">
+          <div class="bg-[#FF007A] text-white border-2 border-black shadow-[4px_4px_0px_#000] p-2.5 rounded-xl font-mono text-[10px] font-black flex items-center gap-1.5 rotate-[4deg]">
+            <span class="bg-[#D4FF00] text-black px-1.5 py-0.5 rounded border border-black font-black">NEW</span>
+            <span>NO TEMPLATE &bull; NO BORING PICS!</span>
+          </div>
+        </div>
+
+        <!-- ART ELEMENT 4: Street Barcode Slap (Bottom Left Corner) -->
+        <div class="absolute bottom-24 left-6 z-20 pointer-events-none rotate-[-4deg] hidden md:block">
+          <div class="bg-[#FAF6F0] text-black p-2.5 rounded-sm border-2 border-black shadow-[5px_5px_0px_#000] font-mono text-[9px] font-black relative">
+            <div class="absolute -top-3 right-2 bg-[#FF007A] text-white px-2 py-0.5 text-[8px] font-black border border-black rotate-[8deg]">
+              PAID IN FULL
+            </div>
+            <div class="tracking-tight text-xs font-mono font-black">||| | |||| || | ||||| | |||</div>
+            <div class="text-[8px] tracking-wider text-zinc-800 font-bold">4J-STREET-2026 // DO NOT BEND</div>
+          </div>
+        </div>
+
+        <!-- Top HUD: Embedded Winning Navbar Varian A with Chromatic Pop -->
+        <div class="relative z-30 w-full flex justify-center items-center pointer-events-auto">
+          <!-- Winning Capsule Navbar with Y2K Accents -->
+          <nav class="bg-[#18181D]/95 backdrop-blur-md border-2 border-black rounded-full px-5 py-2.5 flex items-center gap-4 sm:gap-7 shadow-[5px_5px_0px_#000000] relative">
+            <div class="absolute -top-2.5 -left-2 bg-[#D4FF00] text-black font-mono font-black text-[9px] px-2 py-0.5 rounded border border-black rotate-[-6deg] shadow-[2px_2px_0px_#000]">
+              ★ 4J STREET
+            </div>
+            <div class="flex items-center gap-2.5 cursor-pointer group">
+              <div class="w-8 h-8 rounded-full bg-[#FF6E00] text-black font-display font-black text-xs flex items-center justify-center border-2 border-black shadow-[2px_2px_0px_#000] group-hover:rotate-12 transition-transform">
+                4J
+              </div>
+              <span class="font-display font-black text-sm tracking-tight text-white group-hover:text-[#D4FF00] transition-colors">
+                FOURJECTIVE
+              </span>
+            </div>
+            <div class="hidden sm:flex items-center gap-5 font-mono text-xs font-bold text-zinc-300">
+              <a href="#arena-manifesto" class="hover:text-[#D4FF00] transition-colors">Manifesto</a>
+              <a href="#arena-layanan" class="hover:text-[#00F0FF] transition-colors">Layanan</a>
+              <a href="#arena-themes" class="hover:text-[#FF007A] transition-colors">5 Themes</a>
+            </div>
+            <a href="https://wa.me/6285157386631" target="_blank" class="btn-arcade bg-[#FF6E00] hover:bg-[#D4FF00] text-black font-mono font-black text-xs px-4 py-2 rounded-full border-2 border-black shadow-[3px_3px_0px_#000000,5px_5px_0px_#FF007A] flex items-center gap-1">
+              <span>KONSULTASI</span>
+              <span>&rarr;</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- Centerpiece Typography: 3D Comic Extrusion & Street Stencil Statement -->
+        <div class="relative z-20 my-auto text-center px-4 mix-blend-difference pointer-events-none">
+          <!-- Graffiti Crown & Stencil Stamp -->
+          <div class="flex items-center justify-center gap-2 mb-3">
+            <svg class="w-8 h-8 text-[#D4FF00] drop-shadow-[2px_2px_0px_#000]" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/>
+            </svg>
+            <span class="font-mono text-xs font-black text-black bg-[#D4FF00] px-3 py-0.5 rounded-full border-2 border-black shadow-[2px_2px_0px_#000] rotate-[-2deg]">
+              YEARBOOK ART REVOLUTION // 2026
+            </span>
+          </div>
+
+          <!-- Massive Title with 3D Comic Extrusion (Black -> Magenta -> Cyan -> Lime) -->
+          <h1 class="font-display font-black text-4xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight uppercase leading-[0.88] mb-4 text-white comic-extrusion">
+            DO THE BEST FOR<br/>
+            <span class="text-[#FF6E00] underline decoration-[#D4FF00] decoration-wavy decoration-4">THE BEST MOMENT.</span>
+          </h1>
+
+          <p class="font-sans text-sm sm:text-base md:text-lg font-bold text-white max-w-xl mx-auto leading-relaxed drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+            Studio buku tahunan tempat energi liar &amp; ide gila angkatan lo dieksekusi tanpa batas. Film 4K bioskop, Living AR foto bergerak, dan layout majalah streetwear.
+          </p>
+        </div>
+
+        <!-- CHARACTER ART 1: Left Monster Bursting through Comic Lime Frame with Spray Can -->
+        <div class="absolute bottom-6 left-4 sm:left-8 z-20 pointer-events-auto float-idle group">
+          <div class="relative">
+            <!-- Comic Halftone Burst Halo Behind Mascot -->
+            <div class="absolute -inset-3 bg-[#D4FF00] rounded-full border-2 border-black shadow-[5px_5px_0px_#000] -z-10 group-hover:scale-105 transition-transform"></div>
+            
+            <img src="images/landing-page/hero/mascot-left.svg" alt="Mascot Left" class="w-28 sm:w-44 drop-shadow-[0_16px_28px_rgba(0,0,0,0.95)] group-hover:scale-110 transition-transform cursor-pointer" />
+            
+            <!-- Comic Speech Bubble with Spray Drip -->
+            <div class="absolute -top-8 -right-10 bg-[#FAC443] text-black font-mono font-black text-[10px] sm:text-[11px] px-3 py-1 rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] rotate-[6deg] flex items-center gap-1.5 whitespace-nowrap">
+              <i data-lucide="flame" class="w-3.5 h-3.5 text-[#FF6E00]"></i>
+              <span>"ANTI POSE KAKU BRO!"</span>
+            </div>
+            
+            <!-- Street Tag Badge -->
+            <div class="absolute -bottom-2 -left-2 bg-black text-[#00F0FF] font-mono text-[9px] font-black px-2.5 py-0.5 border-2 border-black rounded shadow-[2px_2px_0px_#000] rotate-[-4deg]">
+              #ALL-CITY-GRAFF
+            </div>
+          </div>
+        </div>
+
+        <!-- CHARACTER ART 2: Right Camera Monster Bursting through Hot Pink Comic Star with 4K Lens Crosshair -->
+        <div class="absolute bottom-6 right-4 sm:right-8 z-20 pointer-events-auto float-idle-delayed group">
+          <div class="relative">
+            <!-- Comic Magenta Star Burst Behind Mascot -->
+            <div class="absolute -inset-3 bg-[#FF007A] rounded-2xl border-2 border-black shadow-[5px_5px_0px_#000] -z-10 group-hover:scale-105 transition-transform rotate-[6deg]"></div>
+            
+            <img src="images/landing-page/hero/mascot-right.svg" alt="Mascot Right" class="w-28 sm:w-44 drop-shadow-[0_16px_28px_rgba(0,0,0,0.95)] group-hover:scale-110 transition-transform cursor-pointer" />
+            
+            <!-- 4K Viewfinder Badge with Japanese Subtitle -->
+            <div class="absolute -top-9 -left-12 bg-[#00F0FF] text-black font-mono font-black text-[10px] sm:text-[11px] px-3 py-1 rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] rotate-[-6deg] flex flex-col items-center">
+              <div class="flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
+                <span>★ REC 4K SQUAD ★</span>
+              </div>
+              <span class="text-[8px] tracking-tighter opacity-80">「映画館のクオリティ」</span>
+            </div>
+
+            <!-- RAW Badge -->
+            <div class="absolute -bottom-2 -right-2 bg-[#D4FF00] text-black font-mono text-[9px] font-black px-2.5 py-0.5 border-2 border-black rounded shadow-[2px_2px_0px_#000] rotate-[4deg]">
+              10-BIT RAW
+            </div>
+          </div>
+        </div>
+
+        <!-- Floating Cloud & Star Doodle with Street Glow -->
+        <div class="absolute top-28 left-20 z-10 pointer-events-none opacity-90 float-idle hidden sm:block">
+          <img src="images/landing-page/hero/cloud-1.svg" alt="Cloud" class="w-24 drop-shadow-[0_6px_16px_rgba(0,0,0,0.9)]" />
+        </div>
+        <div class="absolute top-32 right-24 z-10 pointer-events-none opacity-95 float-idle-delayed hidden sm:block">
+          <img src="images/landing-page/hero/star.svg" alt="Star" class="w-14 spin-slow drop-shadow-[0_0_20px_rgba(212,255,0,0.9)]" />
+        </div>
+
+        <!-- Bottom Action Row: Multi-Color Neon Buttons & Graffiti Arrow -->
+        <div class="relative z-20 flex flex-wrap justify-center items-center gap-4 pointer-events-auto pt-6">
+          <!-- Graffiti marker arrow in Toxic Lime -->
+          <div class="hidden sm:flex items-center gap-1.5 text-[#D4FF00] font-mono font-black text-sm rotate-[-5deg] drop-shadow-[2px_2px_0px_#000]">
+            <span class="underline decoration-wavy decoration-2">GASKEN SINI</span>
+            <span>➔</span>
+          </div>
+
+          <!-- Primary Heroic Button with Dual-Tone Shadow -->
+          <a href="https://wa.me/6285157386631" target="_blank" class="btn-arcade bg-[#FF6E00] hover:bg-[#D4FF00] text-black font-mono font-black text-xs sm:text-sm px-8 py-4 rounded-full border-2 border-black shadow-[6px_6px_0px_#000,10px_10px_0px_#FF007A] flex items-center gap-2">
+            <span>KONSULTASI ANGKATAN</span>
+            <span class="text-base">&rarr;</span>
+          </a>
+
+          <!-- Secondary Button in Cyber Cyan -->
+          <a href="#arena-layanan" class="btn-arcade bg-[#00F0FF] hover:bg-white text-black font-mono font-black text-xs sm:text-sm px-6 py-4 rounded-full border-2 border-black shadow-[5px_5px_0px_#000] transition-all">
+            [EKSPLORASI LAYANAN]
+          </a>
+        </div>
+      </div>
+      <div class="font-mono text-xs text-zinc-400 flex items-center gap-2">
+        <i data-lucide="palette" class="w-4 h-4 text-[#D4FF00]"></i>
+        <span>Palet Y2K Hyper-Chromatic: Fourjective Orange (#FF6E00) berpadu dengan Toxic Lime (#D4FF00), Electric Magenta (#FF007A), &amp; Cyber Cyan (#00F0FF). Canvas fisika 3D Verlet tetap enteng di 120 FPS dengan efek neon spark interaktif!</span>
+    </div>
+
+    <!-- HERO OPTION 2: Pure Minimalist Kinetic Cloth -->
+    <div class="p-6 sm:p-8 rounded-3xl bg-[#121215] border border-white/15 space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <span class="font-mono text-xs font-bold bg-white/10 text-zinc-300 px-3 py-1 rounded-full border border-white/20">
+            KONSEP 02 &bull; HIGH-FASHION MINIMALIST
+          </span>
+          <h3 class="font-display font-bold text-xl text-white">Pure Verlet Cloth &bull; Zero Stickers (Editorial Monolith)</h3>
+        </div>
+        <span class="font-mono text-xs text-zinc-400">Style: Monochrome murni, fokus eksklusif ke kain 3D dan tipografi kontras</span>
+      </div>
+
+      <div class="relative w-full h-[400px] rounded-3xl overflow-hidden bg-black border border-white/20 flex flex-col justify-center items-center text-center p-8">
+        <div class="font-mono text-xs text-[#FF6E00] uppercase tracking-widest mb-3">MINIMALIST OPTICAL SUITE</div>
+        <h2 class="font-display font-black text-3xl sm:text-5xl uppercase text-white tracking-tight leading-tight mb-4">
+          TIMELESS ARCHIVE &bull; CINEMA 4K
+        </h2>
+        <p class="font-sans text-sm text-zinc-400 max-w-md mb-6">
+          Kain fisika polos tanpa elemen kartun, cocok jika positioning brand ingin 100% formal editorial ala museum seni.
+        </p>
+        <span class="font-mono text-xs px-4 py-2 rounded-full border border-white/20 text-zinc-400">
+          [VERLET PHYSICS CLOTH ONLY]
+        </span>
+      </div>
+    </div>
+
+    <!-- HERO OPTION 3: Loon Art Scrapbook Collage Hero -->
+    <div class="p-6 sm:p-8 rounded-3xl bg-[#121215] border border-white/15 space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <span class="font-mono text-xs font-bold bg-[#DDD6FE] text-black px-3 py-1 rounded-full border border-black shadow-[2px_2px_0px_#000]">
+            KONSEP 03 &bull; TACTILE NOSTALGIA
+          </span>
+          <h3 class="font-display font-bold text-xl text-white">Scrapbook &amp; Cassette Player (Loon Art Style)</h3>
+        </div>
+        <span class="font-mono text-xs text-zinc-400">Style: Kertas krem, polaroid dengan masking tape, audio player retro</span>
+      </div>
+
+      <div class="relative w-full h-[440px] rounded-3xl overflow-hidden bg-[#FAF6F0] text-[#18181B] border-2 border-black flex flex-col justify-between p-8 bg-paper-grid">
+        <div class="flex justify-between items-center">
+          <span class="bg-[#FDE047] text-black font-mono font-bold text-xs px-3 py-1 rounded-full border border-black shadow-[2px_2px_0px_#000]">
+            JOURNAL EDISI 2026
+          </span>
+          <!-- Retro Audio Player Widget -->
+          <div class="bg-white px-3 py-1.5 rounded-full border border-black shadow-[2px_2px_0px_#000] flex items-center gap-3 font-mono text-xs">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Lagu Angkatan: "Kisah Klasik"</span>
+            <span class="text-zinc-400">&bull; 02:45</span>
+          </div>
+        </div>
+
+        <div class="my-auto text-center max-w-xl mx-auto">
+          <h2 class="font-display font-black text-3xl sm:text-5xl uppercase tracking-tight mb-3">
+            KENANGAN TAK TERTANDINGI.
+          </h2>
+          <p class="font-sans text-xs sm:text-sm text-zinc-600 leading-relaxed mb-6">
+            Menghimpun tiap tawa, ruang kelas, dan cerita masa putih abu-abu ke dalam jurnal album buatan tangan penuh kehangatan.
+          </p>
+        </div>
+
+        <!-- Tilted Polaroids with Tape -->
+        <div class="flex justify-center gap-4">
+          <div class="bg-white p-2.5 rounded-lg border border-black shadow-[3px_3px_0px_#000] rotate-[-4deg] relative">
+            <div class="tape-strip w-12 h-4 absolute -top-2 left-1/2 -translate-x-1/2 rotate-[-2deg]"></div>
+            <img src="images/landing-page/portfolio/barbie.png" alt="Polaroid" class="w-24 h-24 object-cover rounded" />
+            <span class="font-mono text-[10px] block text-center mt-1 font-bold">Class of 26</span>
+          </div>
+          <div class="bg-white p-2.5 rounded-lg border border-black shadow-[3px_3px_0px_#000] rotate-[5deg] relative">
+            <div class="tape-strip w-12 h-4 absolute -top-2 left-1/2 -translate-x-1/2 rotate-[3deg]"></div>
+            <img src="images/landing-page/portfolio/dark.png" alt="Polaroid" class="w-24 h-24 object-cover rounded" />
+            <span class="font-mono text-[10px] block text-center mt-1 font-bold">The Seniors</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 03. MANIFESTO & PERNYATAAN SIKAP SHOWDOWN                                -->
+  <!-- ========================================================================= -->
+  <section id="arena-manifesto" class="py-16 px-6 max-w-7xl mx-auto border-b border-white/10 space-y-12">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/10 pb-6">
+      <div>
+        <span class="font-mono text-xs font-bold text-[#FF6E00]">[SHOWDOWN 03 // MANIFESTO &amp; CREED]</span>
+        <h2 class="font-display font-black text-3xl sm:text-5xl uppercase tracking-tight mt-1">Pernyataan Sikap &amp; Nilai</h2>
+      </div>
+      <p class="font-mono text-xs text-zinc-400 max-w-md">
+        Pilihan teknik penyampaian pesan: Word Scroll Scrub vs. Pinned Split-Column vs. Pop-Comic Bento.
+      </p>
+    </div>
+
+    <!-- MANIFESTO OPTION 1: Word-by-Word Scroll Scrubbing ("The Creed") (TERPILIH OLEH USER) -->
+    <div class="p-6 sm:p-8 rounded-3xl bg-[#121215] border-2 border-black shadow-[6px_6px_0px_#FAC443] space-y-6 relative overflow-hidden">
+      <div class="absolute top-0 right-0 bg-[#FAC443] text-black font-mono font-black text-xs px-4 py-1 rounded-bl-xl border-l-2 border-b-2 border-black flex items-center gap-1 shadow-sm">
+        <i data-lucide="check-check" class="w-4 h-4"></i> TERPILIH // WINNER
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="font-mono text-xs font-bold bg-[#FAC443] text-black px-3 py-1 rounded-full border border-black shadow-[2px_2px_0px_#000]">
+          OPSI 1 &bull; TERPILIH
+        </span>
+        <h3 class="font-display font-bold text-xl text-white">Word-by-Word Scroll Scrubbing (The Creed)</h3>
+      </div>
+      <div class="p-8 sm:p-12 rounded-2xl bg-[#09090B] border border-white/10 text-center space-y-6">
+        <span class="font-mono text-xs font-bold text-[#FF6E00] uppercase tracking-widest px-3 py-1 rounded-full bg-white/5 border border-white/10">
+          PERNYATAAN SIKAP // THE FOURJECTIVE CREED
+        </span>
+        <div id="showdown-scrub-text" class="font-display font-black text-2xl sm:text-4xl md:text-5xl leading-tight text-white max-w-4xl mx-auto">
+          Buku tahunan Anda akan bertahan lebih lama dari feed media sosial, tren algoritma, dan ponsel pintar Anda. Ia adalah saksi nyata bahwa Anda pernah tertawa, berjuang, dan bersinar bersama di tempat yang sama.
+        </div>
+        <!-- Live Slider Simulator -->
+        <div class="pt-4 flex flex-col items-center gap-2 max-w-sm mx-auto font-mono text-xs text-zinc-400">
+          <span>Geser Simulasi Scrubbing Progress:</span>
+          <input type="range" id="scrub-slider" min="0" max="100" value="30" class="w-full accent-[#FF6E00]" />
+          <span id="scrub-slider-label" class="text-white font-bold">30% Iluminasi</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MANIFESTO OPTION 2: Split Pinning (Kenangan Yang Menolak Dilupakan) -->
+    <div class="p-6 sm:p-8 rounded-3xl bg-[#121215] border border-white/15 space-y-6">
+      <div class="flex items-center gap-2">
+        <span class="font-mono text-xs font-bold bg-white/10 text-zinc-300 px-3 py-1 rounded-full border border-white/20">
+          OPSI 2 &bull; EDITORIAL CARDS
+        </span>
+        <h3 class="font-display font-bold text-xl text-white">Split Pinning (Left Column Pinned + 3 Value Cards)</h3>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 p-8 rounded-2xl bg-[#09090B] border border-white/10 items-start">
+        <div class="lg:col-span-5 space-y-4">
+          <span class="font-mono text-xs font-bold text-[#FF6E00] uppercase tracking-widest">MANIFESTO FOURJECTIVE</span>
+          <h4 class="font-display font-black text-2xl sm:text-3xl text-white">Kenangan Yang Menolak Untuk Dilupakan.</h4>
+          <p class="text-zinc-400 text-xs sm:text-sm leading-relaxed">
+            Masa SMA bukan sekadar penutupan kalender akademik, melainkan pembentukan karakter manusia yang tak terulang.
+          </p>
+        </div>
+        <div class="lg:col-span-7 space-y-3 font-mono text-xs">
+          <div class="p-4 bg-surface border border-hairline rounded-xl">
+            <span class="font-display font-black text-lg text-[#FF6E00] block mb-1">01. Kolaborasi Konsep Bebas</span>
+            <p class="text-zinc-400">Workshop kreatif bersama panitia sekolah menggali tema unik angkatan.</p>
+          </div>
+          <div class="p-4 bg-surface border border-hairline rounded-xl">
+            <span class="font-display font-black text-lg text-[#FF6E00] block mb-1">02. Eksekusi Sinematik 4K</span>
+            <p class="text-zinc-400">Lighting bioskop, prime lens, dan color grading standar layar lebar.</p>
+          </div>
+          <div class="p-4 bg-surface border border-hairline rounded-xl">
+            <span class="font-display font-black text-lg text-[#FF6E00] block mb-1">03. Transparansi &amp; Garansi Fisik</span>
+            <p class="text-zinc-400">Dummy cetak disediakan sebelum cetak massal, garansi ganti baru cacat produksi.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 04. LAYANAN SHOWDOWN ARENA: GSAP MOTION LAB                               -->
+  <!-- ========================================================================= -->
+  <section id="arena-layanan" class="py-16 px-6 max-w-7xl mx-auto border-b border-white/10 space-y-12">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/10 pb-6">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-mono text-xs font-bold bg-[#FF6E00] text-black px-2.5 py-0.5 rounded border border-black shadow-[2px_2px_0px_#000]">
+            STATUS: GSAP MOTION LAB
+          </span>
+          <span class="font-mono text-xs font-bold text-zinc-400">[SHOWDOWN 04 // LAYANAN]</span>
+        </div>
+        <h2 class="font-display font-black text-3xl sm:text-5xl uppercase tracking-tight mt-2">
+          Eksplorasi Gerak GSAP Layanan Street Art
+        </h2>
+      </div>
+      <p class="font-mono text-xs text-zinc-400 max-w-md">
+        Meninggalkan format kartu kaku. Di sini kita rancang 3 mekanik interaktif GSAP (Skate Deck Fanning, Stencil Spray Reveal, dan Manga Kinetic Split).
+      </p>
+    </div>
+
+    <!-- GSAP CONCEPT 1: 3D Fanning Skate Deck / Vinyl Album Carousel -->
+    <div class="p-6 sm:p-8 rounded-3xl bg-[#121215] border-2 border-black shadow-[6px_6px_0px_#FAC443] space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <span class="font-mono text-xs font-bold bg-[#FAC443] text-black px-3 py-1 rounded-full border border-black shadow-[2px_2px_0px_#000]">
+            MEKANIK GSAP 01 &bull; 3D FANNING DECK
+          </span>
+          <h3 class="font-display font-bold text-xl text-white">The Skate Deck &amp; Vinyl Sleeve Fan-Out (Hover / Click Card)</h3>
+        </div>
+        <span class="font-mono text-xs text-[#FF6E00] font-bold">Interaktif: Arahkan kursor ke tiap kartu untuk membuka fanning</span>
+      </div>
+
+      <!-- Live Fanning Deck Simulation (Hyper-Chromatic Y2K Edition) -->
+      <div id="deck-fanning-container" class="relative w-full h-[480px] rounded-2xl bg-black border-2 border-black overflow-hidden flex items-center justify-center p-6 bg-comic-dots">
+        <div class="relative w-full max-w-4xl h-full flex items-center justify-center">
+          
+          <!-- Card 1: Sinematografi 4K (Cyber Cyan & Obsidian) -->
+          <div id="deck-card-1" class="deck-card absolute w-72 sm:w-80 h-[390px] rounded-2xl bg-[#09090C] border-2 border-black shadow-[6px_6px_0px_#00F0FF,10px_10px_0px_#000] p-6 flex flex-col justify-between cursor-pointer transition-all duration-300 transform -translate-x-36 rotate-[-8deg] hover:z-30 hover:scale-105 hover:rotate-0 hover:translate-x-[-130px] hover:shadow-[10px_10px_0px_#00F0FF,14px_14px_0px_#000] group select-none relative overflow-hidden">
+            <!-- Film Strip Top Sprocket Holes -->
+            <div class="flex justify-between items-center gap-1.5 pb-2 border-b border-[#00F0FF]/30">
+              <span class="font-mono text-[10px] bg-[#00F0FF] text-black font-black px-2 py-0.5 rounded border border-black shadow-[2px_2px_0px_#000]">01 // CINEMA 4K</span>
+              <span class="font-mono text-[9px] text-[#00F0FF] font-black">10-BIT PRORES &bull; 60FPS</span>
+            </div>
+            
+            <div class="my-auto">
+              <div class="w-12 h-12 rounded-xl bg-[#00F0FF]/15 flex items-center justify-center mb-3 border-2 border-[#00F0FF] text-[#00F0FF] shadow-[3px_3px_0px_#00F0FF]">
+                <i data-lucide="video" class="w-6 h-6"></i>
+              </div>
+              <h4 class="font-display font-black text-2xl text-white uppercase leading-tight">Sinematografi Layar Lebar</h4>
+              <p class="text-xs text-zinc-300 mt-2 leading-relaxed font-medium">Aftermovie angkatan sinematik bioskop, prime lenses f/1.4 dengan bokeh dreamy &amp; aerial drone 4K.</p>
+            </div>
+            
+            <div class="flex justify-between items-center pt-2 border-t border-white/10">
+              <span class="font-mono text-[10px] bg-[#D4FF00] text-black px-2 py-0.5 rounded border border-black font-black rotate-[-2deg]">★ FILM BIOSKOP</span>
+              <img src="images/landing-page/hero/mascot-1.svg" class="w-14 h-14 drop-shadow-[0_4px_8px_rgba(0,240,255,0.4)]" alt="Mascot" />
+            </div>
+          </div>
+
+          <!-- Card 2: Augmented Reality (Vivid Orange & Hot Magenta) -->
+          <div id="deck-card-2" class="deck-card absolute w-72 sm:w-80 h-[390px] rounded-2xl bg-[#FF6E00] border-2 border-black shadow-[6px_6px_0px_#FF007A,10px_10px_0px_#000] p-6 flex flex-col justify-between cursor-pointer transition-all duration-300 transform z-20 hover:scale-105 hover:shadow-[12px_12px_0px_#FF007A,16px_16px_0px_#000] group select-none relative overflow-hidden">
+            <!-- Shimmer Accent Ribbon -->
+            <div class="flex justify-between items-center pb-2 border-b border-black/20">
+              <span class="font-mono text-[10px] bg-black text-[#D4FF00] font-black px-2 py-0.5 rounded border border-black shadow-[2px_2px_0px_#000]">02 // LIVING AR</span>
+              <span class="font-mono text-[9px] bg-white text-black px-1.5 py-0.5 rounded font-black border border-black">iOS &bull; ANDROID</span>
+            </div>
+            
+            <div class="my-auto text-black">
+              <div class="w-12 h-12 rounded-xl bg-black flex items-center justify-center mb-3 border-2 border-black text-[#D4FF00] shadow-[3px_3px_0px_#000]">
+                <i data-lucide="scan-face" class="w-6 h-6"></i>
+              </div>
+              <h4 class="font-display font-black text-2xl uppercase leading-tight text-white drop-shadow-[2px_2px_0px_#000]">Augmented Reality</h4>
+              <p class="text-xs text-black font-bold mt-2 leading-relaxed">Buku cetak fisik yang hidup seketika saat disorot kamera HP! Video nostalgia &amp; suara spontan angkatan.</p>
+            </div>
+            
+            <div class="flex justify-between items-center pt-2 border-t border-black/20">
+              <span class="font-mono text-[10px] bg-[#FF007A] text-white px-2.5 py-0.5 rounded border border-black font-black shadow-[2px_2px_0px_#000]">SCAN &amp; PLAY</span>
+              <img src="images/landing-page/hero/mascot-2.svg" class="w-14 h-14 drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]" alt="Mascot" />
+            </div>
+          </div>
+
+          <!-- Card 3: Editorial Streetwear Zine (Acid Lime & Newsprint) -->
+          <div id="deck-card-3" class="deck-card absolute w-72 sm:w-80 h-[390px] rounded-2xl bg-[#FAF6F0] text-black border-2 border-black shadow-[6px_6px_0px_#D4FF00,10px_10px_0px_#000] p-6 flex flex-col justify-between cursor-pointer transition-all duration-300 transform translate-x-36 rotate-[8deg] hover:z-30 hover:scale-105 hover:rotate-0 hover:translate-x-[130px] hover:shadow-[10px_10px_0px_#D4FF00,14px_14px_0px_#000] group select-none bg-paper-grid relative overflow-hidden">
+            <div class="flex justify-between items-center pb-2 border-b border-black/15">
+              <span class="font-mono text-[10px] bg-black text-white font-black px-2 py-0.5 rounded border border-black shadow-[2px_2px_0px_#000]">03 // EDITORIAL ZINE</span>
+              <span class="font-mono text-[9px] text-zinc-700 font-black">190GSM ART PAPER</span>
+            </div>
+            
+            <div class="my-auto">
+              <div class="w-12 h-12 rounded-xl bg-[#D4FF00] text-black flex items-center justify-center mb-3 border-2 border-black shadow-[3px_3px_0px_#000]">
+                <i data-lucide="book-open" class="w-6 h-6 text-black"></i>
+              </div>
+              <h4 class="font-display font-black text-2xl uppercase leading-tight">Editorial Street Zine</h4>
+              <p class="text-xs text-zinc-800 font-semibold mt-2 leading-relaxed">Layout majalah streetwear bebas template kaku. Jilid Swiss lay-flat 180&deg; terbuka penuh tanpa terpotong!</p>
+            </div>
+            
+            <div class="flex justify-between items-center pt-2 border-t border-black/10">
+              <span class="font-mono text-[10px] bg-[#FAC443] text-black px-2 py-0.5 rounded border border-black font-black">HARDCOVER SWISS</span>
+              <img src="images/landing-page/portfolio/barbie.png" class="w-12 h-12 object-cover rounded-lg border-2 border-black shadow-[2px_2px_0px_#000]" alt="Thumb" />
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div class="font-mono text-xs text-zinc-400 flex items-center gap-2">
+        <i data-lucide="sparkles" class="w-4 h-4 text-[#FAC443]"></i>
+        <span>Kelebihan: Tidak butuh scroll 3x viewport yang membosankan. Tiga layanan langsung terlihat dalam satu panggung interaktif 3D deck!</span>
+      </div>
+    </div>
+
+    <!-- GSAP CONCEPT 2: Stencil Spray Scrub Reveal Simulator -->
+    <div class="p-6 sm:p-8 rounded-3xl bg-[#121215] border border-white/15 space-y-6">
+      <div class="flex items-center gap-2">
+        <span class="font-mono text-xs font-bold bg-[#FF6E00] text-black px-3 py-1 rounded-full border border-black shadow-[2px_2px_0px_#000]">
+          MEKANIK GSAP 02 &bull; SCROLL-PINNED SPRAY WIPE
+        </span>
+        <h3 class="font-display font-bold text-xl text-white">Graffiti Stencil Spray Pinning (Scroll wipes away spray paint)</h3>
+      </div>
+      <div class="p-6 rounded-2xl bg-[#09090B] border border-white/10 text-xs font-mono text-zinc-300 space-y-4">
+        <p class="leading-relaxed">
+          <strong>Konsep Teknis GSAP:</strong> Halaman mem-pin trigger secara horizontal atau vertikal (100vh). Saat user scroll:
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+          <div class="p-4 bg-[#18181D] border border-white/10 rounded-xl">
+            <span class="text-[#FF6E00] font-black">[0-33% SCROLL]</span>
+            <div class="font-display font-bold text-white text-sm mt-1">Spray Cat Orange</div>
+            <p class="text-[11px] text-zinc-400 mt-1">Efek aerosol membuka viewport 4K cinema lens viewfinder.</p>
+          </div>
+          <div class="p-4 bg-[#18181D] border border-white/10 rounded-xl">
+            <span class="text-[#FAC443] font-black">[34-66% SCROLL]</span>
+            <div class="font-display font-bold text-white text-sm mt-1">AR Glitch Hologram</div>
+            <p class="text-[11px] text-zinc-400 mt-1">Maskot menyemprot layar memunculkan QR scan 3D interaktif.</p>
+          </div>
+          <div class="p-4 bg-[#18181D] border border-white/10 rounded-xl">
+            <span class="text-pink-400 font-black">[67-100% SCROLL]</span>
+            <div class="font-display font-bold text-white text-sm mt-1">Zine Paper Tear</div>
+            <p class="text-[11px] text-zinc-400 mt-1">Kertas sobek reveal jilid lay-flat dan art paper premium.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 05. 5 THEMES & PORTFOLIO SHOWDOWN ARENA                                  -->
+  <!-- ========================================================================= -->
+  <section id="arena-themes" class="py-16 px-6 max-w-7xl mx-auto border-b border-white/10 space-y-12">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/10 pb-6">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-mono text-xs font-bold bg-[#FAC443] text-black px-2.5 py-0.5 rounded border border-black shadow-[2px_2px_0px_#000]">
+            STATUS: STREET BRAINSTORM
+          </span>
+          <span class="font-mono text-xs font-bold text-zinc-400">[SHOWDOWN 05 // 5 CONCEPT THEMES]</span>
+        </div>
+        <h2 class="font-display font-black text-3xl sm:text-5xl uppercase tracking-tight mt-2">5 Konsep Edisi Buku Tahunan</h2>
+      </div>
+      <p class="font-mono text-xs text-zinc-400 max-w-md">
+        Sedang dieksplorasi ulang: Format <strong>Wheatpaste Alley Wall / Street Zine Deck</strong> untuk menggantikan accordion yang terasa terlalu steril/tech.
+      </p>
+    </div>
+
+    <!-- THEMES OPTION: Expandable Horizontal Accordion (Interactive Live Test) -->
+    <div class="p-6 sm:p-8 rounded-3xl bg-[#121215] border-2 border-black shadow-[6px_6px_0px_#FAC443] space-y-6">
+      <div class="flex items-center gap-2">
+        <span class="font-mono text-xs font-bold bg-white/10 text-zinc-300 px-3 py-1 rounded-full border border-white/20">
+          PROTOTYPE SEMENTARA
+        </span>
+        <h3 class="font-display font-bold text-xl text-white">Interactive 5 Theme Slices (Akan dievolusi ke format Street Wall)</h3>
+      </div>
+
+      <!-- Live Accordion Container -->
+      <div class="flex flex-col lg:flex-row h-[480px] gap-3">
+        <!-- Panel 1: Dark Noir -->
+        <div class="showdown-accordion-panel flex-1 bg-surface rounded-2xl border-2 border-black overflow-hidden relative group cursor-pointer shadow-[4px_4px_0px_#00F0FF]">
+          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105 opacity-60" style="background-image: url('images/landing-page/portfolio/dark.png');"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+          <div class="relative h-full p-6 flex flex-col justify-between z-10">
+            <span class="bg-[#00F0FF] text-black font-mono text-[10px] font-black px-2.5 py-1 rounded-full border border-black w-max shadow-[2px_2px_0px_#000]">
+              01 &bull; DARK NOIR
+            </span>
+            <div>
+              <h4 class="font-display font-black text-xl sm:text-2xl text-white uppercase mb-1">DARK CINEMATIC</h4>
+              <p class="text-xs text-zinc-300 line-clamp-2">Pencahayaan moody chiaroscuro film misteri independen.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 2: Barbie Chic -->
+        <div class="showdown-accordion-panel flex-1 bg-surface rounded-2xl border-2 border-black overflow-hidden relative group cursor-pointer shadow-[4px_4px_0px_#FF007A]">
+          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105 opacity-60" style="background-image: url('images/landing-page/portfolio/barbie.png');"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-pink-950 via-pink-950/40 to-transparent"></div>
+          <div class="relative h-full p-6 flex flex-col justify-between z-10">
+            <span class="bg-[#FF007A] text-white font-mono text-[10px] font-black px-2.5 py-1 rounded-full border border-black w-max shadow-[2px_2px_0px_#000]">
+              02 &bull; RETRO POP
+            </span>
+            <div>
+              <h4 class="font-display font-black text-xl sm:text-2xl text-white uppercase mb-1">BARBIE CHIC</h4>
+              <p class="text-xs text-zinc-300 line-clamp-2">Estetika 90s glamor remaja ceria majalah mode.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 3: Jumanji -->
+        <div class="showdown-accordion-panel flex-1 bg-surface rounded-2xl border-2 border-black overflow-hidden relative group cursor-pointer shadow-[4px_4px_0px_#00FF66]">
+          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105 opacity-60" style="background-image: url('images/landing-page/portfolio/jumanji.png');"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-emerald-950 via-emerald-950/40 to-transparent"></div>
+          <div class="relative h-full p-6 flex flex-col justify-between z-10">
+            <span class="bg-[#00FF66] text-black font-mono text-[10px] font-black px-2.5 py-1 rounded-full border border-black w-max shadow-[2px_2px_0px_#000]">
+              03 &bull; WILD OUTDOOR
+            </span>
+            <div>
+              <h4 class="font-display font-black text-xl sm:text-2xl text-white uppercase mb-1">WILD JUMANJI</h4>
+              <p class="text-xs text-zinc-300 line-clamp-2">Petualangan alam terbuka, kostum safari, drone 4K.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 4: Zombie Lab -->
+        <div class="showdown-accordion-panel flex-1 bg-surface rounded-2xl border-2 border-black overflow-hidden relative group cursor-pointer shadow-[4px_4px_0px_#D4FF00]">
+          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105 opacity-60" style="background-image: url('images/landing-page/portfolio/zombie.png');"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+          <div class="relative h-full p-6 flex flex-col justify-between z-10">
+            <span class="bg-[#D4FF00] text-black font-mono text-[10px] font-black px-2.5 py-1 rounded-full border border-black w-max shadow-[2px_2px_0px_#000]">
+              04 &bull; SCI-FI FX
+            </span>
+            <div>
+              <h4 class="font-display font-black text-xl sm:text-2xl text-white uppercase mb-1">ZOMBIE LAB</h4>
+              <p class="text-xs text-zinc-300 line-clamp-2">Makeup artist prosthetics, asap haze, strobe sci-fi.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 5: Chromatic -->
+        <div class="showdown-accordion-panel flex-1 bg-surface rounded-2xl border-2 border-black overflow-hidden relative group cursor-pointer shadow-[4px_4px_0px_#FF6E00]">
+          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105 opacity-60" style="background-image: url('images/landing-page/portfolio/colorfull.png');"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-orange-950 via-orange-950/40 to-transparent"></div>
+          <div class="relative h-full p-6 flex flex-col justify-between z-10">
+            <span class="bg-[#FF6E00] text-black font-mono text-[10px] font-black px-2.5 py-1 rounded-full border border-black w-max shadow-[2px_2px_0px_#000]">
+              05 &bull; POP ART
+            </span>
+            <div>
+              <h4 class="font-display font-black text-xl sm:text-2xl text-white uppercase mb-1">VIVID CHROMATIC</h4>
+              <p class="text-xs text-zinc-300 line-clamp-2">Multi-color strobe gel &amp; tipografi dinamis.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 06. STICKER & ASSET VAULT (CREATIVE FREEDOM REPOSITORY)                   -->
+  <!-- ========================================================================= -->
+  <section id="arena-stickers" class="py-16 px-6 max-w-7xl mx-auto space-y-8">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/10 pb-6">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-mono text-xs font-bold bg-zinc-700 text-zinc-300 px-2.5 py-0.5 rounded border border-black">
+            STATUS: PENDING REPLACEMENT
+          </span>
+          <span class="font-mono text-xs font-bold text-zinc-400">[SHOWDOWN 06 // ASSET VAULT]</span>
+        </div>
+        <h2 class="font-display font-black text-3xl sm:text-5xl uppercase tracking-tight mt-2">Koleksi Maskot, Doodles &amp; Stiker</h2>
+      </div>
+      <p class="font-mono text-xs text-zinc-400 max-w-md">
+        Akan diperbarui dengan paket grafiti, spray drips, stensil jalanan, dan maskot kartun versi final dari user.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4 font-mono text-xs text-center">
+      <!-- Mascot 1 -->
+      <div class="p-4 bg-surface rounded-2xl border-2 border-black shadow-[4px_4px_0px_#000] flex flex-col items-center justify-between h-48 hover:scale-105 transition-transform">
+        <img src="images/landing-page/hero/mascot-1.svg" alt="Mascot 1" class="w-20 my-auto" />
+        <span class="text-[11px] font-bold text-[#FF6E00]">mascot-1.svg</span>
+      </div>
+
+      <!-- Mascot 2 -->
+      <div class="p-4 bg-surface rounded-2xl border-2 border-black shadow-[4px_4px_0px_#000] flex flex-col items-center justify-between h-48 hover:scale-105 transition-transform">
+        <img src="images/landing-page/hero/mascot-2.svg" alt="Mascot 2" class="w-20 my-auto" />
+        <span class="text-[11px] font-bold text-[#FF6E00]">mascot-2.svg</span>
+      </div>
+
+      <!-- Mascot Left -->
+      <div class="p-4 bg-surface rounded-2xl border-2 border-black shadow-[4px_4px_0px_#000] flex flex-col items-center justify-between h-48 hover:scale-105 transition-transform">
+        <img src="images/landing-page/hero/mascot-left.svg" alt="Mascot Left" class="w-20 my-auto" />
+        <span class="text-[11px] font-bold text-[#FF6E00]">mascot-left.svg</span>
+      </div>
+
+      <!-- Mascot Right -->
+      <div class="p-4 bg-surface rounded-2xl border-2 border-black shadow-[4px_4px_0px_#000] flex flex-col items-center justify-between h-48 hover:scale-105 transition-transform">
+        <img src="images/landing-page/hero/mascot-right.svg" alt="Mascot Right" class="w-20 my-auto" />
+        <span class="text-[11px] font-bold text-[#FF6E00]">mascot-right.svg</span>
+      </div>
+
+      <!-- Star SVG -->
+      <div class="p-4 bg-surface rounded-2xl border-2 border-black shadow-[4px_4px_0px_#000] flex flex-col items-center justify-between h-48 hover:scale-105 transition-transform">
+        <img src="images/landing-page/hero/star.svg" alt="Star" class="w-16 my-auto spin-slow" />
+        <span class="text-[11px] font-bold text-[#FAC443]">star.svg</span>
+      </div>
+
+      <!-- Cloud SVG -->
+      <div class="p-4 bg-surface rounded-2xl border-2 border-black shadow-[4px_4px_0px_#000] flex flex-col items-center justify-between h-48 hover:scale-105 transition-transform">
+        <img src="images/landing-page/hero/cloud-1.svg" alt="Cloud" class="w-20 my-auto float-idle" />
+        <span class="text-[11px] font-bold text-white">cloud-1.svg</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="border-t-2 border-black bg-[#121215] py-12 px-6 font-mono text-xs text-zinc-400">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div>&copy; 2026 Fourjective Design System &bull; Component Showdown Arena</div>
+      <div class="flex gap-4">
+        <a href="index.html" class="hover:text-white underline">Ke Index Prototypes &rarr;</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ================= LIVE CANVAS SCRIPT FOR SHOWDOWN HERO ================= -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Initialize Lucide Icons
+      if (window.lucide) window.lucide.createIcons();
+
+      // 2. Interactive Word Scrubbing Slider Simulator
+      const scrubSlider = document.getElementById('scrub-slider');
+      const scrubLabel = document.getElementById('scrub-slider-label');
+      const scrubParagraph = document.getElementById('showdown-scrub-text');
+
+      if (scrubSlider && scrubParagraph) {
+        const rawWords = scrubParagraph.textContent.trim().split(/\s+/);
+        scrubParagraph.innerHTML = '';
+        rawWords.forEach(w => {
+          const span = document.createElement('span');
+          span.className = 'scrub-word mr-2';
+          span.textContent = w;
+          scrubParagraph.appendChild(span);
+        });
+
+        const updateScrub = (val) => {
+          const words = scrubParagraph.querySelectorAll('.scrub-word');
+          const total = words.length;
+          const cutoff = Math.floor((val / 100) * total);
+
+          words.forEach((w, idx) => {
+            if (idx <= cutoff) {
+              w.style.opacity = '1';
+              w.style.color = '#FFFFFF';
+            } else {
+              w.style.opacity = '0.15';
+              w.style.color = '#A1A1AA';
+            }
+          });
+          if (scrubLabel) scrubLabel.innerText = val + '% Iluminasi';
+        };
+
+        scrubSlider.addEventListener('input', (e) => updateScrub(e.target.value));
+        updateScrub(30);
+      }
+
+      // 2b. Interactive GSAP 3D Deck Fanning Interactions
+      const card1 = document.getElementById('deck-card-1');
+      const card2 = document.getElementById('deck-card-2');
+      const card3 = document.getElementById('deck-card-3');
+      const deckCards = [card1, card2, card3].filter(Boolean);
+
+      deckCards.forEach((c, idx) => {
+        c.addEventListener('mouseenter', () => {
+          deckCards.forEach((other, oIdx) => {
+            if (other === c) {
+              gsap.to(other, { scale: 1.06, zIndex: 40, duration: 0.3, ease: 'back.out(1.5)' });
+            } else {
+              const pushX = oIdx < idx ? -40 : 40;
+              gsap.to(other, { xPercent: pushX, opacity: 0.65, scale: 0.94, duration: 0.3, ease: 'power2.out' });
+            }
+          });
+        });
+        c.addEventListener('mouseleave', () => {
+          deckCards.forEach(other => {
+            gsap.to(other, { scale: 1, opacity: 1, xPercent: 0, zIndex: other === card2 ? 20 : 10, duration: 0.35, ease: 'power2.out', clearProps: 'transform,opacity' });
+          });
+        });
+      });
+
+      // 3. Pure 21st.dev Lightweight Kinetic 3D Verlet Mesh for Showdown Hero
+      const container = document.getElementById('hero-demo-1');
+      const canvas = document.getElementById('showdown-mesh-canvas');
+      if (!canvas || !container) return;
+
+      const ctx = canvas.getContext('2d', { alpha: false });
+      if (!ctx) return;
+
+      let animationFrameId;
+      let width = 0;
+      let height = 0;
+
+      const mouse = {
+        x: -1000,
+        y: -1000,
+        targetAngleX: 0.2,
+        targetAngleY: -0.3,
+        angleX: 0.2,
+        angleY: -0.3,
+        radius: 180,
+      };
+
+      let points = [];
+      let constraints = [];
+
+      function handleResize() {
+        const rect = container.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = rect.width;
+        height = rect.height;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
+        ctx.scale(dpr, dpr);
+        initMesh();
+      }
+
+      function handleMouseMove(e) {
+        const rect = container.getBoundingClientRect();
+        const rawX = e.clientX - rect.left;
+        const rawY = e.clientY - rect.top;
+
+        mouse.x = rawX;
+        mouse.y = rawY;
+
+        const normX = (rawX / width - 0.5) * 2;
+        const normY = (rawY / height - 0.5) * 2;
+        mouse.targetAngleY = normX * 0.45;
+        mouse.targetAngleX = -normY * 0.35 + 0.2;
+      }
+
+      function handleMouseLeave() {
+        mouse.x = -1000;
+        mouse.y = -1000;
+        mouse.targetAngleX = 0.2;
+        mouse.targetAngleY = 0;
+      }
+
+      function initMesh() {
+        points = [];
+        constraints = [];
+
+        const spacing = 42; // Pure lightweight 21st.dev spacing
+        const cols = Math.ceil((width * 1.15) / spacing) + 1;
+        const rows = Math.ceil((height * 1.15) / spacing) + 1;
+
+        const grid = [];
+        const startX = -(cols * spacing) / 2;
+        const startY = -(rows * spacing) / 2;
+
+        for (let j = 0; j < rows; j++) {
+          grid[j] = [];
+          for (let i = 0; i < cols; i++) {
+            const bx = startX + i * spacing;
+            const by = startY + j * spacing;
+            const isEdge = (i === 0 || i === cols - 1 || j === 0 || j === rows - 1);
+
+            const p = {
+              x: bx, y: by, z: 0,
+              oldX: bx, oldY: by, oldZ: 0,
+              pinned: isEdge,
+              baseX: bx, baseY: by, baseZ: 0,
+              projX: 0, projY: 0, projScale: 1,
+            };
+            points.push(p);
+            grid[j][i] = p;
+          }
+        }
+
+        for (let j = 0; j < rows; j++) {
+          for (let i = 0; i < cols; i++) {
+            if (i < cols - 1) constraints.push({ p1: grid[j][i], p2: grid[j][i + 1], length: spacing });
+            if (j < rows - 1) constraints.push({ p1: grid[j][i], p2: grid[j + 1][i], length: spacing });
+          }
+        }
+      }
+
+      container.addEventListener('mousemove', handleMouseMove);
+      container.addEventListener('mouseleave', handleMouseLeave);
+      window.addEventListener('resize', handleResize);
+      handleResize();
+
+      let time = 0;
+
+      function render() {
+        time += 0.025;
+
+        mouse.angleX += (mouse.targetAngleX - mouse.angleX) * 0.05;
+        mouse.angleY += (mouse.targetAngleY - mouse.angleY) * 0.05;
+
+        const cosX = Math.cos(mouse.angleX);
+        const sinX = Math.sin(mouse.angleX);
+        const cosY = Math.cos(mouse.angleY);
+        const sinY = Math.sin(mouse.angleY);
+
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, width, height);
+
+        // Verlet step
+        for (let i = 0; i < points.length; i++) {
+          const p = points[i];
+          if (p.pinned) continue;
+
+          const vx = (p.x - p.oldX) * 0.93;
+          const vy = (p.y - p.oldY) * 0.93;
+          const vz = (p.z - p.oldZ) * 0.93;
+
+          p.oldX = p.x; p.oldY = p.y; p.oldZ = p.z;
+          p.x += vx; p.y += vy; p.z += vz;
+
+          const ambientZ = Math.sin(p.baseX * 0.015 + p.baseY * 0.015 + time) * 18;
+          p.x += (p.baseX - p.x) * 0.04;
+          p.y += (p.baseY - p.y) * 0.04;
+          p.z += (p.baseZ + ambientZ - p.z) * 0.04;
+        }
+
+        const perspective = 600;
+        const centerX = width / 2;
+        const centerY = height / 2;
+
+        for (let i = 0; i < points.length; i++) {
+          const p = points[i];
+          const rx1 = p.x * cosY + p.z * sinY;
+          const ry1 = p.y;
+          const rz1 = -p.x * sinY + p.z * cosY;
+
+          const rx2 = rx1;
+          const ry2 = ry1 * cosX - rz1 * sinX;
+          const rz2 = ry1 * sinX + rz1 * cosX + 400;
+
+          const scale = perspective / Math.max(1, rz2);
+          p.projScale = scale;
+          p.projX = centerX + rx2 * scale;
+          p.projY = centerY + ry2 * scale;
+
+          if (!p.pinned) {
+            const dx = p.projX - mouse.x;
+            const dy = p.projY - mouse.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < mouse.radius && dist > 0) {
+              const force = (1 - dist / mouse.radius) * 22;
+              const angle = Math.atan2(dy, dx);
+              p.x += (Math.cos(angle) * force) / p.projScale;
+              p.y += (Math.sin(angle) * force) / p.projScale;
+              p.z -= (force * 1.5) / p.projScale;
+            }
+          }
+        }
+
+        // 4 Relaxation iterations
+        for (let iter = 0; iter < 4; iter++) {
+          for (let i = 0; i < constraints.length; i++) {
+            const c = constraints[i];
+            const dx = c.p2.x - c.p1.x;
+            const dy = c.p2.y - c.p1.y;
+            const dz = c.p2.z - c.p1.z;
+            const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            const delta = (dist - c.length) / (dist || 1);
+
+            if (!c.p1.pinned) {
+              c.p1.x += dx * 0.5 * delta;
+              c.p1.y += dy * 0.5 * delta;
+              c.p1.z += dz * 0.5 * delta;
+            }
+            if (!c.p2.pinned) {
+              c.p2.x -= dx * 0.5 * delta;
+              c.p2.y -= dy * 0.5 * delta;
+              c.p2.z -= dz * 0.5 * delta;
+            }
+          }
+        }
+
+        // Draw Springs
+        for (let i = 0; i < constraints.length; i++) {
+          const c = constraints[i];
+          const midX = (c.p1.projX + c.p2.projX) / 2;
+          const midY = (c.p1.projY + c.p2.projY) / 2;
+
+          const dx = mouse.x - midX;
+          const dy = mouse.y - midY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          const isHot = dist < mouse.radius;
+          const avgScale = (c.p1.projScale + c.p2.projScale) / 2;
+
+          if (isHot) {
+            const ratio = dist / mouse.radius;
+            if (ratio < 0.35) {
+              ctx.strokeStyle = '#D4FF00'; // Toxic Acid Lime core
+              ctx.lineWidth = 3.2 * avgScale;
+            } else if (ratio < 0.7) {
+              ctx.strokeStyle = '#00F0FF'; // Electric Cyber Cyan flare
+              ctx.lineWidth = 2.4 * avgScale;
+            } else {
+              ctx.strokeStyle = '#FF007A'; // Electric Magenta / Hot Pink rim
+              ctx.lineWidth = 1.8 * avgScale;
+            }
+          } else {
+            const normX = midX / width;
+            const normY = midY / height;
+            const alpha = Math.min(0.9, Math.max(0.14, 0.45 * avgScale));
+            if (normY < 0.32) {
+              ctx.strokeStyle = `rgba(212, 255, 0, ${alpha * 0.75})`; // Acid Lime top
+            } else if (normX > 0.62) {
+              ctx.strokeStyle = `rgba(255, 0, 122, ${alpha * 0.8})`; // Hot Pink right
+            } else if (normX < 0.32) {
+              ctx.strokeStyle = `rgba(0, 240, 255, ${alpha * 0.75})`; // Cyber Cyan left
+            } else {
+              ctx.strokeStyle = `rgba(255, 110, 0, ${alpha})`; // Fourjective Vivid Orange center
+            }
+            ctx.lineWidth = 1.1 * avgScale;
+          }
+
+          ctx.beginPath();
+          ctx.moveTo(c.p1.projX, c.p1.projY);
+          ctx.lineTo(c.p2.projX, c.p2.projY);
+          ctx.stroke();
+        }
+
+        // Draw glowing neon spark nodes around cursor
+        if (mouse.x > -500) {
+          for (let i = 0; i < points.length; i += 2) {
+            const p = points[i];
+            const dx = mouse.x - p.projX;
+            const dy = mouse.y - p.projY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < mouse.radius * 0.7) {
+              const nodeRatio = dist / (mouse.radius * 0.7);
+              ctx.fillStyle = nodeRatio < 0.35 ? '#D4FF00' : (nodeRatio < 0.7 ? '#00F0FF' : '#FF007A');
+              ctx.beginPath();
+              ctx.arc(p.projX, p.projY, (3.2 - nodeRatio * 1.8) * p.projScale, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+        }
+
+        animationFrameId = requestAnimationFrame(render);
+      }
+
+      animationFrameId = requestAnimationFrame(render);
+    });
+  </script>
+</body>
+</html>

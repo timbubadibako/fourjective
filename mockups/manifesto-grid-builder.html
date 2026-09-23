@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fourjective — Manifesto Grid Studio & Composer</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Unbounded:wght@400;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              orange: '#FF6E00',
+              pink: '#FF4B93',
+              green: '#8EE000',
+              blue: '#3B4BF7',
+              yellow: '#FFD600',
+              dark: '#0C0C0E'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            unbounded: ['"Unbounded"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .pixelated {
+      image-rendering: pixelated;
+    }
+
+    /* Selected Item Outline */
+    .item-selected {
+      outline: 2px solid #FF6E00 !important;
+      outline-offset: 2px;
+      box-shadow: 0 0 15px rgba(255, 110, 0, 0.5) !important;
+    }
+
+    /* Grid Hover Guide */
+    .grid-cell-hover {
+      background-color: rgba(255, 110, 0, 0.15) !important;
+    }
+  </style>
+</head>
+<body class="bg-[#09090B] text-stone-200 font-sans min-h-screen flex flex-col antialiased selection:bg-[#FF4B93] selection:text-white">
+
+  <!-- TOP HEADER & ACTION BAR -->
+  <header class="bg-[#111115] border-b border-white/10 px-4 sm:px-6 py-3 sticky top-0 z-50 flex items-center justify-between gap-4 flex-wrap">
+    <div class="flex items-center gap-3">
+      <a href="fanned-sticker-4jectiv.html" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-stone-400 hover:text-white transition-all" title="Kembali ke Main Mockup">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      </a>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-unbounded font-black text-sm text-white tracking-wider uppercase">GRID STUDIO</span>
+          <span class="px-2 py-0.5 rounded-full bg-[#FF4B93]/20 border border-[#FF4B93]/40 text-[#FF4B93] font-mono font-bold text-[10px]">MANIFESTO BUILDER</span>
+        </div>
+        <p class="text-[11px] text-stone-400 font-medium">Susun kolom, pills, icon, dan background blueprint modular secara visual</p>
+      </div>
+    </div>
+
+    <!-- Right Quick Actions -->
+    <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+      <!-- Preset Presets -->
+      <div class="flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-xl p-1">
+        <button onclick="loadDefaultPreset()" class="px-2.5 py-1 rounded-lg hover:bg-white/10 text-[11px] font-mono text-stone-300 transition-all flex items-center gap-1.5">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-sky-400"></i>
+          <span>Reset ke Default (22x5)</span>
+        </button>
+        <button onclick="clearAllItems()" class="px-2.5 py-1 rounded-lg hover:bg-red-500/20 hover:text-red-300 text-[11px] font-mono text-stone-400 transition-all flex items-center gap-1.5">
+          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          <span>Kosongkan Item</span>
+        </button>
+      </div>
+
+      <!-- JSON View -->
+      <button onclick="toggleJsonModal()" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono font-bold text-stone-300 transition-all flex items-center gap-2">
+        <i data-lucide="code" class="w-4 h-4 text-emerald-400"></i>
+        <span>Lihat JSON</span>
+      </button>
+
+      <!-- BIG COPY PROMPT BUTTON -->
+      <button onclick="copyAiPrompt()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-[#FF6E00] to-[#FF4B93] hover:from-[#ff7e1a] hover:to-[#ff5ea0] text-white font-unbounded font-black text-xs uppercase tracking-wider shadow-lg shadow-[#FF6E00]/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+        <i data-lucide="copy" class="w-4 h-4"></i>
+        <span>SALIN PROMPT UNTUK AI</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN STUDIO WORKSPACE -->
+  <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+    
+    <!-- LEFT SIDEBAR: PALETTE & TOOLBOX -->
+    <aside class="w-full lg:w-80 bg-[#121216] border-b lg:border-b-0 lg:border-r border-white/10 p-4 overflow-y-auto space-y-6 flex-shrink-0">
+      
+      <!-- 1. GRID DIMENSION CONTROLS -->
+      <div class="bg-black/30 border border-white/10 rounded-2xl p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-mono font-bold uppercase tracking-wider text-stone-400 flex items-center gap-1.5">
+            <i data-lucide="grid" class="w-3.5 h-3.5 text-[#FF6E00]"></i>
+            UKURAN GRID
+          </span>
+          <span id="grid-dimensions-badge" class="px-2 py-0.5 rounded-md bg-[#FF6E00]/20 text-[#FF6E00] font-mono font-bold text-xs">
+            22 Kolom x 5 Baris
+          </span>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex items-center justify-between text-xs">
+            <label for="cols-slider" class="text-stone-300 font-medium">Jumlah Kolom:</label>
+            <span id="cols-val" class="font-mono text-white font-bold">22</span>
+          </div>
+          <input type="range" id="cols-slider" min="12" max="30" value="22" oninput="updateGridDimensions()" class="w-full accent-[#FF6E00] cursor-pointer">
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex items-center justify-between text-xs">
+            <label for="rows-slider" class="text-stone-300 font-medium">Jumlah Baris:</label>
+            <span id="rows-val" class="font-mono text-white font-bold">5</span>
+          </div>
+          <input type="range" id="rows-slider" min="3" max="8" value="5" oninput="updateGridDimensions()" class="w-full accent-[#FF6E00] cursor-pointer">
+        </div>
+
+        <div class="pt-2 border-t border-white/5 flex items-center justify-between text-xs text-stone-400">
+          <span>Rasio Tiap Sel:</span>
+          <span class="font-mono text-emerald-400 font-bold">1:1 Square (Terkunci)</span>
+        </div>
+      </div>
+
+      <!-- 2. BRUSH / PAINT MODE FOR BACKGROUND CELLS -->
+      <div class="bg-black/30 border border-white/10 rounded-2xl p-4 space-y-3">
+        <span class="text-xs font-mono font-bold uppercase tracking-wider text-stone-400 flex items-center gap-1.5">
+          <i data-lucide="brush" class="w-3.5 h-3.5 text-sky-400"></i>
+          MODE KUAS BACKGROUND
+        </span>
+        <p class="text-[11px] text-stone-400">Pilih alat di bawah, lalu klik sel kosong di kanvas untuk menggambar pattern background blueprint:</p>
+        
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <button onclick="setPaintTool('x')" id="tool-x" class="p-2 rounded-xl border border-sky-500/40 bg-sky-500/20 text-sky-300 font-mono flex items-center gap-2 hover:bg-sky-500/30 transition-all">
+            <span class="w-5 h-5 border border-sky-400/50 flex items-center justify-center font-bold text-xs">✕</span>
+            <span>Gambar 'X'</span>
+          </button>
+          
+          <button onclick="setPaintTool('box')" id="tool-box" class="p-2 rounded-xl border border-white/10 bg-white/5 text-stone-300 font-mono flex items-center gap-2 hover:bg-white/10 transition-all">
+            <span class="w-5 h-5 border border-white/30 rounded flex items-center justify-center">□</span>
+            <span>Kotak Polos</span>
+          </button>
+
+          <button onclick="setPaintTool('box2x1')" id="tool-box2x1" class="p-2 rounded-xl border border-white/10 bg-white/5 text-stone-300 font-mono flex items-center gap-2 hover:bg-white/10 transition-all">
+            <span class="w-7 h-4 border border-white/30 rounded flex items-center justify-center text-[9px]">2x1</span>
+            <span>Balok 2x1</span>
+          </button>
+
+          <button onclick="setPaintTool('blank')" id="tool-blank" class="p-2 rounded-xl border border-white/10 bg-white/5 text-stone-300 font-mono flex items-center gap-2 hover:bg-white/10 transition-all">
+            <span class="w-5 h-5 bg-black border border-white/10 rounded flex items-center justify-center text-[10px]">■</span>
+            <span>Item Gelap</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3. ADD COMPONENTS PALETTE -->
+      <div class="space-y-3">
+        <span class="text-xs font-mono font-bold uppercase tracking-wider text-stone-400 flex items-center gap-1.5">
+          <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-[#FF4B93]"></i>
+          TAMBAH KOMPONEN
+        </span>
+        <p class="text-[11px] text-stone-400">Klik komponen untuk menambahkannya langsung ke grid:</p>
+
+        <!-- Pills Section -->
+        <div class="space-y-2">
+          <span class="text-[10px] font-mono uppercase text-stone-500">PILLS (5x1 Span)</span>
+          
+          <div class="space-y-1.5">
+            <button onclick="addComponent('pill', { color: '#FF4B93', text: 'DICINTAI', textDark: true, cspan: 5, rspan: 1 })" class="w-full px-3 py-2 rounded-full bg-[#FF4B93] text-[#0C0C0E] font-unbounded font-black text-xs uppercase flex items-center justify-between hover:scale-[1.02] active:scale-98 transition-all shadow-md shadow-[#FF4B93]/20">
+              <span>+ Pink Pill</span>
+              <span class="font-mono text-[10px] opacity-75">5x1</span>
+            </button>
+
+            <button onclick="addComponent('pill', { color: '#8EE000', text: 'DILIRIK', textDark: true, cspan: 5, rspan: 1 })" class="w-full px-3 py-2 rounded-full bg-[#8EE000] text-[#0C0C0E] font-unbounded font-black text-xs uppercase flex items-center justify-between hover:scale-[1.02] active:scale-98 transition-all shadow-md shadow-[#8EE000]/20">
+              <span>+ Lime Green Pill</span>
+              <span class="font-mono text-[10px] opacity-75">5x1</span>
+            </button>
+
+            <button onclick="addComponent('pill', { color: '#3B4BF7', text: 'TERPANA', textDark: false, cspan: 5, rspan: 1 })" class="w-full px-3 py-2 rounded-full bg-[#3B4BF7] text-white font-unbounded font-black text-xs uppercase flex items-center justify-between hover:scale-[1.02] active:scale-98 transition-all shadow-md shadow-[#3B4BF7]/20">
+              <span>+ Cobalt Blue Pill</span>
+              <span class="font-mono text-[10px] opacity-75">5x1</span>
+            </button>
+
+            <button onclick="addComponent('pill', { color: '#FF6E00', text: 'DIBICARAKAN', textDark: true, cspan: 5, rspan: 1 })" class="w-full px-3 py-2 rounded-full bg-[#FF6E00] text-[#0C0C0E] font-unbounded font-black text-xs uppercase flex items-center justify-between hover:scale-[1.02] active:scale-98 transition-all shadow-md shadow-[#FF6E00]/20">
+              <span>+ Orange Pill</span>
+              <span class="font-mono text-[10px] opacity-75">5x1</span>
+            </button>
+
+            <button onclick="addComponent('pill', { color: '#FFD600', text: 'BANGGA', textDark: true, cspan: 5, rspan: 1 })" class="w-full px-3 py-2 rounded-full bg-[#FFD600] text-[#0C0C0E] font-unbounded font-black text-xs uppercase flex items-center justify-between hover:scale-[1.02] active:scale-98 transition-all shadow-md shadow-[#FFD600]/20">
+              <span>+ Yellow Pill</span>
+              <span class="font-mono text-[10px] opacity-75">5x1</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Shapes & Glyphs Section -->
+        <div class="space-y-2 pt-2">
+          <span class="text-[10px] font-mono uppercase text-stone-500">GLYPHS & ICONS</span>
+          
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="addComponent('triangle', { cspan: 1, rspan: 1 })" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex flex-col items-center gap-1 text-[11px] font-mono hover:border-blue-500 transition-all">
+              <svg viewBox="0 0 54 48" class="w-6 h-6"><polygon points="27,2 52,46 2,46" fill="#3B4BF7" /></svg>
+              <span>Segitiga (1x1)</span>
+            </button>
+
+            <button onclick="addComponent('target', { cspan: 1, rspan: 1 })" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex flex-col items-center gap-1 text-[11px] font-mono hover:border-lime-500 transition-all">
+              <svg viewBox="0 0 50 50" class="w-6 h-6">
+                <circle cx="25" cy="25" r="22" fill="none" stroke="#8EE000" stroke-width="3" />
+                <circle cx="25" cy="25" r="13" fill="none" stroke="#8EE000" stroke-width="3" />
+                <circle cx="25" cy="25" r="5" fill="#8EE000" />
+              </svg>
+              <span>Target (1x1)</span>
+            </button>
+
+            <button onclick="addComponent('sparkle', { cspan: 1, rspan: 1 })" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex flex-col items-center gap-1 text-[11px] font-mono hover:border-yellow-400 transition-all">
+              <svg viewBox="0 0 40 40" class="w-6 h-6">
+                <path d="M 20 2 Q 20 20 2 20 Q 20 20 20 38 Q 20 20 38 20 Q 20 20 20 2 Z" fill="#FFD600" />
+              </svg>
+              <span>Sparkle (1x1)</span>
+            </button>
+
+            <button onclick="addComponent('pacman', { cspan: 1, rspan: 1 })" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex flex-col items-center gap-1 text-[11px] font-mono hover:border-lime-400 transition-all">
+              <div class="w-6 h-6 flex items-center justify-center text-lime-400 font-mono font-black text-base">👾</div>
+              <span>Pacman (1x1)</span>
+            </button>
+
+            <button onclick="addComponent('heart', { cspan: 1, rspan: 1 })" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex flex-col items-center gap-1 text-[11px] font-mono hover:border-yellow-400 transition-all">
+              <div class="w-6 h-6 flex items-center justify-center text-yellow-400 font-mono font-black text-base">💛</div>
+              <span>Heart (1x1)</span>
+            </button>
+
+            <button onclick="addComponent('spring', { cspan: 2, rspan: 1 })" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex flex-col items-center gap-1 text-[11px] font-mono hover:border-yellow-400 transition-all">
+              <svg viewBox="0 0 100 35" class="w-10 h-5">
+                <g fill="none" stroke="#FFD600" stroke-width="2">
+                  <ellipse cx="15" cy="17" rx="8" ry="14" />
+                  <ellipse cx="30" cy="17" rx="8" ry="14" />
+                  <ellipse cx="45" cy="17" rx="8" ry="14" />
+                  <ellipse cx="60" cy="17" rx="8" ry="14" />
+                  <ellipse cx="75" cy="17" rx="8" ry="14" />
+                  <ellipse cx="90" cy="17" rx="8" ry="14" />
+                </g>
+              </svg>
+              <span>Per/Coil (2x1)</span>
+            </button>
+
+            <button onclick="addComponent('star', { cspan: 4, rspan: 4 })" class="col-span-2 p-2.5 rounded-xl bg-[#FF4B93]/10 hover:bg-[#FF4B93]/20 border border-[#FF4B93]/30 flex items-center justify-center gap-2 text-xs font-mono text-[#FF4B93] font-bold transition-all">
+              <svg viewBox="0 0 60 60" class="w-6 h-6"><polygon points="30,2 38,22 59,23 42,37 48,58 30,46 12,58 18,37 1,23 22,22" fill="#FF4B93" /></svg>
+              <span>Pink Star Giant (4x4)</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </aside>
+
+    <!-- CENTER & MAIN CANVAS STAGE -->
+    <main class="flex-1 bg-[#0C0C0E] flex flex-col overflow-y-auto p-4 sm:p-8 relative">
+      
+      <!-- IN-CANVAS HEADLINE EDITING -->
+      <div class="max-w-4xl mx-auto w-full text-center mb-6 pt-4">
+        <span class="text-[10px] font-mono uppercase tracking-widest text-stone-500">HEADLINE PREVIEW (BISA DIEDIT):</span>
+        <input type="text" id="canvas-headline" value="KAMI MEMBUAT SEGALANYA AGAR KAMU..." oninput="updateHeadlineText(this.value)" class="w-full text-center bg-transparent border-b border-white/10 focus:border-[#FF6E00] text-white font-unbounded font-black text-xl sm:text-3xl uppercase tracking-tight py-2 outline-none transition-all">
+      </div>
+
+      <!-- VISUAL CANVAS CONTAINER (100% Full-Width Scalable 1:1 Aspect Ratio) -->
+      <div class="w-full overflow-x-auto select-none pb-8">
+        
+        <!-- Live Perforated Stamp Waves framing the canvas -->
+        <div class="relative w-full border border-white/20 bg-black/60 rounded-3xl overflow-hidden shadow-2xl">
+          
+          <!-- Top Perforated Wave -->
+          <div class="w-full h-3 bg-[#F5F2EC] overflow-hidden leading-none relative">
+            <svg class="w-full h-full block" viewBox="0 0 1200 12" preserveAspectRatio="none">
+              <defs>
+                <pattern id="builder-wave-top" width="20" height="12" patternUnits="userSpaceOnUse">
+                  <path d="M 0,0 L 20,0 L 20,12 C 16,12 14,2 10,2 C 6,2 4,12 0,12 Z" fill="#F5F2EC" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="12" fill="url(#builder-wave-top)" />
+            </svg>
+          </div>
+
+          <!-- The Active 1:1 Square Grid Board -->
+          <div id="grid-stage" class="relative w-full" style="aspect-ratio: 22 / 5;">
+            
+            <!-- Layer 1: Background Cells (Clickable to paint X / boxes) -->
+            <div id="grid-bg-layer" class="absolute inset-0 w-full h-full pointer-events-auto" style="display: grid;">
+              <!-- Generated Cells -->
+            </div>
+
+            <!-- Layer 2: Placed Items (Interactive draggable & selectable elements) -->
+            <div id="grid-items-layer" class="absolute inset-0 w-full h-full pointer-events-none" style="display: grid;">
+              <!-- Placed Items -->
+            </div>
+
+          </div>
+
+          <!-- Bottom Perforated Wave -->
+          <div class="w-full h-3 bg-[#F5F2EC] overflow-hidden leading-none relative">
+            <svg class="w-full h-full block" viewBox="0 0 1200 12" preserveAspectRatio="none">
+              <defs>
+                <pattern id="builder-wave-bot" width="20" height="12" patternUnits="userSpaceOnUse">
+                  <path d="M 0,12 L 20,12 L 20,0 C 16,0 14,10 10,10 C 6,10 4,0 0,0 Z" fill="#F5F2EC" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="12" fill="url(#builder-wave-bot)" />
+            </svg>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ACTIVE SELECTED ITEM INSPECTOR / PROPERTY DOCK -->
+      <div id="item-inspector" class="max-w-3xl mx-auto w-full bg-[#18181D] border border-white/15 rounded-2xl p-4 shadow-2xl transition-all hidden">
+        <div class="flex items-center justify-between border-b border-white/10 pb-3 mb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#FF6E00]"></span>
+            <span class="font-unbounded font-bold text-xs text-white uppercase">INSPECTOR ELEMEN: <span id="inspector-item-title" class="text-[#FF6E00]">Pill</span></span>
+          </div>
+          <button onclick="deleteSelectedItem()" class="px-2.5 py-1 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-300 font-mono text-xs flex items-center gap-1 transition-all">
+            <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+            <span>Hapus Elemen</span>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+          <!-- Column Position -->
+          <div class="space-y-1">
+            <label class="text-stone-400 font-mono text-[11px]">Kolom (Col):</label>
+            <div class="flex items-center gap-1">
+              <button onclick="moveSelectedItem(-1, 0)" class="px-2 py-1 bg-white/10 hover:bg-white/20 rounded font-mono font-bold">◀</button>
+              <input type="number" id="insp-col" min="1" max="30" onchange="updateSelectedItemProp('col', parseInt(this.value))" class="w-full bg-black/50 border border-white/10 rounded px-2 py-1 font-mono text-center text-white">
+              <button onclick="moveSelectedItem(1, 0)" class="px-2 py-1 bg-white/10 hover:bg-white/20 rounded font-mono font-bold">▶</button>
+            </div>
+          </div>
+
+          <!-- Row Position -->
+          <div class="space-y-1">
+            <label class="text-stone-400 font-mono text-[11px]">Baris (Row):</label>
+            <div class="flex items-center gap-1">
+              <button onclick="moveSelectedItem(0, -1)" class="px-2 py-1 bg-white/10 hover:bg-white/20 rounded font-mono font-bold">▲</button>
+              <input type="number" id="insp-row" min="1" max="10" onchange="updateSelectedItemProp('row', parseInt(this.value))" class="w-full bg-black/50 border border-white/10 rounded px-2 py-1 font-mono text-center text-white">
+              <button onclick="moveSelectedItem(0, 1)" class="px-2 py-1 bg-white/10 hover:bg-white/20 rounded font-mono font-bold">▼</button>
+            </div>
+          </div>
+
+          <!-- Width Span -->
+          <div class="space-y-1">
+            <label class="text-stone-400 font-mono text-[11px]">Lebar (Span Col):</label>
+            <input type="number" id="insp-cspan" min="1" max="10" onchange="updateSelectedItemProp('cspan', parseInt(this.value))" class="w-full bg-black/50 border border-white/10 rounded px-2 py-1 font-mono text-center text-white">
+          </div>
+
+          <!-- Height Span -->
+          <div class="space-y-1">
+            <label class="text-stone-400 font-mono text-[11px]">Tinggi (Span Row):</label>
+            <input type="number" id="insp-rspan" min="1" max="6" onchange="updateSelectedItemProp('rspan', parseInt(this.value))" class="w-full bg-black/50 border border-white/10 rounded px-2 py-1 font-mono text-center text-white">
+          </div>
+        </div>
+
+        <!-- Text input if applicable -->
+        <div id="insp-text-group" class="mt-3 pt-3 border-t border-white/10 space-y-1">
+          <label class="text-stone-400 font-mono text-[11px]">Teks Komponen:</label>
+          <input type="text" id="insp-text" oninput="updateSelectedItemProp('text', this.value)" class="w-full bg-black/50 border border-white/10 rounded-xl px-3 py-1.5 font-unbounded text-sm uppercase text-white outline-none focus:border-[#FF6E00]">
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- MODAL: JSON & PROMPT PREVIEW -->
+  <div id="json-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden items-center justify-center p-4">
+    <div class="bg-[#141418] border border-white/15 rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i data-lucide="file-json" class="w-5 h-5 text-emerald-400"></i>
+          <span class="font-unbounded font-black text-sm text-white uppercase">GENERATED PROMPT & CONFIG</span>
+        </div>
+        <button onclick="toggleJsonModal()" class="p-1 rounded-lg text-stone-400 hover:text-white">✕</button>
+      </div>
+      
+      <p class="text-xs text-stone-400">Ini adalah teks instruksi dan config JSON yang siap dipaste ke AI untuk langsung diterapkan ke mockup utama:</p>
+      
+      <textarea id="modal-json-text" readonly class="w-full h-72 bg-black/70 border border-white/10 rounded-2xl p-4 font-mono text-xs text-pink-300 outline-none resize-none"></textarea>
+      
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button onclick="toggleJsonModal()" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-stone-300 font-mono text-xs transition-all">
+          Tutup
+        </button>
+        <button onclick="copyModalContent()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-[#FF6E00] to-[#FF4B93] text-white font-unbounded font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-[#FF6E00]/30 transition-all">
+          <i data-lucide="copy" class="w-4 h-4"></i>
+          <span>SALIN KE CLIPBOARD</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl bg-emerald-500 text-black font-mono font-bold text-xs shadow-2xl flex items-center gap-2 transform translate-y-10 opacity-0 pointer-events-none transition-all duration-300">
+    <i data-lucide="check-circle" class="w-4 h-4"></i>
+    <span id="toast-text">Berhasil disalin!</span>
+  </div>
+
+  <!-- ================= LOGIC & STUDIO ENGINE ================= -->
+  <script>
+    lucide.createIcons();
+
+    // Studio State
+    let config = {
+      cols: 22,
+      rows: 5,
+      headline: "KAMI MEMBUAT SEGALANYA AGAR KAMU...",
+      backgroundCells: {}, // key: "c,r" -> { type: 'x' | 'box' | 'box2x1' | 'blank' }
+      items: [] // array of { id, type, col, row, cspan, rspan, color, text, textDark }
+    };
+
+    let selectedItemId = null;
+    let currentPaintTool = 'x'; // 'x', 'box', 'box2x1', 'blank'
+
+    // ================= DEFAULT PRESET (EXACT REFERENCE 22x5) =================
+    function loadDefaultPreset() {
+      config.cols = 22;
+      config.rows = 5;
+      config.headline = "KAMI MEMBUAT SEGALANYA AGAR KAMU...";
+      document.getElementById('canvas-headline').value = config.headline;
+      document.getElementById('cols-slider').value = 22;
+      document.getElementById('rows-slider').value = 5;
+      document.getElementById('cols-val').textContent = "22";
+      document.getElementById('rows-val').textContent = "5";
+
+      // Blueprint cells (exact reference blueprint map)
+      config.backgroundCells = {};
+      
+      const defaultXs = [
+        [1,1], [13,1], [17,1], [19,1], [21,1],
+        [8,2], [9,2], [22,2],
+        [7,3], [8,3], [11,3], [16,3],
+        [1,4], [2,4], [3,4], [4,4], [13,4], [17,4],
+        [6,5], [9,5], [10,5], [17,5], [22,5]
+      ];
+      defaultXs.forEach(([c, r]) => {
+        config.backgroundCells[`${c},${r}`] = { type: 'x' };
+      });
+
+      const defaultBoxes = [
+        [3,1], [10,1], [12,1], [14,1], [18,1], [20,1],
+        [12,2],
+        [17,3],
+        [5,4], [16,4], [22,4],
+        [1,5], [11,5], [16,5]
+      ];
+      defaultBoxes.forEach(([c, r]) => {
+        config.backgroundCells[`${c},${r}`] = { type: 'box' };
+      });
+
+      const default2x1 = [
+        [8,1], [1,2], [10,2], [9,3], [12,3], [11,4], [14,4], [4,5], [7,5]
+      ];
+      default2x1.forEach(([c, r]) => {
+        config.backgroundCells[`${c},${r}`] = { type: 'box2x1' };
+      });
+
+      // Default visual items (12 elements)
+      config.items = [
+        { id: 'item_1', type: 'triangle', col: 2, row: 1, cspan: 1, rspan: 1, title: 'Blue Triangle' },
+        { id: 'item_2', type: 'pill', col: 4, row: 1, cspan: 5, rspan: 1, color: '#FF4B93', text: 'DICINTAI', textDark: true },
+        { id: 'item_3', type: 'target', col: 11, row: 1, cspan: 1, rspan: 1, title: 'Target Rings' },
+        { id: 'item_4', type: 'spring', col: 15, row: 1, cspan: 2, rspan: 1, title: 'Spring Coil' },
+        
+        { id: 'item_5', type: 'sparkle', col: 7, row: 2, cspan: 1, rspan: 1, title: 'Sparkle Star' },
+        { id: 'item_6', type: 'pill', col: 13, row: 2, cspan: 5, rspan: 1, color: '#3B4BF7', text: 'TERPANA', textDark: false },
+        
+        { id: 'item_7', type: 'pill', col: 2, row: 3, cspan: 5, rspan: 1, color: '#8EE000', text: 'DILIRIK', textDark: true },
+        { id: 'item_8', type: 'pacman', col: 15, row: 3, cspan: 1, rspan: 1, title: 'Pacman Monster' },
+        
+        { id: 'item_9', type: 'pill', col: 7, row: 4, cspan: 5, rspan: 1, color: '#FF6E00', text: 'DIBICARAKAN', textDark: true },
+        { id: 'item_10', type: 'star', col: 18, row: 2, cspan: 4, rspan: 4, title: 'Pink Star 4x4' },
+        
+        { id: 'item_11', type: 'heart', col: 3, row: 5, cspan: 1, rspan: 1, title: 'Yellow Heart' },
+        { id: 'item_12', type: 'pill', col: 12, row: 5, cspan: 5, rspan: 1, color: '#FFD600', text: 'BANGGA', textDark: true }
+      ];
+
+      selectedItemId = null;
+      hideInspector();
+      renderAll();
+      showToast("Preset 22x5 default berhasil dimuat!");
+    }
+
+    // ================= RENDER ENGINES =================
+    function renderAll() {
+      renderGridStage();
+      renderBackgroundCells();
+      renderItems();
+      lucide.createIcons();
+    }
+
+    function renderGridStage() {
+      const stage = document.getElementById('grid-stage');
+      const bgLayer = document.getElementById('grid-bg-layer');
+      const itemsLayer = document.getElementById('grid-items-layer');
+      
+      stage.style.aspectRatio = `${config.cols} / ${config.rows}`;
+      
+      const gridTemplate = `repeat(${config.cols}, minmax(0, 1fr))`;
+      const rowTemplate = `repeat(${config.rows}, minmax(0, 1fr))`;
+      
+      bgLayer.style.gridTemplateColumns = gridTemplate;
+      bgLayer.style.gridTemplateRows = rowTemplate;
+      
+      itemsLayer.style.gridTemplateColumns = gridTemplate;
+      itemsLayer.style.gridTemplateRows = rowTemplate;
+      
+      document.getElementById('grid-dimensions-badge').textContent = `${config.cols} Kolom x ${config.rows} Baris`;
+    }
+
+    function renderBackgroundCells() {
+      const bgLayer = document.getElementById('grid-bg-layer');
+      let html = '';
+      const cellSvg = '<svg class="w-full h-full stroke-white/[0.09]" preserveAspectRatio="none" viewBox="0 0 100 100"><line x1="0" y1="0" x2="100" y2="100" stroke-width="1.2"/><line x1="100" y1="0" x2="0" y2="100" stroke-width="1.2"/></svg>';
+
+      for (let r = 1; r <= config.rows; r++) {
+        for (let c = 1; c <= config.cols; c++) {
+          const key = `${c},${r}`;
+          const cellData = config.backgroundCells[key];
+
+          if (cellData && cellData.type === 'box2x1') {
+            html += `<div onclick="handleCellClick(${c}, ${r})" class="border border-white/[0.08] relative overflow-hidden cursor-pointer hover:border-[#FF6E00]/60 transition-colors" style="grid-column: ${c} / span 2; grid-row: ${r} / span 1;">
+              <span class="absolute top-1 left-1 font-mono text-[8px] text-stone-600 opacity-40">${c},${r}</span>
+            </div>`;
+            c++; // skip next column since spanned 2
+            continue;
+          }
+
+          if (cellData && cellData.type === 'x') {
+            html += `<div onclick="handleCellClick(${c}, ${r})" class="border border-white/[0.08] relative overflow-hidden flex items-center justify-center cursor-pointer hover:border-[#FF6E00]/60 transition-colors" style="grid-column: ${c}; grid-row: ${r};">
+              ${cellSvg}
+              <span class="absolute top-0.5 left-0.5 font-mono text-[8px] text-stone-600 opacity-40">${c},${r}</span>
+            </div>`;
+          } else if (cellData && cellData.type === 'box') {
+            html += `<div onclick="handleCellClick(${c}, ${r})" class="border border-white/[0.08] relative overflow-hidden cursor-pointer hover:border-[#FF6E00]/60 transition-colors" style="grid-column: ${c}; grid-row: ${r};">
+              <span class="absolute top-0.5 left-0.5 font-mono text-[8px] text-stone-600 opacity-40">${c},${r}</span>
+            </div>`;
+          } else {
+            // blank cell
+            html += `<div onclick="handleCellClick(${c}, ${r})" class="border border-white/[0.03] bg-black/20 relative overflow-hidden cursor-pointer hover:bg-white/[0.04] transition-colors" style="grid-column: ${c}; grid-row: ${r};">
+              <span class="absolute top-0.5 left-0.5 font-mono text-[8px] text-stone-700 opacity-20">${c},${r}</span>
+            </div>`;
+          }
+        }
+      }
+      bgLayer.innerHTML = html;
+    }
+
+    function renderItems() {
+      const itemsLayer = document.getElementById('grid-items-layer');
+      let html = '';
+
+      config.items.forEach(item => {
+        const isSelected = item.id === selectedItemId;
+        const selClass = isSelected ? 'item-selected ring-2 ring-[#FF6E00]' : '';
+        const style = `grid-column: ${item.col} / span ${item.cspan}; grid-row: ${item.row} / span ${item.rspan};`;
+
+        let content = '';
+
+        if (item.type === 'pill') {
+          const textColor = item.textDark ? '#0C0C0E' : '#FFFFFF';
+          content = `
+            <div class="w-full h-full rounded-full flex items-center justify-center font-unbounded font-black text-[10px] sm:text-xs md:text-sm tracking-wide uppercase px-2 shadow-lg overflow-hidden select-none" style="background-color: ${item.color}; color: ${textColor};">
+              <span class="truncate">${item.text}</span>
+            </div>
+          `;
+        } else if (item.type === 'triangle') {
+          content = `
+            <svg viewBox="0 0 54 48" class="w-full h-full p-2 filter drop-shadow-[0_2px_8px_rgba(59,75,247,0.4)]" preserveAspectRatio="xMidYMid meet">
+              <polygon points="27,2 52,46 2,46" fill="#3B4BF7" />
+            </svg>
+          `;
+        } else if (item.type === 'target') {
+          content = `
+            <svg viewBox="0 0 50 50" class="w-full h-full p-2 filter drop-shadow-[0_2px_8px_rgba(142,224,0,0.4)]" preserveAspectRatio="xMidYMid meet">
+              <circle cx="25" cy="25" r="23" fill="none" stroke="#8EE000" stroke-width="3.5" />
+              <circle cx="25" cy="25" r="14" fill="none" stroke="#8EE000" stroke-width="3.5" />
+              <circle cx="25" cy="25" r="6" fill="#8EE000" />
+            </svg>
+          `;
+        } else if (item.type === 'spring') {
+          content = `
+            <svg viewBox="0 0 130 46" class="w-full h-full p-1 filter drop-shadow-[0_2px_8px_rgba(255,214,0,0.3)]" preserveAspectRatio="xMidYMid meet">
+              <g fill="none" stroke="#FFD600" stroke-width="1.8" stroke-linecap="round" opacity="0.95">
+                <ellipse cx="14" cy="23" rx="9" ry="19" />
+                <ellipse cx="23" cy="23" rx="9" ry="19" />
+                <ellipse cx="32" cy="23" rx="9" ry="19" />
+                <ellipse cx="41" cy="23" rx="9" ry="19" />
+                <ellipse cx="50" cy="23" rx="9" ry="19" />
+                <ellipse cx="59" cy="23" rx="9" ry="19" />
+                <ellipse cx="68" cy="23" rx="9" ry="19" />
+                <ellipse cx="77" cy="23" rx="9" ry="19" />
+                <ellipse cx="86" cy="23" rx="9" ry="19" />
+                <ellipse cx="95" cy="23" rx="9" ry="19" />
+                <ellipse cx="104" cy="23" rx="9" ry="19" />
+                <ellipse cx="113" cy="23" rx="9" ry="19" />
+              </g>
+            </svg>
+          `;
+        } else if (item.type === 'sparkle') {
+          content = `
+            <svg viewBox="0 0 40 40" class="w-full h-full p-2.5 filter drop-shadow-[0_2px_8px_rgba(255,214,0,0.5)]" preserveAspectRatio="xMidYMid meet">
+              <path d="M 20 2 Q 20 20 2 20 Q 20 20 20 38 Q 20 20 38 20 Q 20 20 20 2 Z" fill="#FFD600" />
+            </svg>
+          `;
+        } else if (item.type === 'pacman') {
+          content = `
+            <div class="w-full h-full p-1 flex items-center justify-center">
+              <svg viewBox="0 0 12 11" class="w-full h-full pixelated filter drop-shadow-[0_2px_8px_rgba(142,224,0,0.4)]" preserveAspectRatio="xMidYMid meet">
+                <rect x="2" y="0" width="1" height="1" fill="#8EE000" /><rect x="9" y="0" width="1" height="1" fill="#8EE000" /><rect x="3" y="1" width="1" height="1" fill="#8EE000" /><rect x="8" y="1" width="1" height="1" fill="#8EE000" /><rect x="2" y="2" width="8" height="1" fill="#8EE000" /><rect x="1" y="3" width="2" height="1" fill="#8EE000" /><rect x="3" y="3" width="2" height="1" fill="#FFFFFF" /><rect x="4" y="3" width="1" height="1" fill="#0C0C0E" /><rect x="5" y="3" width="2" height="1" fill="#8EE000" /><rect x="7" y="3" width="2" height="1" fill="#FFFFFF" /><rect x="8" y="3" width="1" height="1" fill="#0C0C0E" /><rect x="9" y="3" width="2" height="1" fill="#8EE000" /><rect x="0" y="4" width="12" height="2" fill="#8EE000" /><rect x="0" y="6" width="1" height="1" fill="#8EE000" /><rect x="2" y="6" width="8" height="1" fill="#8EE000" /><rect x="11" y="6" width="1" height="1" fill="#8EE000" /><rect x="0" y="7" width="1" height="1" fill="#8EE000" /><rect x="2" y="7" width="1" height="1" fill="#8EE000" /><rect x="9" y="7" width="1" height="1" fill="#8EE000" /><rect x="11" y="7" width="1" height="1" fill="#8EE000" /><rect x="0" y="8" width="1" height="3" fill="#8EE000" /><rect x="3" y="8" width="1" height="3" fill="#8EE000" /><rect x="5" y="8" width="2" height="3" fill="#8EE000" /><rect x="8" y="8" width="1" height="3" fill="#8EE000" /><rect x="11" y="8" width="1" height="3" fill="#8EE000" />
+              </svg>
+            </div>
+          `;
+        } else if (item.type === 'heart') {
+          content = `
+            <div class="w-full h-full p-2 flex items-center justify-center">
+              <svg viewBox="0 0 13 11" class="w-full h-full pixelated filter drop-shadow-[0_2px_8px_rgba(255,214,0,0.45)]" preserveAspectRatio="xMidYMid meet">
+                <rect x="2" y="0" width="3" height="1" fill="#FFD600" /><rect x="8" y="0" width="3" height="1" fill="#FFD600" /><rect x="1" y="1" width="5" height="1" fill="#FFD600" /><rect x="7" y="1" width="5" height="1" fill="#FFD600" /><rect x="0" y="2" width="13" height="3" fill="#FFD600" /><rect x="1" y="5" width="11" height="1" fill="#FFD600" /><rect x="2" y="6" width="9" height="1" fill="#FFD600" /><rect x="3" y="7" width="7" height="1" fill="#FFD600" /><rect x="4" y="8" width="5" height="1" fill="#FFD600" /><rect x="5" y="9" width="3" height="1" fill="#FFD600" /><rect x="6" y="10" width="1" height="1" fill="#FFD600" />
+              </svg>
+            </div>
+          `;
+        } else if (item.type === 'star') {
+          content = `
+            <div class="w-full h-full p-2 flex items-center justify-center">
+              <svg viewBox="0 0 60 60" class="w-full h-full filter drop-shadow-[0_4px_16px_rgba(255,75,147,0.45)]" preserveAspectRatio="xMidYMid meet">
+                <polygon points="30,2 38,22 59,23 42,37 48,58 30,46 12,58 18,37 1,23 22,22" fill="#FF4B93" />
+              </svg>
+            </div>
+          `;
+        }
+
+        html += `
+          <div onclick="selectItem('${item.id}', event)" class="pointer-events-auto p-1 relative group cursor-pointer transition-transform ${selClass}" style="${style}">
+            ${content}
+          </div>
+        `;
+      });
+
+      itemsLayer.innerHTML = html;
+    }
+
+    // ================= INTERACTION HANDLERS =================
+    function setPaintTool(tool) {
+      currentPaintTool = tool;
+      ['x', 'box', 'box2x1', 'blank'].forEach(t => {
+        const btn = document.getElementById(`tool-${t}`);
+        if (t === tool) {
+          btn.className = 'p-2 rounded-xl border border-sky-500/40 bg-sky-500/20 text-sky-300 font-mono flex items-center gap-2 transition-all';
+        } else {
+          btn.className = 'p-2 rounded-xl border border-white/10 bg-white/5 text-stone-300 font-mono flex items-center gap-2 hover:bg-white/10 transition-all';
+        }
+      });
+      showToast(`Kuas aktif: ${tool.toUpperCase()}`);
+    }
+
+    function handleCellClick(col, row) {
+      const key = `${col},${row}`;
+      if (currentPaintTool === 'blank') {
+        delete config.backgroundCells[key];
+      } else {
+        config.backgroundCells[key] = { type: currentPaintTool };
+      }
+      renderBackgroundCells();
+    }
+
+    function addComponent(type, extra = {}) {
+      const id = 'item_' + Date.now();
+      const newItem = {
+        id,
+        type,
+        col: 1,
+        row: 1,
+        cspan: extra.cspan || 1,
+        rspan: extra.rspan || 1,
+        color: extra.color || '#FF6E00',
+        text: extra.text || 'TEXT',
+        textDark: extra.textDark !== undefined ? extra.textDark : true,
+        title: extra.title || type
+      };
+      config.items.push(newItem);
+      selectItem(id);
+      renderItems();
+      showToast(`Komponen ditambahkan ke Kolom 1, Baris 1!`);
+    }
+
+    function selectItem(id, event) {
+      if (event) event.stopPropagation();
+      selectedItemId = id;
+      const item = config.items.find(i => i.id === id);
+      if (!item) return;
+
+      const inspector = document.getElementById('item-inspector');
+      inspector.classList.remove('hidden');
+
+      document.getElementById('inspector-item-title').textContent = item.text || item.title || item.type;
+      document.getElementById('insp-col').value = item.col;
+      document.getElementById('insp-row').value = item.row;
+      document.getElementById('insp-cspan').value = item.cspan;
+      document.getElementById('insp-rspan').value = item.rspan;
+
+      const textGroup = document.getElementById('insp-text-group');
+      if (item.type === 'pill') {
+        textGroup.classList.remove('hidden');
+        document.getElementById('insp-text').value = item.text;
+      } else {
+        textGroup.classList.add('hidden');
+      }
+
+      renderItems();
+    }
+
+    function hideInspector() {
+      document.getElementById('item-inspector').classList.add('hidden');
+    }
+
+    function updateSelectedItemProp(prop, value) {
+      if (!selectedItemId) return;
+      const item = config.items.find(i => i.id === selectedItemId);
+      if (!item) return;
+
+      item[prop] = value;
+      renderItems();
+    }
+
+    function moveSelectedItem(dCol, dRow) {
+      if (!selectedItemId) return;
+      const item = config.items.find(i => i.id === selectedItemId);
+      if (!item) return;
+
+      item.col = Math.max(1, Math.min(config.cols - item.cspan + 1, item.col + dCol));
+      item.row = Math.max(1, Math.min(config.rows - item.rspan + 1, item.row + dRow));
+      
+      document.getElementById('insp-col').value = item.col;
+      document.getElementById('insp-row').value = item.row;
+      renderItems();
+    }
+
+    function deleteSelectedItem() {
+      if (!selectedItemId) return;
+      config.items = config.items.filter(i => i.id !== selectedItemId);
+      selectedItemId = null;
+      hideInspector();
+      renderItems();
+      showToast('Elemen berhasil dihapus!');
+    }
+
+    function clearAllItems() {
+      if (confirm('Yakin ingin mengosongkan semua elemen di kanvas?')) {
+        config.items = [];
+        selectedItemId = null;
+        hideInspector();
+        renderItems();
+        showToast('Semua item telah dibersihkan.');
+      }
+    }
+
+    function updateGridDimensions() {
+      config.cols = parseInt(document.getElementById('cols-slider').value);
+      config.rows = parseInt(document.getElementById('rows-slider').value);
+      document.getElementById('cols-val').textContent = config.cols;
+      document.getElementById('rows-val').textContent = config.rows;
+      renderAll();
+    }
+
+    function updateHeadlineText(text) {
+      config.headline = text;
+    }
+
+    // ================= PROMPT BUILDER FOR AI =================
+    function generatePromptText() {
+      const itemsDesc = config.items.map(i => {
+        if (i.type === 'pill') {
+          return `- Pill "${i.text}": Col ${i.col} to ${i.col + i.cspan - 1} (Span ${i.cspan}x${i.rspan}), Row ${i.row}, Color ${i.color}, TextDark: ${i.textDark}`;
+        } else {
+          return `- Shape ${i.title || i.type}: Col ${i.col} to ${i.col + i.cspan - 1} (Span ${i.cspan}x${i.rspan}), Row ${i.row}`;
+        }
+      }).join('\n');
+
+      const bgX = [];
+      const bgBox = [];
+      const bg2x1 = [];
+
+      Object.entries(config.backgroundCells).forEach(([key, val]) => {
+        const [c, r] = key.split(',').map(Number);
+        if (val.type === 'x') bgX.push(`[${c},${r}]`);
+        else if (val.type === 'box') bgBox.push(`[${c},${r}]`);
+        else if (val.type === 'box2x1') bg2x1.push(`[${c},${r}]`);
+      });
+
+      return `Nih bro hasil susunan Grid Manifesto 4JECTIV dari Grid Studio:
+
+Ukuran Grid:
+- Kolom: ${config.cols}
+- Baris: ${config.rows}
+- Rasio: 1:1 Square per sel (aspect-ratio: ${config.cols} / ${config.rows})
+- Headline: "${config.headline}"
+
+Daftar Komponen (${config.items.length} elemen):
+${itemsDesc}
+
+Background Blueprint Cells:
+- Sel dengan tanda silang diagonal 'X' (${bgX.length} sel):
+  ${bgX.join(', ') || 'None'}
+- Sel kotak polos 1x1 (${bgBox.length} sel):
+  ${bgBox.join(', ') || 'None'}
+- Balok kotak 2x1 (${bg2x1.length} balok):
+  ${bg2x1.join(', ') || 'None'}
+
+Format Raw JSON Config:
+\`\`\`json
+${JSON.stringify(config, null, 2)}
+\`\`\`
+
+Tolong terapkan langsung susunan dan koordinat di atas ke section manifesto di file mockup fanned-sticker-4jectiv.html ya!`;
+    }
+
+    function copyAiPrompt() {
+      const prompt = generatePromptText();
+      navigator.clipboard.writeText(prompt).then(() => {
+        showToast("Prompt berhasil disalin! Silakan paste langsung ke chat AI.");
+      }).catch(err => {
+        // Fallback
+        const ta = document.createElement('textarea');
+        ta.value = prompt;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast("Prompt berhasil disalin! Silakan paste langsung ke chat AI.");
+      });
+    }
+
+    function toggleJsonModal() {
+      const modal = document.getElementById('json-modal');
+      const isHidden = modal.classList.contains('hidden');
+      if (isHidden) {
+        document.getElementById('modal-json-text').value = generatePromptText();
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      } else {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function copyModalContent() {
+      const text = document.getElementById('modal-json-text').value;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("Teks berhasil disalin!");
+      });
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-text').textContent = msg;
+      toast.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
+      toast.classList.add('opacity-100', 'translate-y-0');
+      setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
+      }, 2500);
+    }
+
+    // Initialize with default preset on load
+    loadDefaultPreset();
+  </script>
+</body>
+</html>

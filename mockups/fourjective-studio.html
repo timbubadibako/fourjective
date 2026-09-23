@@ -1,0 +1,3062 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FOURJECTIVE — Creative Production Studio</title>
+  <meta name="description" content="Do The Best For The Best Moment. Studio produksi kreatif untuk buku tahunan, sinematografi 4K, dan augmented reality." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Syne:wght@700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- GSAP Core + Plugins -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Observer.min.js"></script>
+
+  <!-- GSAP Club Plugins -->
+  <script src="https://unpkg.com/gsap@3.12.5/dist/SplitText.min.js"></script>
+  <script src="https://unpkg.com/gsap@3.12.5/dist/ScrambleTextPlugin.min.js"></script>
+  <script src="https://unpkg.com/gsap@3.12.5/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://unpkg.com/gsap@3.12.5/dist/Flip.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            orange: { DEFAULT: '#FF6E00', 50: '#FFF3E8', 100: '#FFE2C2', 500: '#FF6E00', 600: '#E06200', 700: '#B84F00' },
+            canvas: '#FBFBFB',
+            dark: '#111113',
+            zinc: { soft: '#F4F4F5', hairline: '#E4E4E7' }
+          },
+          fontFamily: {
+            syne: ['Syne', 'sans-serif'],
+            jakarta: ['"Plus Jakarta Sans"', 'sans-serif']
+          },
+          boxShadow: {
+            'card': '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06)',
+            'card-hover': '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
+            'orange': '0 8px 32px rgba(255,110,0,0.3)',
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* ============================================
+       CSS CUSTOM PROPERTIES & BASE
+    ============================================ */
+    :root {
+      --orange: #FF6E00;
+      --canvas: #FBFBFB;
+      --dark: #111113;
+      --zinc-soft: #F4F4F5;
+      --hairline: #E4E4E7;
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --section-pad: clamp(80px, 10vw, 140px);
+      --max-w: 1280px;
+      --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--canvas);
+      color: var(--dark);
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* GPU compositor hints */
+    .will-transform { will-change: transform; }
+    .will-opacity { will-change: opacity; }
+    .gpu { transform: translateZ(0); backface-visibility: hidden; }
+
+    /* Typography */
+    .font-display { font-family: var(--font-display); }
+    h1, h2, h3, h4 { font-family: var(--font-display); }
+
+    /* ============================================
+       CUSTOM CURSOR
+    ============================================ */
+    #cursor-follower {
+      position: fixed;
+      top: -32px; left: -32px;
+      width: 64px; height: 64px;
+      border: 1.5px solid var(--dark);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      mix-blend-mode: difference;
+      will-change: transform;
+      transition: border-color 0.3s, background-color 0.3s, width 0.3s, height 0.3s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #cursor-follower.expanded {
+      width: 88px; height: 88px;
+      top: -44px; left: -44px;
+      border-color: var(--orange);
+      background: rgba(255,110,0,0.08);
+    }
+    #cursor-follower.dark-mode {
+      border-color: #fff;
+    }
+    #cursor-label {
+      font-family: var(--font-body);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--dark);
+      opacity: 0;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+    #cursor-follower.expanded #cursor-label { opacity: 1; }
+    #cursor-dot {
+      position: fixed;
+      top: -3px; left: -3px;
+      width: 6px; height: 6px;
+      background: var(--orange);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 10000;
+      will-change: transform;
+    }
+
+    /* ============================================
+       SCROLL BAR
+    ============================================ */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--zinc-soft); }
+    ::-webkit-scrollbar-thumb { background: var(--orange); border-radius: 2px; }
+
+    /* ============================================
+       NAVBAR
+    ============================================ */
+    #navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      background: rgba(251,251,251,0.88);
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      border-bottom: 1px solid var(--hairline);
+      transition: box-shadow 0.3s, padding 0.3s;
+      will-change: transform;
+    }
+    #navbar.scrolled {
+      box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+    }
+    .nav-link {
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--dark);
+      letter-spacing: 0.01em;
+      transition: color 0.2s;
+      position: relative;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -2px; left: 0; right: 0;
+      height: 1.5px;
+      background: var(--orange);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .nav-link:hover { color: var(--orange); }
+    .nav-link:hover::after { transform: scaleX(1); }
+
+    /* ============================================
+       HERO SECTION
+    ============================================ */
+    #hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      background: var(--canvas);
+    }
+    #hero-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0));
+      -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0));
+    }
+
+    .mascot-img {
+      position: absolute;
+      bottom: 0;
+      will-change: transform;
+      pointer-events: none;
+      user-select: none;
+    }
+    #mascot-left { left: -8px; width: clamp(180px, 22vw, 340px); }
+    #mascot-right { right: -8px; width: clamp(180px, 22vw, 340px); }
+
+    @keyframes float-y {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-18px); }
+    }
+    @keyframes float-y-slow {
+      0%, 100% { transform: translateY(0px) rotate(-2deg); }
+      50% { transform: translateY(-12px) rotate(2deg); }
+    }
+    @keyframes drift-cloud {
+      0%, 100% { transform: translateX(0px); }
+      50% { transform: translateX(14px); }
+    }
+    @keyframes spin-slow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+      50% { opacity: 0.6; transform: scale(0.8) rotate(20deg); }
+    }
+
+    .mascot-float { animation: float-y 4s ease-in-out infinite; }
+    .mascot-float-right { animation: float-y-slow 5s ease-in-out infinite; }
+    .cloud-drift { animation: drift-cloud 7s ease-in-out infinite; }
+    .star-twinkle { animation: twinkle 2.5s ease-in-out infinite; }
+
+    .hero-cloud {
+      position: absolute;
+      pointer-events: none;
+      user-select: none;
+      will-change: transform;
+    }
+
+    .hero-stat {
+      border-left: 2px solid var(--orange);
+      padding-left: 16px;
+    }
+
+    /* Rotating stamp */
+    .rotating-stamp {
+      width: 120px; height: 120px;
+      will-change: transform;
+      position: relative;
+    }
+    .stamp-text-path {
+      font-family: var(--font-body);
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      fill: var(--dark);
+      text-transform: uppercase;
+    }
+    .stamp-center-dot {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 24px; height: 24px;
+      background: var(--orange);
+      border-radius: 50%;
+    }
+
+    /* Magnetic buttons */
+    .magnetic-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      border-radius: 100px;
+      font-family: var(--font-body);
+      font-weight: 700;
+      font-size: 0.9rem;
+      letter-spacing: 0.01em;
+      cursor: none;
+      will-change: transform;
+      transition: box-shadow var(--transition-base), background var(--transition-base);
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary {
+      background: var(--orange);
+      color: #fff;
+    }
+    .btn-primary:hover { box-shadow: 0 8px 32px rgba(255,110,0,0.35); }
+    .btn-outline {
+      background: transparent;
+      color: var(--dark);
+      border: 1.5px solid var(--dark);
+    }
+    .btn-outline:hover { background: var(--dark); color: #fff; }
+    .btn-outline-white {
+      background: transparent;
+      color: #fff;
+      border: 1.5px solid rgba(255,255,255,0.5);
+    }
+    .btn-outline-white:hover { background: rgba(255,255,255,0.1); }
+
+    /* ============================================
+       MANIFESTO SECTION
+    ============================================ */
+    .manifesto-section {
+      background: var(--canvas);
+      padding: var(--section-pad) 0;
+    }
+    .manifesto-word {
+      opacity: 0.12;
+      color: var(--dark);
+      display: inline-block;
+      transition: color 0.1s;
+    }
+    .manifesto-highlight {
+      color: var(--orange) !important;
+      opacity: 1 !important;
+    }
+
+    /* ============================================
+       STACKING SERVICE PANELS
+    ============================================ */
+    .stack-panel {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+    }
+    .panel-progress {
+      position: absolute;
+      bottom: 0; left: 0;
+      height: 3px;
+      background: var(--orange);
+      width: 0%;
+      z-index: 10;
+    }
+    .panel-num {
+      font-family: var(--font-display);
+      font-size: clamp(100px, 18vw, 240px);
+      font-weight: 900;
+      line-height: 1;
+      opacity: 0.05;
+      position: absolute;
+      right: -20px;
+      top: 50%;
+      transform: translateY(-50%);
+      user-select: none;
+      pointer-events: none;
+      letter-spacing: -0.04em;
+    }
+
+    /* ============================================
+       HORIZONTAL SCROLL GALLERY
+    ============================================ */
+    .h-pin {
+      overflow: hidden;
+    }
+    .h-track {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 24px;
+      padding: 40px 80px;
+      will-change: transform;
+    }
+    .h-card {
+      flex: 0 0 clamp(320px, 38vw, 520px);
+      height: clamp(380px, 60vh, 580px);
+      border-radius: 20px;
+      overflow: hidden;
+      position: relative;
+      will-change: transform;
+      cursor: none;
+    }
+    .h-card img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .h-card:hover img { transform: scale(1.05); }
+    .h-card-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(17,17,19,0.9) 0%, transparent 55%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 28px;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .h-card:hover .h-card-overlay { opacity: 1; }
+    .h-card-stamp {
+      position: absolute;
+      top: 20px; right: 20px;
+      width: 72px; height: 72px;
+    }
+
+    /* ============================================
+       MASCOT PARADE
+    ============================================ */
+    .mascot-parade-section {
+      position: relative;
+      overflow: hidden;
+      padding: var(--section-pad) 0;
+    }
+    .parade-mascot {
+      position: absolute;
+      pointer-events: none;
+      will-change: transform;
+    }
+
+    /* ============================================
+       PARALLAX CINEMA WINDOW
+    ============================================ */
+    .cinema-section {
+      position: relative;
+      height: 80vh;
+      overflow: hidden;
+    }
+    .cinema-bg {
+      position: absolute;
+      inset: -20%;
+      will-change: transform;
+    }
+    .cinema-bg img {
+      width: 100%; height: 140%;
+      object-fit: cover;
+      object-position: center;
+    }
+    .cinema-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(17,17,19,0.85) 0%, rgba(17,17,19,0.2) 60%, transparent 100%);
+    }
+    .cinema-text {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 60px clamp(24px, 6vw, 80px);
+      will-change: transform;
+    }
+    .draw-underline path {
+      stroke: var(--orange);
+      stroke-width: 3;
+      fill: none;
+      stroke-linecap: round;
+    }
+
+    /* ============================================
+       PROCESS TIMELINE
+    ============================================ */
+    .timeline-section {
+      position: relative;
+      padding: var(--section-pad) 0;
+    }
+    .timeline-line {
+      position: absolute;
+      left: 50%;
+      top: 100px;
+      bottom: 100px;
+      width: 1px;
+    }
+    .timeline-line-path {
+      stroke: var(--orange);
+      stroke-width: 1.5;
+      fill: none;
+      stroke-dasharray: 1000;
+      stroke-dashoffset: 1000;
+    }
+    .timeline-step {
+      position: relative;
+      will-change: transform, opacity;
+    }
+    .step-number {
+      font-family: var(--font-display);
+      font-size: clamp(48px, 8vw, 96px);
+      font-weight: 900;
+      color: var(--orange);
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    /* ============================================
+       OBSERVER TESTIMONIAL SECTION
+    ============================================ */
+    .observer-section {
+      position: relative;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--dark);
+    }
+    .testimonial-slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(24px, 6vw, 80px);
+      visibility: hidden;
+      opacity: 0;
+    }
+    .testimonial-slide:first-child {
+      visibility: visible;
+      opacity: 1;
+    }
+    .slide-indicators {
+      position: absolute;
+      right: 32px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 10;
+    }
+    .slide-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      transition: background 0.3s, transform 0.3s;
+    }
+    .slide-dot.active {
+      background: var(--orange);
+      transform: scale(1.5);
+    }
+    .quote-mark {
+      font-family: var(--font-display);
+      font-size: clamp(80px, 15vw, 200px);
+      color: var(--orange);
+      line-height: 0.7;
+      opacity: 0.15;
+      position: absolute;
+      top: 60px; left: 40px;
+      user-select: none;
+    }
+
+    /* ============================================
+       FLIP PORTFOLIO FILTER
+    ============================================ */
+    .portfolio-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .portfolio-card {
+      border-radius: 16px;
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid var(--hairline);
+      cursor: none;
+      will-change: transform;
+      transition: box-shadow 0.3s;
+    }
+    .portfolio-card:hover { box-shadow: var(--shadow-card-hover); }
+    .portfolio-card img {
+      width: 100%; height: 200px;
+      object-fit: cover;
+      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .portfolio-card:hover img { transform: scale(1.06); }
+    .filter-btn {
+      padding: 8px 20px;
+      border-radius: 100px;
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1.5px solid var(--hairline);
+      background: transparent;
+      color: var(--dark);
+      cursor: none;
+      transition: all 0.2s;
+    }
+    .filter-btn.active {
+      background: var(--orange);
+      color: #fff;
+      border-color: var(--orange);
+    }
+
+    /* ============================================
+       BUDGET ESTIMATOR
+    ============================================ */
+    .estimator-section {
+      background: var(--zinc-soft);
+      padding: var(--section-pad) 0;
+    }
+    .price-display {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: clamp(40px, 7vw, 80px);
+      color: var(--orange);
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+    .slider-track {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: 2px;
+      background: linear-gradient(to right, var(--orange) 0%, var(--orange) var(--pct, 25%), var(--hairline) var(--pct, 25%));
+      outline: none;
+      cursor: pointer;
+    }
+    .slider-track::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--orange);
+      border: 3px solid #fff;
+      box-shadow: 0 2px 8px rgba(255,110,0,0.4);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .slider-track::-webkit-slider-thumb:hover { transform: scale(1.2); }
+    .toggle-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      background: #fff;
+      border: 1.5px solid var(--hairline);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      user-select: none;
+    }
+    .toggle-option.checked {
+      border-color: var(--orange);
+      background: rgba(255,110,0,0.04);
+    }
+    .toggle-checkbox {
+      width: 20px; height: 20px;
+      border-radius: 6px;
+      border: 2px solid var(--hairline);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .toggle-option.checked .toggle-checkbox {
+      background: var(--orange);
+      border-color: var(--orange);
+    }
+
+    /* ============================================
+       FAQ ACCORDION
+    ============================================ */
+    .faq-item {
+      border-bottom: 1px solid var(--hairline);
+      overflow: hidden;
+    }
+    .faq-question {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 0;
+      cursor: none;
+      gap: 16px;
+    }
+    .faq-icon {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--orange);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 18px;
+      font-weight: 300;
+      will-change: transform;
+      transition: background 0.2s;
+    }
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      will-change: max-height;
+    }
+    .faq-answer-inner { padding-bottom: 22px; }
+
+    /* ============================================
+       FOOTER
+    ============================================ */
+    #footer {
+      background: var(--dark);
+      position: relative;
+      overflow: hidden;
+    }
+    .footer-star {
+      position: absolute;
+      border-radius: 50%;
+      background: #fff;
+      opacity: 0;
+      animation: star-appear 3s ease-in-out infinite;
+    }
+    @keyframes star-appear {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 0.7; }
+    }
+    .footer-link {
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.5);
+      transition: color 0.2s;
+      display: inline-block;
+    }
+    .footer-link:hover { color: var(--orange); }
+
+    /* ============================================
+       THREE.JS MID-PAGE CANVAS
+    ============================================ */
+    #ar-canvas {
+      width: 100%;
+      height: 400px;
+      border-radius: 20px;
+      background: transparent;
+    }
+
+    /* ============================================
+       SCRAMBLE CTA SECTION
+    ============================================ */
+    .scramble-section {
+      background: var(--dark);
+      padding: var(--section-pad) 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ============================================
+       SECTION LABELS
+    ============================================ */
+    .section-label {
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--orange);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-label::before {
+      content: '';
+      display: block;
+      width: 24px;
+      height: 1.5px;
+      background: var(--orange);
+    }
+
+    /* ============================================
+       UTILITY
+    ============================================ */
+    .content-wrap {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 clamp(16px, 5vw, 80px);
+    }
+    .section-pad { padding: var(--section-pad) 0; }
+    .rounded-2xl { border-radius: 16px; }
+    .text-balance { text-wrap: balance; }
+
+    /* Mask for text reveals */
+    .text-reveal-wrap {
+      overflow: hidden;
+      display: block;
+    }
+
+    /* Animated gradient bg */
+    @keyframes gradient-shift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Loading overlay */
+    #loader {
+      position: fixed;
+      inset: 0;
+      background: var(--dark);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .loader-logo {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: clamp(32px, 6vw, 64px);
+      color: #fff;
+      letter-spacing: -0.04em;
+    }
+    .loader-logo span { color: var(--orange); }
+    .loader-bar-wrap {
+      width: 200px;
+      height: 2px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 1px;
+      overflow: hidden;
+    }
+    .loader-bar {
+      height: 100%;
+      background: var(--orange);
+      width: 0%;
+      border-radius: 1px;
+    }
+    .loader-pct {
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.1em;
+    }
+
+    /* Responsive */
+    @media (max-width: 767px) {
+      #mascot-left, #mascot-right { width: 120px; }
+      .h-card { flex: 0 0 280px; height: 340px; }
+      .timeline-line { display: none; }
+      .portfolio-grid { grid-template-columns: 1fr 1fr; }
+      body { cursor: auto; }
+      #cursor-follower, #cursor-dot { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       LOADER
+  ============================================================ -->
+  <div id="loader">
+    <div class="loader-logo"><span>4J</span>OURJECTIVE</div>
+    <div class="loader-bar-wrap"><div class="loader-bar" id="loader-bar"></div></div>
+    <div class="loader-pct" id="loader-pct">0%</div>
+  </div>
+
+  <!-- ============================================================
+       CUSTOM CURSOR
+  ============================================================ -->
+  <div id="cursor-follower">
+    <span id="cursor-label"></span>
+  </div>
+  <div id="cursor-dot"></div>
+
+  <!-- ============================================================
+       NAVBAR
+  ============================================================ -->
+  <nav id="navbar" class="py-4">
+    <div class="content-wrap">
+      <div class="flex items-center justify-between gap-6">
+        <!-- Logo -->
+        <a href="#" class="flex items-center gap-3 no-underline" style="cursor:none">
+          <div class="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-content-center" style="background:var(--orange); display:flex; align-items:center; justify-content:center;">
+            <span class="font-display text-white font-black text-base leading-none">4J</span>
+          </div>
+          <div>
+            <div class="font-display font-black text-sm tracking-wide" style="color:var(--dark); letter-spacing:0.06em; line-height:1.1;">FOURJECTIVE</div>
+            <div class="font-jakarta text-xs" style="color:#888; letter-spacing:0.04em; line-height:1.2;">Creative Production Studio</div>
+          </div>
+        </a>
+
+        <!-- Nav Links -->
+        <div class="hidden md:flex items-center gap-8">
+          <a href="#manifesto" class="nav-link">Manifesto</a>
+          <a href="#layanan" class="nav-link">Layanan</a>
+          <a href="#portofolio" class="nav-link">Portofolio</a>
+          <a href="#proses" class="nav-link">Proses</a>
+          <a href="#estimator" class="nav-link">Estimator</a>
+        </div>
+
+        <!-- Right side -->
+        <div class="flex items-center gap-3">
+          <!-- WhatsApp -->
+          <a href="https://wa.me/6281234567890" target="_blank" class="w-9 h-9 rounded-full flex items-center justify-center border border-zinc-hairline hover:border-orange-DEFAULT transition-colors" style="cursor:none; border-color:var(--hairline);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="color:#25D366">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+            </svg>
+          </a>
+          <!-- CTA -->
+          <button class="magnetic-btn btn-primary text-sm" style="padding:10px 22px;">Mulai Projek</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ============================================================
+       SECTION 5: HERO
+  ============================================================ -->
+  <section id="hero" class="pt-20">
+    <!-- Three.js canvas -->
+    <canvas id="hero-canvas"></canvas>
+
+    <!-- Cloud SVGs -->
+    <img src="images/landing-page/hero/cloud-1.svg" class="hero-cloud cloud-drift" style="top:12%; left:8%; width:clamp(80px,12vw,180px); opacity:0.6;" alt="" />
+    <img src="images/landing-page/hero/cloud-2.svg" class="hero-cloud cloud-drift" style="top:22%; right:14%; width:clamp(60px,9vw,140px); opacity:0.5; animation-delay:-3s;" alt="" />
+    <img src="images/landing-page/hero/cloud-3.svg" class="hero-cloud cloud-drift" style="bottom:28%; left:20%; width:clamp(50px,7vw,100px); opacity:0.4; animation-delay:-5s;" alt="" />
+
+    <!-- Stars -->
+    <img src="images/landing-page/hero/star.svg" id="star-1" class="hero-cloud star-twinkle" style="top:18%; left:38%; width:32px; opacity:0.8;" alt="" />
+    <img src="images/landing-page/hero/star.svg" id="star-2" class="hero-cloud star-twinkle" style="top:35%; right:22%; width:22px; opacity:0.6; animation-delay:-1.5s;" alt="" />
+    <img src="images/landing-page/hero/star.svg" id="star-3" class="hero-cloud star-twinkle" style="bottom:35%; right:36%; width:18px; opacity:0.5; animation-delay:-0.8s;" alt="" />
+
+    <!-- Mascots -->
+    <img src="images/landing-page/hero/mascot-left.svg" id="mascot-left" class="mascot-img will-transform" alt="Fourjective Mascot Left" />
+    <img src="images/landing-page/hero/mascot-right.svg" id="mascot-right" class="mascot-img will-transform" alt="Fourjective Mascot Right" />
+
+    <!-- Hero content -->
+    <div class="content-wrap relative z-10 w-full">
+      <div class="flex flex-col items-center text-center" style="padding:80px 0 120px;">
+
+        <!-- Logo image -->
+        <div id="hero-logo-wrap" style="margin-bottom:32px; opacity:0;">
+          <img src="images/landing-page/hero/fourjective.png" alt="Fourjective" style="height:clamp(36px,5vw,56px); object-fit:contain;" />
+        </div>
+
+        <!-- Section label -->
+        <div class="section-label mb-8" id="hero-label" style="opacity:0;">
+          Creative Production Studio — Est. 2024
+        </div>
+
+        <!-- Main headline -->
+        <h1 style="font-family:var(--font-display); font-weight:900; font-size:clamp(44px,9vw,128px); line-height:0.94; letter-spacing:-0.04em; color:var(--dark); margin-bottom:32px; text-transform:uppercase;">
+          <span class="text-reveal-wrap"><span class="hero-line block">Do The Best</span></span>
+          <span class="text-reveal-wrap"><span class="hero-line block" style="color:var(--orange);">For The Best</span></span>
+          <span class="text-reveal-wrap"><span class="hero-line block">Moment.</span></span>
+        </h1>
+
+        <!-- Subtitle scramble -->
+        <p id="hero-sub" class="font-jakarta mb-10" style="font-size:clamp(15px,2vw,18px); font-weight:400; color:#555; max-width:540px; line-height:1.6; opacity:0;">
+          Studio produksi kreatif terbaik untuk buku tahunan, sinematografi 4K, dan pengalaman augmented reality yang tak terlupakan.
+        </p>
+
+        <!-- CTAs -->
+        <div class="flex flex-wrap gap-4 justify-center mb-14" id="hero-ctas" style="opacity:0;">
+          <button class="magnetic-btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 014.31 11.6 19.79 19.79 0 011.24 3 2 2 0 013.24 1h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L7.91 8.6a16 16 0 006.29 6.29l1.96-1.5a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 15.92z"/></svg>
+            Konsultasi Gratis
+          </button>
+          <button class="magnetic-btn btn-outline">
+            Lihat Portofolio
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+
+        <!-- Rotating stamp -->
+        <div class="rotating-stamp" id="rotating-stamp" style="margin-bottom:48px;">
+          <svg viewBox="0 0 120 120" width="120" height="120">
+            <defs>
+              <path id="stampCircle" d="M60,60 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0" />
+            </defs>
+            <text class="stamp-text-path">
+              <textPath href="#stampCircle" startOffset="0%">★ FOURJECTIVE CREATIVE STUDIO ★ EST. 2024 ★</textPath>
+            </text>
+          </svg>
+          <div class="stamp-center-dot"></div>
+        </div>
+
+        <!-- Stats row -->
+        <div class="flex flex-wrap justify-center gap-8 md:gap-12" id="hero-stats" style="opacity:0;">
+          <div class="hero-stat">
+            <div class="font-display font-black text-3xl" style="color:var(--orange); letter-spacing:-0.03em;"><span class="counter" data-target="150">0</span>+</div>
+            <div class="font-jakarta text-sm mt-1" style="color:#777; font-weight:500;">Portofolio</div>
+          </div>
+          <div class="hero-stat">
+            <div class="font-display font-black text-3xl" style="color:var(--orange); letter-spacing:-0.03em;"><span class="counter" data-target="5">0</span>+</div>
+            <div class="font-jakarta text-sm mt-1" style="color:#777; font-weight:500;">Tahun</div>
+          </div>
+          <div class="hero-stat">
+            <div class="font-display font-black text-3xl" style="color:var(--orange); letter-spacing:-0.03em;"><span class="counter" data-target="12">0</span></div>
+            <div class="font-jakarta text-sm mt-1" style="color:#777; font-weight:500;">Kota</div>
+          </div>
+          <div class="hero-stat">
+            <div class="font-display font-black text-3xl" style="color:var(--orange); letter-spacing:-0.03em;"><span class="counter" data-target="98">0</span>%</div>
+            <div class="font-jakarta text-sm mt-1" style="color:#777; font-weight:500;">Puas</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 6: MANIFESTO SCRUB
+  ============================================================ -->
+  <section id="manifesto" class="manifesto-section">
+    <div class="content-wrap">
+      <div class="section-label mb-12">Manifesto</div>
+      <div class="manifesto-text" style="font-family:var(--font-display); font-weight:800; font-size:clamp(28px,5vw,64px); line-height:1.25; letter-spacing:-0.02em; max-width:960px;">
+        <!-- Words will be wrapped in spans by JS -->
+        Kami percaya bahwa setiap momen sekolah adalah kisah yang layak diabadikan dengan penuh keindahan, ketelitian, dan jiwa seni yang tinggi. Buku tahunan bukan sekadar kumpulan foto — ia adalah warisan kenangan yang akan selalu dikenang selamanya. <span class="manifesto-highlight-trigger">FOURJECTIVE ADALAH PILIHAN TERBAIK</span> untuk merayakan perjalanan terbaik Anda.
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 7: STACKING SERVICE PANELS
+  ============================================================ -->
+  <section id="layanan">
+
+    <!-- Panel 1: Sinematografi -->
+    <div class="stack-panel" style="background:var(--dark);" id="panel-1">
+      <div class="panel-num" style="color:#fff;">01</div>
+      <div class="panel-progress" id="panel-prog-1"></div>
+      <div class="content-wrap w-full">
+        <div class="flex flex-col md:flex-row items-center gap-16">
+          <div class="flex-1">
+            <div class="section-label mb-6" style="color:rgba(255,110,0,1);">Layanan 01</div>
+            <h2 class="font-display font-black mb-6" style="font-size:clamp(36px,6vw,80px); color:#fff; letter-spacing:-0.03em; line-height:0.95; text-transform:uppercase;">
+              Sinema<br/>tografi<br/><span style="color:var(--orange);">4K</span>
+            </h2>
+            <p class="font-jakarta mb-8" style="color:rgba(255,255,255,0.6); font-size:1.1rem; line-height:1.7; max-width:480px; font-weight:400;">
+              Rekam setiap momen terbaik dalam kualitas cinema grade 4K. Dari sesi foto kelas hingga video after-movie yang sinematik — kami menghadirkan produksi setara film layar lebar untuk sekolah Anda.
+            </p>
+            <div class="flex gap-8 mb-8">
+              <div>
+                <div class="font-display font-black text-4xl" style="color:var(--orange);">4K</div>
+                <div class="font-jakarta text-xs" style="color:rgba(255,255,255,0.4); font-weight:500; margin-top:2px;">Resolusi Cinema</div>
+              </div>
+              <div>
+                <div class="font-display font-black text-4xl" style="color:var(--orange);">HDR</div>
+                <div class="font-jakarta text-xs" style="color:rgba(255,255,255,0.4); font-weight:500; margin-top:2px;">Color Grading</div>
+              </div>
+              <div>
+                <div class="font-display font-black text-4xl" style="color:var(--orange);">RAW</div>
+                <div class="font-jakarta text-xs" style="color:rgba(255,255,255,0.4); font-weight:500; margin-top:2px;">File Format</div>
+              </div>
+            </div>
+            <button class="magnetic-btn btn-primary">Pelajari Lebih Lanjut</button>
+          </div>
+          <div class="flex-1 flex justify-center">
+            <img src="images/landing-page/hero/mascot-1.svg" id="panel1-mascot" class="will-transform" style="width:clamp(200px,35vw,420px); opacity:0;" alt="Mascot Cinema" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 2: Augmented Reality -->
+    <div class="stack-panel" style="background:var(--orange);" id="panel-2">
+      <div class="panel-num" style="color:rgba(255,255,255,0.15);">02</div>
+      <div class="panel-progress" id="panel-prog-2"></div>
+      <div class="content-wrap w-full">
+        <div class="flex flex-col md:flex-row items-center gap-16">
+          <div class="flex-1">
+            <div class="section-label mb-6" style="color:rgba(255,255,255,0.7);">Layanan 02</div>
+            <h2 class="font-display font-black mb-6" style="font-size:clamp(36px,6vw,80px); color:#fff; letter-spacing:-0.03em; line-height:0.95; text-transform:uppercase;">
+              Augmen<br/>ted<br/><span style="color:var(--dark);">Reality</span>
+            </h2>
+            <p class="font-jakarta mb-8" style="color:rgba(255,255,255,0.85); font-size:1.1rem; line-height:1.7; max-width:480px; font-weight:400;">
+              Hidupkan halaman buku tahunan Anda dengan teknologi AR. Scan foto dengan smartphone — dan saksikan kenangan bergerak, bersuara, dan bercerita dalam dimensi baru yang menakjubkan.
+            </p>
+            <div class="flex gap-4">
+              <div style="background:rgba(255,255,255,0.15); border-radius:12px; padding:16px 20px; backdrop-filter:blur(8px);">
+                <div class="font-display font-black text-2xl text-white">iOS</div>
+                <div class="font-jakarta text-xs" style="color:rgba(255,255,255,0.7); margin-top:2px;">Compatible</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.15); border-radius:12px; padding:16px 20px; backdrop-filter:blur(8px);">
+                <div class="font-display font-black text-2xl text-white">Android</div>
+                <div class="font-jakarta text-xs" style="color:rgba(255,255,255,0.7); margin-top:2px;">Compatible</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.15); border-radius:12px; padding:16px 20px; backdrop-filter:blur(8px);">
+                <div class="font-display font-black text-2xl text-white">3D</div>
+                <div class="font-jakarta text-xs" style="color:rgba(255,255,255,0.7); margin-top:2px;">Animation</div>
+              </div>
+            </div>
+          </div>
+          <div class="flex-1 flex justify-center">
+            <img src="images/landing-page/hero/mascot-2.svg" id="panel2-mascot" class="will-transform" style="width:clamp(200px,35vw,420px); opacity:0;" alt="Mascot AR" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 3: Editorial Premium -->
+    <div class="stack-panel" style="background:var(--canvas);" id="panel-3">
+      <div class="panel-num" style="color:var(--dark);">03</div>
+      <div class="panel-progress" id="panel-prog-3"></div>
+      <div class="content-wrap w-full">
+        <div class="flex flex-col gap-10">
+          <div>
+            <div class="section-label mb-6">Layanan 03</div>
+            <h2 class="font-display font-black" style="font-size:clamp(36px,6vw,80px); color:var(--dark); letter-spacing:-0.03em; line-height:0.95; text-transform:uppercase;">
+              Editorial <span style="color:var(--orange);">Premium</span>
+            </h2>
+          </div>
+          <div class="flex flex-col md:flex-row gap-6 items-start">
+            <p class="font-jakarta" style="color:#555; font-size:1.05rem; line-height:1.7; max-width:440px; font-weight:400; flex:1;">
+              Desain editorial buku tahunan premium dengan layout majalah kelas atas. Setiap halaman dirancang oleh desainer berpengalaman dengan eye for detail yang tinggi.
+            </p>
+            <div class="flex flex-wrap gap-4 flex-1">
+              <div class="rounded-2xl overflow-hidden border border-zinc-hairline" style="border-color:var(--hairline); flex:1; min-width:160px; max-width:220px;">
+                <img src="images/landing-page/portfolio/barbie.png" alt="Barbie Theme" style="width:100%; height:140px; object-fit:cover;" />
+                <div style="padding:12px 14px;"><div class="font-jakarta text-sm font-semibold">Barbie World</div></div>
+              </div>
+              <div class="rounded-2xl overflow-hidden border border-zinc-hairline" style="border-color:var(--hairline); flex:1; min-width:160px; max-width:220px;">
+                <img src="images/landing-page/portfolio/colorfull.png" alt="Colorfull Theme" style="width:100%; height:140px; object-fit:cover;" />
+                <div style="padding:12px 14px;"><div class="font-jakarta text-sm font-semibold">Colorfull</div></div>
+              </div>
+              <div class="rounded-2xl overflow-hidden border border-zinc-hairline" style="border-color:var(--hairline); flex:1; min-width:160px; max-width:220px;">
+                <img src="images/landing-page/portfolio/dark.png" alt="Dark Theme" style="width:100%; height:140px; object-fit:cover;" />
+                <div style="padding:12px 14px;"><div class="font-jakarta text-sm font-semibold">Dark Elegance</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 8: HORIZONTAL SCROLL PORTFOLIO GALLERY
+  ============================================================ -->
+  <section id="portofolio" style="background:var(--dark); padding:var(--section-pad) 0 0;">
+    <div class="content-wrap mb-12">
+      <div class="section-label mb-6" style="color:var(--orange);">Portofolio</div>
+      <div class="flex items-end justify-between gap-4 flex-wrap">
+        <h2 class="font-display font-black" style="font-size:clamp(32px,5vw,72px); color:#fff; letter-spacing:-0.03em; line-height:0.95; text-transform:uppercase;">
+          Karya Terbaik<br/>Kami
+        </h2>
+        <p class="font-jakarta" style="color:rgba(255,255,255,0.5); max-width:320px; font-size:0.95rem; line-height:1.7;">
+          Scroll ke kanan untuk melihat koleksi lengkap buku tahunan yang telah kami produksi bersama sekolah-sekolah terbaik.
+        </p>
+      </div>
+    </div>
+
+    <div class="h-pin" id="h-pin">
+      <div class="h-track" id="h-track">
+
+        <!-- Card 1: Barbie -->
+        <div class="h-card will-transform" data-title="Barbie World" data-year="2024" data-cat="Majalah">
+          <img src="images/landing-page/portfolio/barbie.png" alt="Barbie World" />
+          <div class="h-card-overlay">
+            <div class="h-card-stamp rotating-stamp-card">
+              <svg viewBox="0 0 72 72" width="72" height="72">
+                <defs><path id="sc1" d="M36,36 m-28,0 a28,28 0 1,1 56,0 a28,28 0 1,1 -56,0"/></defs>
+                <text style="font-family:var(--font-body); font-size:6px; font-weight:700; letter-spacing:0.15em; fill:rgba(255,255,255,0.8);">
+                  <textPath href="#sc1">★ 2024 ★ FOURJECTIVE ★ MAJALAH</textPath>
+                </text>
+              </svg>
+            </div>
+            <span class="font-jakarta text-xs font-semibold" style="color:rgba(255,255,255,0.6); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:6px;">Tema Majalah</span>
+            <h3 class="font-display font-black text-2xl text-white">Barbie World</h3>
+          </div>
+        </div>
+
+        <!-- Card 2: Colorfull -->
+        <div class="h-card will-transform" data-title="Colorfull Vibes" data-year="2024" data-cat="Hybrid">
+          <img src="images/landing-page/portfolio/colorfull.png" alt="Colorfull Vibes" />
+          <div class="h-card-overlay">
+            <div class="h-card-stamp rotating-stamp-card">
+              <svg viewBox="0 0 72 72" width="72" height="72">
+                <defs><path id="sc2" d="M36,36 m-28,0 a28,28 0 1,1 56,0 a28,28 0 1,1 -56,0"/></defs>
+                <text style="font-family:var(--font-body); font-size:6px; font-weight:700; letter-spacing:0.15em; fill:rgba(255,255,255,0.8);">
+                  <textPath href="#sc2">★ 2024 ★ FOURJECTIVE ★ HYBRID</textPath>
+                </text>
+              </svg>
+            </div>
+            <span class="font-jakarta text-xs font-semibold" style="color:rgba(255,255,255,0.6); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:6px;">Tema Hybrid</span>
+            <h3 class="font-display font-black text-2xl text-white">Colorfull Vibes</h3>
+          </div>
+        </div>
+
+        <!-- Card 3: Dark -->
+        <div class="h-card will-transform" data-title="Dark Elegance" data-year="2023" data-cat="Sinema">
+          <img src="images/landing-page/portfolio/dark.png" alt="Dark Elegance" />
+          <div class="h-card-overlay">
+            <div class="h-card-stamp rotating-stamp-card">
+              <svg viewBox="0 0 72 72" width="72" height="72">
+                <defs><path id="sc3" d="M36,36 m-28,0 a28,28 0 1,1 56,0 a28,28 0 1,1 -56,0"/></defs>
+                <text style="font-family:var(--font-body); font-size:6px; font-weight:700; letter-spacing:0.15em; fill:rgba(255,255,255,0.8);">
+                  <textPath href="#sc3">★ 2023 ★ FOURJECTIVE ★ SINEMA</textPath>
+                </text>
+              </svg>
+            </div>
+            <span class="font-jakarta text-xs font-semibold" style="color:rgba(255,255,255,0.6); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:6px;">Sinematografi</span>
+            <h3 class="font-display font-black text-2xl text-white">Dark Elegance</h3>
+          </div>
+        </div>
+
+        <!-- Card 4: Jumanji -->
+        <div class="h-card will-transform" data-title="Jumanji Adventure" data-year="2023" data-cat="Sinema">
+          <img src="images/landing-page/portfolio/jumanji.png" alt="Jumanji Adventure" />
+          <div class="h-card-overlay">
+            <div class="h-card-stamp rotating-stamp-card">
+              <svg viewBox="0 0 72 72" width="72" height="72">
+                <defs><path id="sc4" d="M36,36 m-28,0 a28,28 0 1,1 56,0 a28,28 0 1,1 -56,0"/></defs>
+                <text style="font-family:var(--font-body); font-size:6px; font-weight:700; letter-spacing:0.15em; fill:rgba(255,255,255,0.8);">
+                  <textPath href="#sc4">★ 2023 ★ FOURJECTIVE ★ SINEMA</textPath>
+                </text>
+              </svg>
+            </div>
+            <span class="font-jakarta text-xs font-semibold" style="color:rgba(255,255,255,0.6); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:6px;">Sinematografi</span>
+            <h3 class="font-display font-black text-2xl text-white">Jumanji Adventure</h3>
+          </div>
+        </div>
+
+        <!-- Card 5: Zombie -->
+        <div class="h-card will-transform" data-title="Zombie Chronicles" data-year="2024" data-cat="Hybrid">
+          <img src="images/landing-page/portfolio/zombie.png" alt="Zombie Chronicles" />
+          <div class="h-card-overlay">
+            <div class="h-card-stamp rotating-stamp-card">
+              <svg viewBox="0 0 72 72" width="72" height="72">
+                <defs><path id="sc5" d="M36,36 m-28,0 a28,28 0 1,1 56,0 a28,28 0 1,1 -56,0"/></defs>
+                <text style="font-family:var(--font-body); font-size:6px; font-weight:700; letter-spacing:0.15em; fill:rgba(255,255,255,0.8);">
+                  <textPath href="#sc5">★ 2024 ★ FOURJECTIVE ★ HYBRID</textPath>
+                </text>
+              </svg>
+            </div>
+            <span class="font-jakarta text-xs font-semibold" style="color:rgba(255,255,255,0.6); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:6px;">Tema Hybrid</span>
+            <h3 class="font-display font-black text-2xl text-white">Zombie Chronicles</h3>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- Horizontal scroll instruction -->
+    <div class="content-wrap" style="padding-top:24px; padding-bottom:var(--section-pad);">
+      <div class="flex items-center gap-3" style="opacity:0.5;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        <span class="font-jakarta text-sm text-white">Geser untuk melihat lebih banyak</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 9: MASCOT PARADE
+  ============================================================ -->
+  <section class="mascot-parade-section" style="min-height:600px; background:var(--canvas);" id="mascot-parade">
+    <!-- Surrounding mascots -->
+    <img src="images/landing-page/portfolio/top-left.svg" class="parade-mascot will-transform" id="pm-tl" style="top:0; left:0; width:clamp(120px,18vw,260px);" alt="" />
+    <img src="images/landing-page/portfolio/top-right.svg" class="parade-mascot will-transform" id="pm-tr" style="top:0; right:0; width:clamp(120px,18vw,260px);" alt="" />
+    <img src="images/landing-page/portfolio/bottom-left.svg" class="parade-mascot will-transform" id="pm-bl" style="bottom:0; left:0; width:clamp(120px,18vw,260px);" alt="" />
+    <img src="images/landing-page/portfolio/bottom-right.svg" class="parade-mascot will-transform" id="pm-br" style="bottom:0; right:0; width:clamp(120px,18vw,260px);" alt="" />
+    <img src="images/landing-page/portfolio/middle.svg" class="parade-mascot will-transform" id="pm-mid" style="top:50%; left:5%; transform:translateY(-50%); width:clamp(80px,12vw,180px);" alt="" />
+
+    <!-- Central text -->
+    <div class="content-wrap flex items-center justify-center" style="min-height:600px; padding:120px clamp(16px,5vw,80px);">
+      <div class="text-center" style="max-width:800px;">
+        <div class="section-label mb-8" style="justify-content:center;">Filosofi Kami</div>
+        <h2 class="font-display font-black" style="font-size:clamp(36px,7vw,96px); letter-spacing:-0.04em; line-height:0.95; color:var(--dark);" id="parade-headline">
+          Setiap Momen<br/>Itu <span style="color:var(--orange);">Unik.</span>
+        </h2>
+        <p class="font-jakarta mt-8" style="font-size:1.1rem; color:#666; line-height:1.8; max-width:560px; margin:32px auto 0;">
+          Tidak ada dua kenangan yang sama. Itulah mengapa setiap buku tahunan yang kami produksi dirancang khusus — mencerminkan kepribadian, semangat, dan cerita unik dari setiap sekolah.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 10: PARALLAX CINEMA WINDOW
+  ============================================================ -->
+  <section class="cinema-section" id="cinema-section">
+    <div class="cinema-bg" id="cinema-bg">
+      <img src="images/landing-page/portfolio/dark.png" alt="Cinema Backdrop" />
+    </div>
+    <div class="cinema-overlay"></div>
+    <div class="cinema-text" id="cinema-text">
+      <h2 class="font-display font-black text-white" style="font-size:clamp(36px,8vw,120px); letter-spacing:-0.04em; line-height:0.9; text-transform:uppercase; max-width:900px;">
+        Kenangan Yang<br/>Tak Terhapus
+      </h2>
+      <!-- Animated SVG underline -->
+      <svg class="draw-underline mt-4" width="480" height="24" viewBox="0 0 480 24" id="cinema-underline">
+        <path d="M0 12 C80 4, 160 20, 240 12 C320 4, 400 20, 480 12" />
+      </svg>
+      <p class="font-jakarta mt-6 text-white" style="opacity:0.7; font-size:1rem; max-width:480px; line-height:1.7;">
+        Setiap gambar, setiap tawa, setiap momen terbaik — diabadikan dalam karya seni yang akan bertahan selamanya.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 11: PROCESS TIMELINE
+  ============================================================ -->
+  <section id="proses" class="timeline-section" style="background:var(--canvas);">
+    <div class="content-wrap">
+      <div class="section-label mb-6">Proses Kami</div>
+      <h2 class="font-display font-black mb-20" style="font-size:clamp(32px,5vw,72px); color:var(--dark); letter-spacing:-0.03em; line-height:0.95; text-transform:uppercase; max-width:600px;">
+        Empat Langkah<br/>Menuju <span style="color:var(--orange);">Sempurna</span>
+      </h2>
+
+      <!-- SVG line (decorative, desktop) -->
+      <div class="hidden md:block" style="position:relative;">
+        <svg id="timeline-svg-line" style="position:absolute; left:50%; top:-40px; transform:translateX(-50%); height:100%; width:2px; overflow:visible;" preserveAspectRatio="none">
+          <line id="tl-line-path" x1="1" y1="0" x2="1" y2="100%" stroke="var(--orange)" stroke-width="1.5" stroke-dasharray="1000" stroke-dashoffset="1000" />
+        </svg>
+      </div>
+
+      <div class="flex flex-col gap-16" id="timeline-steps">
+
+        <!-- Step 1 -->
+        <div class="timeline-step flex flex-col md:flex-row items-start md:items-center gap-8" id="ts-1">
+          <div class="flex-1 md:text-right md:pr-16 order-2 md:order-1">
+            <h3 class="font-display font-black mb-3" style="font-size:clamp(22px,3vw,36px); color:var(--dark);">Konsultasi</h3>
+            <p class="font-jakarta" style="color:#666; font-size:0.95rem; line-height:1.7; max-width:380px; margin-left:auto;">
+              Kami mendengarkan visi dan kebutuhan sekolah Anda. Diskusikan tema, paket, timeline, dan ekspektasi bersama tim kreatif kami yang berpengalaman.
+            </p>
+          </div>
+          <div class="flex-shrink-0 order-1 md:order-2 z-10">
+            <div class="flex items-center justify-center w-20 h-20 rounded-full border-2" style="border-color:var(--orange); background:var(--canvas);">
+              <span class="step-number" style="font-size:32px;">01</span>
+            </div>
+          </div>
+          <div class="flex-1 md:pl-16 order-3">
+            <div class="flex flex-wrap gap-2">
+              <span class="font-jakarta text-xs font-semibold px-3 py-1 rounded-full" style="background:rgba(255,110,0,0.1); color:var(--orange);">Meeting Online/Offline</span>
+              <span class="font-jakarta text-xs font-semibold px-3 py-1 rounded-full" style="background:rgba(255,110,0,0.1); color:var(--orange);">Gratis</span>
+              <span class="font-jakarta text-xs font-semibold px-3 py-1 rounded-full" style="background:rgba(255,110,0,0.1); color:var(--orange);">1–2 Hari</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="timeline-step flex flex-col md:flex-row items-start md:items-center gap-8" id="ts-2">
+          <div class="flex-1 md:text-right md:pr-16 order-2 md:order-1">
+            <h3 class="font-display font-black mb-3" style="font-size:clamp(22px,3vw,36px); color:var(--dark);">Produksi</h3>
+            <p class="font-jakarta" style="color:#666; font-size:0.95rem; line-height:1.7; max-width:380px; margin-left:auto;">
+              Tim fotografer, videografer, dan desainer kami turun langsung ke sekolah. Sesi foto kelas, candid, dan pengambilan konten berlangsung dalam suasana menyenangkan.
+            </p>
+          </div>
+          <div class="flex-shrink-0 order-1 md:order-2 z-10">
+            <div class="flex items-center justify-center w-20 h-20 rounded-full border-2" style="border-color:var(--orange); background:var(--canvas);">
+              <span class="step-number" style="font-size:32px;">02</span>
+            </div>
+          </div>
+          <div class="flex-1 md:pl-16 order-3">
+            <div class="flex flex-wrap gap-2">
+              <span class="font-jakarta text-xs font-semibold px-3 py-1 rounded-full" style="background:rgba(255,110,0,0.1); color:var(--orange);">Foto & Video 4K</span>
+              <span class="font-jakarta text-xs font-semibold px-3 py-1 rounded-full" style="background:rgba(255,110,0,0.1); color:var(--orange);">Desain Editorial</span>
+              <span class="font-jakarta text-xs font-semibold px-3 py-1 rounded-full" style="background:rgba(255,110,0,0.1); color:var(--orange);">2–4 Minggu</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="timeline-step flex flex-col md:flex-row items-start md:items-center gap-8" id="ts-3">
+          <div class="flex-1 md:text-right md:pr-16 order-2 md:order-1">
+            <h3 class="font-display font-black mb-3" style="font-size:clamp(22px,3vw,36px); color:var(--dark);">Pengiriman</h3>
+            <p class="font-jakarta" style="color:#666; font-size:0.95rem; line-height:1.7; max-width:380px; margin-left:auto;">
+              Buku tahunan selesai dicetak dan dikemas dengan indah. Pengiriman langsung ke sekolah dengan pengemasan premium yang melindungi setiap detail karya kami.
+            </p>
+          </div>
+          <div class="flex-shrink-0 order-1 md:order-2 z-10">
+            <div class="flex items-center justify-center w-20 h-20 rounded-full border-2" style="border-color:var(--orange); background:var(--canvas);">
+              <span class="step-number" style="font-size:32px;">03</span>
+            </div>
+          </div>
+          <div class="flex-1 md:pl-16 order-3">
+            <div class="flex flex-wrap gap-2">
+              <span class="font-jakarta text-xs font-semibold px-3 py-1 rounded-full" style="background:rgba(255,110,0,0.1); color:var(--orange);">Cetak Premium</span>
+              <span class="font-jakarta text-xs font-semibold px-3 py-1 rounded-full" style="background:rgba(255,110,0,0.1); color:var(--orange);">Garansi Kualitas</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="timeline-step flex flex-col md:flex-row items-start md:items-center gap-8" id="ts-4">
+          <div class="flex-1 md:text-right md:pr-16 order-2 md:order-1">
+            <h3 class="font-display font-black mb-3" style="font-size:clamp(22px,3vw,36px); color:var(--dark);">Kenangan <span style="color:var(--orange);">Abadi</span></h3>
+            <p class="font-jakarta" style="color:#666; font-size:0.95rem; line-height:1.7; max-width:380px; margin-left:auto;">
+              Buku tahunan Anda telah menjadi warisan yang akan dikenang selamanya. File digital tersimpan aman di cloud dan dapat diakses kapan saja dengan teknologi AR.
+            </p>
+          </div>
+          <div class="flex-shrink-0 order-1 md:order-2 z-10">
+            <div class="flex items-center justify-center w-20 h-20 rounded-full" style="border-width:2px; border-style:solid; border-color:var(--orange); background:var(--orange);">
+              <span class="step-number text-white" style="font-size:32px;">04</span>
+            </div>
+          </div>
+          <div class="flex-1 md:pl-16 order-3">
+            <div class="flex flex-wrap gap-2">
+              <span class="font-jakarta text-xs font-semibold px-3 py-1 rounded-full" style="background:rgba(255,110,0,0.1); color:var(--orange);">Cloud Storage</span>
+              <span class="font-jakarta text-xs font-semibold px-3 py-1 rounded-full" style="background:rgba(255,110,0,0.1); color:var(--orange);">AR Access</span>
+              <span class="font-jakarta text-xs font-semibold px-3 py-1 rounded-full" style="background:rgba(255,110,0,0.1); color:var(--orange);">Selamanya ✦</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 12: THREE.JS FLOATING AR OBJECT
+  ============================================================ -->
+  <section style="background:var(--dark); padding:var(--section-pad) 0;" id="ar-section">
+    <div class="content-wrap">
+      <div class="flex flex-col md:flex-row items-center gap-16">
+        <div class="flex-1">
+          <div class="section-label mb-6" style="color:var(--orange);">Augmented Reality</div>
+          <h2 class="font-display font-black mb-6" style="font-size:clamp(32px,5vw,68px); color:#fff; letter-spacing:-0.03em; line-height:0.95; text-transform:uppercase;">
+            Lihat Dunia Baru<br/>Dengan <span style="color:var(--orange);">AR</span>
+          </h2>
+          <p class="font-jakarta mb-8" style="color:rgba(255,255,255,0.6); font-size:1rem; line-height:1.8; max-width:420px;">
+            Teknologi Augmented Reality kami mengubah setiap halaman buku tahunan menjadi portal ke kenangan hidup. Pindai halaman dengan smartphone — dan saksikan keajaiban.
+          </p>
+          <ul class="flex flex-col gap-4 mb-10">
+            <li class="flex items-center gap-4 font-jakarta" style="color:rgba(255,255,255,0.7); font-size:0.95rem;">
+              <span style="width:8px; height:8px; background:var(--orange); border-radius:50%; flex-shrink:0;"></span>
+              Video after-movie muncul saat foto dipindai
+            </li>
+            <li class="flex items-center gap-4 font-jakarta" style="color:rgba(255,255,255,0.7); font-size:0.95rem;">
+              <span style="width:8px; height:8px; background:var(--orange); border-radius:50%; flex-shrink:0;"></span>
+              Animasi 3D karakter di atas halaman buku
+            </li>
+            <li class="flex items-center gap-4 font-jakarta" style="color:rgba(255,255,255,0.7); font-size:0.95rem;">
+              <span style="width:8px; height:8px; background:var(--orange); border-radius:50%; flex-shrink:0;"></span>
+              Pesan suara pribadi tersimpan selamanya
+            </li>
+          </ul>
+          <button class="magnetic-btn btn-primary">Coba Demo AR</button>
+        </div>
+        <div class="flex-1 flex justify-center">
+          <canvas id="ar-canvas" style="max-width:440px;"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 13: OBSERVER TESTIMONIAL SLIDER
+  ============================================================ -->
+  <section class="observer-section" id="testimonial-section">
+    <div class="quote-mark">"</div>
+
+    <!-- Slide indicators -->
+    <div class="slide-indicators" id="slide-indicators">
+      <div class="slide-dot active" data-idx="0"></div>
+      <div class="slide-dot" data-idx="1"></div>
+      <div class="slide-dot" data-idx="2"></div>
+      <div class="slide-dot" data-idx="3"></div>
+    </div>
+
+    <!-- Slide counter -->
+    <div style="position:absolute; bottom:40px; left:50%; transform:translateX(-50%); z-index:10;" class="font-jakarta text-sm" style="color:rgba(255,255,255,0.4);">
+      <span id="current-slide-num" style="color:var(--orange); font-weight:700;">01</span>
+      <span style="color:rgba(255,255,255,0.3); margin:0 8px;">/</span>
+      <span style="color:rgba(255,255,255,0.3);">04</span>
+    </div>
+
+    <!-- Navigation arrows (mobile) -->
+    <div style="position:absolute; bottom:40px; right:40px; z-index:10; display:flex; gap:12px;">
+      <button id="obs-prev" style="width:44px; height:44px; border-radius:50%; border:1px solid rgba(255,255,255,0.2); background:transparent; color:#fff; display:flex; align-items:center; justify-content:center; cursor:none;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      </button>
+      <button id="obs-next" style="width:44px; height:44px; border-radius:50%; border:1px solid rgba(255,255,255,0.2); background:transparent; color:#fff; display:flex; align-items:center; justify-content:center; cursor:none;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+
+    <!-- Slide 1 -->
+    <div class="testimonial-slide" id="slide-0">
+      <div class="max-w-3xl mx-auto text-center">
+        <p class="font-display font-black text-white mb-8" style="font-size:clamp(22px,4vw,48px); line-height:1.3; letter-spacing:-0.02em;">
+          "Fourjective benar-benar mengubah cara kami memandang buku tahunan. Hasilnya jauh melampaui ekspektasi kami — setiap detail sempurna."
+        </p>
+        <div class="flex items-center justify-center gap-4">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center font-display font-black text-white text-lg" style="background:var(--orange);">A</div>
+          <div class="text-left">
+            <div class="font-jakarta font-semibold text-white text-base">Andriani Kusuma</div>
+            <div class="font-jakarta text-sm" style="color:rgba(255,255,255,0.5);">Panitia Wisuda — SMA Negeri 3 Jakarta</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 2 -->
+    <div class="testimonial-slide" id="slide-1">
+      <div class="max-w-3xl mx-auto text-center">
+        <p class="font-display font-black text-white mb-8" style="font-size:clamp(22px,4vw,48px); line-height:1.3; letter-spacing:-0.02em;">
+          "Fitur AR-nya luar biasa! Adik-adik kelas langsung terkesan waktu scan foto di buku tahunan dan video muncul. Totally worth it!"
+        </p>
+        <div class="flex items-center justify-center gap-4">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center font-display font-black text-white text-lg" style="background:var(--orange);">R</div>
+          <div class="text-left">
+            <div class="font-jakarta font-semibold text-white text-base">Rizky Fauzan</div>
+            <div class="font-jakarta text-sm" style="color:rgba(255,255,255,0.5);">Ketua OSIS — SMAN 1 Bandung</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 3 -->
+    <div class="testimonial-slide" id="slide-2">
+      <div class="max-w-3xl mx-auto text-center">
+        <p class="font-display font-black text-white mb-8" style="font-size:clamp(22px,4vw,48px); line-height:1.3; letter-spacing:-0.02em;">
+          "Dari konsultasi sampai pengiriman, prosesnya sangat profesional. Tim Fourjective sangat responsif dan kreatif. Highly recommended!"
+        </p>
+        <div class="flex items-center justify-center gap-4">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center font-display font-black text-white text-lg" style="background:var(--orange);">S</div>
+          <div class="text-left">
+            <div class="font-jakarta font-semibold text-white text-base">Siti Rahma</div>
+            <div class="font-jakarta text-sm" style="color:rgba(255,255,255,0.5);">Wali Kelas — SMK Multimedia Surabaya</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 4 -->
+    <div class="testimonial-slide" id="slide-3">
+      <div class="max-w-3xl mx-auto text-center">
+        <p class="font-display font-black text-white mb-8" style="font-size:clamp(22px,4vw,48px); line-height:1.3; letter-spacing:-0.02em;">
+          "Kualitas foto dan desain layoutnya benar-benar setara majalah internasional. Murid-murid kami sangat bangga dengan hasilnya!"
+        </p>
+        <div class="flex items-center justify-center gap-4">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center font-display font-black text-white text-lg" style="background:var(--orange);">B</div>
+          <div class="text-left">
+            <div class="font-jakarta font-semibold text-white text-base">Budi Santoso</div>
+            <div class="font-jakarta text-sm" style="color:rgba(255,255,255,0.5);">Kepala Sekolah — SMA Harapan Bangsa Yogyakarta</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 14: FLIP PORTFOLIO FILTER
+  ============================================================ -->
+  <section style="background:var(--canvas); padding:var(--section-pad) 0;" id="flip-section">
+    <div class="content-wrap">
+      <div class="section-label mb-6">Galeri Karya</div>
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+        <h2 class="font-display font-black" style="font-size:clamp(28px,4vw,56px); color:var(--dark); letter-spacing:-0.03em; line-height:0.95; text-transform:uppercase;">
+          Semua<br/>Portofolio
+        </h2>
+        <!-- Filter buttons -->
+        <div class="flex flex-wrap gap-3" id="filter-buttons">
+          <button class="filter-btn active" data-filter="all">Semua</button>
+          <button class="filter-btn" data-filter="sinema">Sinema</button>
+          <button class="filter-btn" data-filter="majalah">Majalah</button>
+          <button class="filter-btn" data-filter="hybrid">Hybrid</button>
+        </div>
+      </div>
+
+      <!-- Portfolio grid -->
+      <div class="portfolio-grid" id="portfolio-grid">
+
+        <div class="portfolio-card" data-category="majalah">
+          <div style="overflow:hidden;">
+            <img src="images/landing-page/portfolio/barbie.png" alt="Barbie World" />
+          </div>
+          <div style="padding:16px 20px 20px;">
+            <span class="font-jakarta text-xs font-bold px-2 py-1 rounded" style="background:rgba(255,110,0,0.1); color:var(--orange); letter-spacing:0.08em; text-transform:uppercase;">Majalah</span>
+            <h3 class="font-display font-bold mt-3 mb-1" style="font-size:1.1rem; color:var(--dark);">Barbie World</h3>
+            <p class="font-jakarta text-sm" style="color:#888;">SMA Harapan Jaya · 2024</p>
+          </div>
+        </div>
+
+        <div class="portfolio-card" data-category="hybrid">
+          <div style="overflow:hidden;">
+            <img src="images/landing-page/portfolio/colorfull.png" alt="Colorfull Vibes" />
+          </div>
+          <div style="padding:16px 20px 20px;">
+            <span class="font-jakarta text-xs font-bold px-2 py-1 rounded" style="background:rgba(255,110,0,0.1); color:var(--orange); letter-spacing:0.08em; text-transform:uppercase;">Hybrid</span>
+            <h3 class="font-display font-bold mt-3 mb-1" style="font-size:1.1rem; color:var(--dark);">Colorfull Vibes</h3>
+            <p class="font-jakarta text-sm" style="color:#888;">SMK Creative Design · 2024</p>
+          </div>
+        </div>
+
+        <div class="portfolio-card" data-category="sinema">
+          <div style="overflow:hidden;">
+            <img src="images/landing-page/portfolio/dark.png" alt="Dark Elegance" />
+          </div>
+          <div style="padding:16px 20px 20px;">
+            <span class="font-jakarta text-xs font-bold px-2 py-1 rounded" style="background:rgba(255,110,0,0.1); color:var(--orange); letter-spacing:0.08em; text-transform:uppercase;">Sinema</span>
+            <h3 class="font-display font-bold mt-3 mb-1" style="font-size:1.1rem; color:var(--dark);">Dark Elegance</h3>
+            <p class="font-jakarta text-sm" style="color:#888;">SMAN 5 Surabaya · 2023</p>
+          </div>
+        </div>
+
+        <div class="portfolio-card" data-category="sinema">
+          <div style="overflow:hidden;">
+            <img src="images/landing-page/portfolio/jumanji.png" alt="Jumanji Adventure" />
+          </div>
+          <div style="padding:16px 20px 20px;">
+            <span class="font-jakarta text-xs font-bold px-2 py-1 rounded" style="background:rgba(255,110,0,0.1); color:var(--orange); letter-spacing:0.08em; text-transform:uppercase;">Sinema</span>
+            <h3 class="font-display font-bold mt-3 mb-1" style="font-size:1.1rem; color:var(--dark);">Jumanji Adventure</h3>
+            <p class="font-jakarta text-sm" style="color:#888;">MAN 2 Jakarta · 2023</p>
+          </div>
+        </div>
+
+        <div class="portfolio-card" data-category="hybrid">
+          <div style="overflow:hidden;">
+            <img src="images/landing-page/portfolio/zombie.png" alt="Zombie Chronicles" />
+          </div>
+          <div style="padding:16px 20px 20px;">
+            <span class="font-jakarta text-xs font-bold px-2 py-1 rounded" style="background:rgba(255,110,0,0.1); color:var(--orange); letter-spacing:0.08em; text-transform:uppercase;">Hybrid</span>
+            <h3 class="font-display font-bold mt-3 mb-1" style="font-size:1.1rem; color:var(--dark);">Zombie Chronicles</h3>
+            <p class="font-jakarta text-sm" style="color:#888;">SMA Bina Bangsa · 2024</p>
+          </div>
+        </div>
+
+        <div class="portfolio-card" data-category="majalah">
+          <div style="overflow:hidden; background:var(--zinc-soft); height:200px; display:flex; align-items:center; justify-content:center;">
+            <span class="font-display font-black text-4xl" style="color:rgba(0,0,0,0.1);">4J</span>
+          </div>
+          <div style="padding:16px 20px 20px;">
+            <span class="font-jakarta text-xs font-bold px-2 py-1 rounded" style="background:rgba(255,110,0,0.1); color:var(--orange); letter-spacing:0.08em; text-transform:uppercase;">Majalah</span>
+            <h3 class="font-display font-bold mt-3 mb-1" style="font-size:1.1rem; color:var(--dark);">Vogue Yearbook</h3>
+            <p class="font-jakarta text-sm" style="color:#888;">SMA Pelita Nusantara · 2024</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 15: BUDGET ESTIMATOR
+  ============================================================ -->
+  <section id="estimator" class="estimator-section">
+    <div class="content-wrap">
+      <div class="section-label mb-6">Kalkulator Paket</div>
+      <div class="flex flex-col md:flex-row gap-16">
+
+        <div class="flex-1">
+          <h2 class="font-display font-black mb-4" style="font-size:clamp(28px,4vw,56px); color:var(--dark); letter-spacing:-0.03em; line-height:0.95; text-transform:uppercase;">
+            Estimasi<br/>Budget <span style="color:var(--orange);">Kamu</span>
+          </h2>
+          <p class="font-jakarta mb-10" style="color:#666; font-size:0.95rem; line-height:1.7; max-width:400px;">
+            Gunakan kalkulator ini untuk mendapatkan estimasi harga paket buku tahunan sesuai kebutuhan sekolah Anda.
+          </p>
+
+          <!-- Student count slider -->
+          <div class="mb-8">
+            <div class="flex justify-between items-center mb-3">
+              <label class="font-jakarta font-semibold text-sm" style="color:var(--dark);">Jumlah Siswa</label>
+              <span class="font-display font-black text-xl" style="color:var(--orange);" id="student-count-display">200</span>
+            </div>
+            <input type="range" class="slider-track" id="student-slider" min="50" max="1000" value="200" step="10" style="--pct:16%;" />
+            <div class="flex justify-between mt-2">
+              <span class="font-jakarta text-xs" style="color:#999;">50 siswa</span>
+              <span class="font-jakarta text-xs" style="color:#999;">1000 siswa</span>
+            </div>
+          </div>
+
+          <!-- Toggle options -->
+          <div class="flex flex-col gap-3 mb-10">
+            <div class="toggle-option" id="opt-ar" data-price="2500000">
+              <div class="toggle-checkbox" id="chk-ar">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" style="display:none;"><path d="M20 6L9 17l-5-5"/></svg>
+              </div>
+              <div class="flex-1">
+                <div class="font-jakarta font-semibold text-sm" style="color:var(--dark);">AR Mode</div>
+                <div class="font-jakarta text-xs" style="color:#888; margin-top:2px;">Augmented Reality interaktif di setiap halaman</div>
+              </div>
+              <span class="font-jakarta text-sm font-semibold" style="color:var(--orange);">+Rp 2,5 jt</span>
+            </div>
+
+            <div class="toggle-option" id="opt-4k" data-price="3000000">
+              <div class="toggle-checkbox" id="chk-4k">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" style="display:none;"><path d="M20 6L9 17l-5-5"/></svg>
+              </div>
+              <div class="flex-1">
+                <div class="font-jakarta font-semibold text-sm" style="color:var(--dark);">4K Video</div>
+                <div class="font-jakarta text-xs" style="color:#888; margin-top:2px;">After-movie sinematografi 4K resolusi penuh</div>
+              </div>
+              <span class="font-jakarta text-sm font-semibold" style="color:var(--orange);">+Rp 3 jt</span>
+            </div>
+
+            <div class="toggle-option" id="opt-cover" data-price="1500000">
+              <div class="toggle-checkbox" id="chk-cover">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" style="display:none;"><path d="M20 6L9 17l-5-5"/></svg>
+              </div>
+              <div class="flex-1">
+                <div class="font-jakarta font-semibold text-sm" style="color:var(--dark);">Premium Cover</div>
+                <div class="font-jakarta text-xs" style="color:#888; margin-top:2px;">Soft-touch laminasi + embossing gold foil</div>
+              </div>
+              <span class="font-jakarta text-sm font-semibold" style="color:var(--orange);">+Rp 1,5 jt</span>
+            </div>
+
+            <div class="toggle-option" id="opt-mascot" data-price="2000000">
+              <div class="toggle-checkbox" id="chk-mascot">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" style="display:none;"><path d="M20 6L9 17l-5-5"/></svg>
+              </div>
+              <div class="flex-1">
+                <div class="font-jakarta font-semibold text-sm" style="color:var(--dark);">Custom Maskot</div>
+                <div class="font-jakarta text-xs" style="color:#888; margin-top:2px;">Karakter maskot eksklusif untuk sekolah Anda</div>
+              </div>
+              <span class="font-jakarta text-sm font-semibold" style="color:var(--orange);">+Rp 2 jt</span>
+            </div>
+
+            <div class="toggle-option" id="opt-hardcover" data-price="1200000">
+              <div class="toggle-checkbox" id="chk-hardcover">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" style="display:none;"><path d="M20 6L9 17l-5-5"/></svg>
+              </div>
+              <div class="flex-1">
+                <div class="font-jakarta font-semibold text-sm" style="color:var(--dark);">Hardcover Extra</div>
+                <div class="font-jakarta text-xs" style="color:#888; margin-top:2px;">Karton tebal premium + jahit benang</div>
+              </div>
+              <span class="font-jakarta text-sm font-semibold" style="color:var(--orange);">+Rp 1,2 jt</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Price display -->
+        <div class="flex-1 flex flex-col justify-center">
+          <div style="background:#fff; border-radius:24px; padding:40px; border:1px solid var(--hairline); position:sticky; top:100px;">
+            <div class="font-jakarta text-sm font-semibold mb-2" style="color:#888; text-transform:uppercase; letter-spacing:0.1em;">Estimasi Total</div>
+            <div class="price-display mb-1" id="price-display">Rp 0</div>
+            <div class="font-jakarta text-xs mb-6" style="color:#bbb;">*Harga belum termasuk biaya cetak per eksemplar</div>
+
+            <!-- Price breakdown -->
+            <div class="flex flex-col gap-3 mb-8" id="price-breakdown">
+              <div class="flex justify-between items-center">
+                <span class="font-jakarta text-sm" style="color:#666;">Paket Dasar (<span id="bd-students">200</span> siswa)</span>
+                <span class="font-jakarta text-sm font-semibold" style="color:var(--dark);" id="bd-base">Rp 0</span>
+              </div>
+              <div class="flex justify-between items-center" id="bd-ar-row" style="display:none !important;">
+                <span class="font-jakarta text-sm" style="color:#666;">AR Mode</span>
+                <span class="font-jakarta text-sm font-semibold" style="color:var(--dark);">Rp 2,5 jt</span>
+              </div>
+              <div class="flex justify-between items-center" id="bd-4k-row" style="display:none !important;">
+                <span class="font-jakarta text-sm" style="color:#666;">4K Video</span>
+                <span class="font-jakarta text-sm font-semibold" style="color:var(--dark);">Rp 3 jt</span>
+              </div>
+              <div class="flex justify-between items-center" id="bd-cover-row" style="display:none !important;">
+                <span class="font-jakarta text-sm" style="color:#666;">Premium Cover</span>
+                <span class="font-jakarta text-sm font-semibold" style="color:var(--dark);">Rp 1,5 jt</span>
+              </div>
+              <div class="flex justify-between items-center" id="bd-mascot-row" style="display:none !important;">
+                <span class="font-jakarta text-sm" style="color:#666;">Custom Maskot</span>
+                <span class="font-jakarta text-sm font-semibold" style="color:var(--dark);">Rp 2 jt</span>
+              </div>
+              <div class="flex justify-between items-center" id="bd-hardcover-row" style="display:none !important;">
+                <span class="font-jakarta text-sm" style="color:#666;">Hardcover Extra</span>
+                <span class="font-jakarta text-sm font-semibold" style="color:var(--dark);">Rp 1,2 jt</span>
+              </div>
+              <div class="flex justify-between items-center pt-3" style="border-top:1px solid var(--hairline); margin-top:4px;">
+                <span class="font-jakarta text-sm font-bold" style="color:var(--dark);">Total Estimasi</span>
+                <span class="font-jakarta text-sm font-bold" style="color:var(--orange);" id="bd-total">Rp 0</span>
+              </div>
+            </div>
+
+            <a href="#" id="wa-estimate-btn" class="magnetic-btn btn-primary w-full justify-center" style="text-decoration:none; display:flex;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              Hubungi via WhatsApp
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 16: SCRAMBLE TEXT CTA
+  ============================================================ -->
+  <section class="scramble-section" id="scramble-section">
+    <!-- Floating mascot -->
+    <img src="images/landing-page/hero/mascot-left.svg" class="will-transform" style="position:absolute; bottom:0; right:80px; width:clamp(120px,18vw,280px); opacity:0.18; pointer-events:none; user-select:none;" alt="" />
+
+    <div class="content-wrap relative z-10">
+      <div class="max-w-4xl">
+        <div class="section-label mb-8" style="color:var(--orange);">Mulai Sekarang</div>
+        <h2 id="scramble-headline" class="font-display font-black mb-6" style="font-size:clamp(36px,7vw,96px); color:#fff; letter-spacing:-0.04em; line-height:0.9; text-transform:uppercase;">
+          FOURJECTIVE — JADIKAN KENANGAN ITU ABADI
+        </h2>
+        <div class="text-reveal-wrap mb-10">
+          <p id="scramble-sub" class="font-jakarta" style="font-size:clamp(15px,1.8vw,20px); color:rgba(255,255,255,0.6); line-height:1.7; max-width:600px; transform:translateY(30px); opacity:0;">
+            Jangan biarkan momen terbaik menghilang begitu saja. Hubungi tim kreatif kami hari ini dan mulai perjalanan menuju buku tahunan impian sekolah Anda.
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-4">
+          <button class="magnetic-btn btn-primary text-base" style="padding:16px 36px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Pesan Sekarang via WhatsApp
+          </button>
+          <button class="magnetic-btn btn-outline-white text-base" style="padding:16px 36px;">
+            Lihat Paket Harga
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 17: FAQ ACCORDION
+  ============================================================ -->
+  <section style="background:var(--canvas); padding:var(--section-pad) 0;" id="faq-section">
+    <div class="content-wrap">
+      <div class="section-label mb-6">FAQ</div>
+      <div class="flex flex-col md:flex-row gap-16">
+        <div class="flex-shrink-0" style="max-width:360px;">
+          <h2 class="font-display font-black mb-6" style="font-size:clamp(28px,4vw,52px); color:var(--dark); letter-spacing:-0.03em; line-height:0.95; text-transform:uppercase;">
+            Pertanyaan<br/>yang Sering<br/>Ditanyakan
+          </h2>
+          <p class="font-jakarta" style="color:#777; font-size:0.95rem; line-height:1.7;">
+            Tidak menemukan jawaban? Hubungi kami langsung via WhatsApp — tim kami siap membantu 24/7.
+          </p>
+          <a href="https://wa.me/6281234567890" class="magnetic-btn btn-primary inline-flex mt-8" style="text-decoration:none;">
+            Tanya Langsung
+          </a>
+        </div>
+
+        <div class="flex-1" id="faq-list">
+
+          <div class="faq-item">
+            <div class="faq-question" id="faq-q-0">
+              <span class="font-jakarta font-semibold" style="font-size:1rem; color:var(--dark);">Berapa lama proses produksi buku tahunan?</span>
+              <div class="faq-icon" id="faq-icon-0">+</div>
+            </div>
+            <div class="faq-answer" id="faq-a-0">
+              <div class="faq-answer-inner">
+                <p class="font-jakarta" style="color:#666; font-size:0.9rem; line-height:1.7;">
+                  Rata-rata proses produksi membutuhkan waktu 4–8 minggu, tergantung pada jumlah siswa, kompleksitas desain, dan paket yang dipilih. Kami selalu menyepakati timeline yang jelas di awal kontrak untuk memastikan ketepatan waktu.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" id="faq-q-1">
+              <span class="font-jakarta font-semibold" style="font-size:1rem; color:var(--dark);">Apakah ada minimum order untuk buku tahunan?</span>
+              <div class="faq-icon" id="faq-icon-1">+</div>
+            </div>
+            <div class="faq-answer" id="faq-a-1">
+              <div class="faq-answer-inner">
+                <p class="font-jakarta" style="color:#666; font-size:0.9rem; line-height:1.7;">
+                  Minimum order kami adalah 50 eksemplar. Namun semakin banyak jumlah yang dicetak, semakin terjangkau harga per eksemplarnya. Kami melayani sekolah dengan 50 hingga lebih dari 1000 siswa.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" id="faq-q-2">
+              <span class="font-jakarta font-semibold" style="font-size:1rem; color:var(--dark);">Bagaimana cara kerja fitur Augmented Reality?</span>
+              <div class="faq-icon" id="faq-icon-2">+</div>
+            </div>
+            <div class="faq-answer" id="faq-a-2">
+              <div class="faq-answer-inner">
+                <p class="font-jakarta" style="color:#666; font-size:0.9rem; line-height:1.7;">
+                  Setelah buku diterima, Anda mengunduh aplikasi Fourjective AR dari App Store atau Play Store. Arahkan kamera ke halaman yang memiliki marker AR — video, animasi 3D, atau pesan suara akan muncul secara otomatis. Teknologi markerless kami memastikan pengalaman yang mulus dan akurat.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" id="faq-q-3">
+              <span class="font-jakarta font-semibold" style="font-size:1rem; color:var(--dark);">Apakah saya bisa request tema custom?</span>
+              <div class="faq-icon" id="faq-icon-3">+</div>
+            </div>
+            <div class="faq-answer" id="faq-a-3">
+              <div class="faq-answer-inner">
+                <p class="font-jakarta" style="color:#666; font-size:0.9rem; line-height:1.7;">
+                  Tentu! Kami sangat terbuka dengan tema custom. Tim desainer kami akan bekerja sama dengan Anda untuk mewujudkan visi unik sekolah Anda. Tidak ada tema yang terlalu kreatif bagi kami.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" id="faq-q-4">
+              <span class="font-jakarta font-semibold" style="font-size:1rem; color:var(--dark);">Bagaimana sistem pembayarannya?</span>
+              <div class="faq-icon" id="faq-icon-4">+</div>
+            </div>
+            <div class="faq-answer" id="faq-a-4">
+              <div class="faq-answer-inner">
+                <p class="font-jakarta" style="color:#666; font-size:0.9rem; line-height:1.7;">
+                  Kami menerapkan sistem pembayaran bertahap: 30% di awal (tanda jadi), 40% saat desain disetujui, dan 30% sisanya sebelum pengiriman. Kami menerima transfer bank, virtual account, dan berbagai metode pembayaran digital.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" id="faq-q-5">
+              <span class="font-jakarta font-semibold" style="font-size:1rem; color:var(--dark);">Apakah Fourjective bisa datang ke luar kota?</span>
+              <div class="faq-icon" id="faq-icon-5">+</div>
+            </div>
+            <div class="faq-answer" id="faq-a-5">
+              <div class="faq-answer-inner">
+                <p class="font-jakarta" style="color:#666; font-size:0.9rem; line-height:1.7;">
+                  Ya! Tim kami telah melayani sekolah di lebih dari 12 kota di Indonesia. Untuk kota di luar domisili tim kami, akan ada biaya transportasi dan akomodasi yang akan diinformasikan di awal konsultasi. Kami sudah melayani Jakarta, Bandung, Surabaya, Yogyakarta, dan banyak kota lainnya.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 18: FOOTER
+  ============================================================ -->
+  <footer id="footer" style="padding:80px 0 40px; position:relative; overflow:hidden;">
+    <!-- CSS Star field (generated by JS) -->
+    <div id="footer-stars" style="position:absolute; inset:0; pointer-events:none; overflow:hidden;"></div>
+
+    <div class="content-wrap relative z-10">
+      <div class="flex flex-col md:flex-row gap-16 mb-16">
+
+        <!-- Brand column -->
+        <div style="max-width:320px;">
+          <div class="flex items-center gap-3 mb-6">
+            <div style="width:40px; height:40px; background:var(--orange); border-radius:10px; display:flex; align-items:center; justify-content:center;">
+              <span class="font-display font-black text-white text-sm">4J</span>
+            </div>
+            <div>
+              <div class="font-display font-black text-white text-sm" style="letter-spacing:0.06em;">FOURJECTIVE</div>
+              <div class="font-jakarta text-xs" style="color:rgba(255,255,255,0.4); letter-spacing:0.04em;">Creative Production Studio</div>
+            </div>
+          </div>
+          <p class="font-jakarta mb-8" style="color:rgba(255,255,255,0.5); font-size:0.9rem; line-height:1.7;">
+            Do The Best For The Best Moment. Studio produksi kreatif terdepan untuk buku tahunan sekolah di Indonesia sejak 2024.
+          </p>
+          <!-- Social links -->
+          <div class="flex gap-4">
+            <a href="#" class="footer-link w-9 h-9 flex items-center justify-center rounded-full" style="background:rgba(255,255,255,0.08); cursor:none;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </a>
+            <a href="#" class="footer-link w-9 h-9 flex items-center justify-center rounded-full" style="background:rgba(255,255,255,0.08); cursor:none;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.26 6.26 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.17 8.17 0 004.77 1.52V6.78a4.85 4.85 0 01-1-.09z"/></svg>
+            </a>
+            <a href="#" class="footer-link w-9 h-9 flex items-center justify-center rounded-full" style="background:rgba(255,255,255,0.08); cursor:none;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Links columns -->
+        <div class="grid grid-cols-3 gap-8 flex-1" style="margin-left:auto;">
+          <div>
+            <div class="font-jakarta font-bold text-white text-sm mb-5" style="letter-spacing:0.05em;">Studio</div>
+            <div class="flex flex-col gap-3">
+              <a href="#" class="footer-link">Tentang Kami</a>
+              <a href="#manifesto" class="footer-link">Manifesto</a>
+              <a href="#" class="footer-link">Tim Kreatif</a>
+              <a href="#" class="footer-link">Karir</a>
+              <a href="#" class="footer-link">Blog</a>
+            </div>
+          </div>
+          <div>
+            <div class="font-jakarta font-bold text-white text-sm mb-5" style="letter-spacing:0.05em;">Layanan</div>
+            <div class="flex flex-col gap-3">
+              <a href="#layanan" class="footer-link">Sinematografi 4K</a>
+              <a href="#layanan" class="footer-link">Augmented Reality</a>
+              <a href="#layanan" class="footer-link">Editorial Premium</a>
+              <a href="#estimator" class="footer-link">Kalkulator Paket</a>
+              <a href="#portofolio" class="footer-link">Portofolio</a>
+            </div>
+          </div>
+          <div>
+            <div class="font-jakarta font-bold text-white text-sm mb-5" style="letter-spacing:0.05em;">Kontak</div>
+            <div class="flex flex-col gap-3">
+              <a href="https://wa.me/6281234567890" class="footer-link">WhatsApp</a>
+              <a href="mailto:hello@fourjective.id" class="footer-link">Email</a>
+              <a href="#" class="footer-link">Jakarta Office</a>
+              <a href="#faq-section" class="footer-link">FAQ</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom bar -->
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4 pt-8" style="border-top:1px solid rgba(255,255,255,0.08);">
+        <p class="font-jakarta text-sm" style="color:rgba(255,255,255,0.3);">© 2024 Fourjective Creative Production Studio. All rights reserved.</p>
+        <div class="flex gap-6">
+          <a href="#" class="footer-link text-xs">Privacy Policy</a>
+          <a href="#" class="footer-link text-xs">Terms of Service</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============================================================
+       JAVASCRIPT
+  ============================================================ -->
+  <script>
+  (function() {
+    'use strict';
+
+    // ============================================================
+    // PLUGIN REGISTRATION
+    // ============================================================
+    try {
+      gsap.registerPlugin(
+        ScrollTrigger,
+        ScrollToPlugin,
+        Observer,
+        SplitText,
+        ScrambleTextPlugin,
+        DrawSVGPlugin,
+        Flip
+      );
+    } catch(e) {
+      console.warn('Some GSAP plugins not loaded:', e.message);
+    }
+
+    // ============================================================
+    // LOADER
+    // ============================================================
+    const loaderBar = document.getElementById('loader-bar');
+    const loaderPct = document.getElementById('loader-pct');
+    const loader = document.getElementById('loader');
+    let progress = { val: 0 };
+
+    gsap.to(progress, {
+      val: 100,
+      duration: 1.8,
+      ease: 'power2.inOut',
+      onUpdate: function() {
+        const pct = Math.round(progress.val);
+        loaderBar.style.width = pct + '%';
+        loaderPct.textContent = pct + '%';
+      },
+      onComplete: function() {
+        gsap.to(loader, {
+          yPercent: -100,
+          duration: 0.8,
+          ease: 'power3.inOut',
+          onComplete: () => { loader.style.display = 'none'; }
+        });
+      }
+    });
+
+    // ============================================================
+    // NAVBAR SCROLL BEHAVIOR
+    // ============================================================
+    const navbar = document.getElementById('navbar');
+    let lastScrollY = window.scrollY;
+
+    window.addEventListener('scroll', () => {
+      const currentY = window.scrollY;
+      if (currentY > 80) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+      lastScrollY = currentY;
+    }, { passive: true });
+
+    // Smooth scroll for nav links
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          gsap.to(window, { scrollTo: { y: target, offsetY: 80 }, duration: 1.2, ease: 'power3.inOut' });
+        }
+      });
+    });
+
+    // ============================================================
+    // CUSTOM CURSOR
+    // ============================================================
+    const cursorFollower = document.getElementById('cursor-follower');
+    const cursorDot = document.getElementById('cursor-dot');
+    const cursorLabel = document.getElementById('cursor-label');
+
+    if (window.innerWidth > 767 && cursorFollower) {
+      const xTo = gsap.quickTo(cursorFollower, 'x', { duration: 0.6, ease: 'power3' });
+      const yTo = gsap.quickTo(cursorFollower, 'y', { duration: 0.6, ease: 'power3' });
+      const xDot = gsap.quickTo(cursorDot, 'x', { duration: 0.1, ease: 'none' });
+      const yDot = gsap.quickTo(cursorDot, 'y', { duration: 0.1, ease: 'none' });
+
+      window.addEventListener('mousemove', e => {
+        xTo(e.clientX - 32);
+        yTo(e.clientY - 32);
+        xDot(e.clientX - 3);
+        yDot(e.clientY - 3);
+      }, { passive: true });
+
+      // Expand on interactive elements
+      const hoverEls = document.querySelectorAll('a, button, .h-card, .portfolio-card, .filter-btn, .toggle-option, .faq-question');
+      hoverEls.forEach(el => {
+        el.addEventListener('mouseenter', () => {
+          cursorFollower.classList.add('expanded');
+          cursorLabel.textContent = el.dataset.cursorLabel || '';
+        });
+        el.addEventListener('mouseleave', () => {
+          cursorFollower.classList.remove('expanded');
+          cursorLabel.textContent = '';
+        });
+      });
+
+      // Dark mode cursor
+      const darkSections = document.querySelectorAll('.observer-section, .scramble-section, #footer, #portofolio, #panel-1, #ar-section');
+      darkSections.forEach(sec => {
+        ScrollTrigger.create({
+          trigger: sec,
+          start: 'top 50%',
+          end: 'bottom 50%',
+          onEnter: () => cursorFollower.classList.add('dark-mode'),
+          onLeave: () => cursorFollower.classList.remove('dark-mode'),
+          onEnterBack: () => cursorFollower.classList.add('dark-mode'),
+          onLeaveBack: () => cursorFollower.classList.remove('dark-mode'),
+        });
+      });
+    }
+
+    // ============================================================
+    // THREE.JS — HERO CANVAS
+    // ============================================================
+    (function initHeroThree() {
+      const canvas = document.getElementById('hero-canvas');
+      if (!canvas || typeof THREE === 'undefined') return;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.z = 30;
+
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setClearColor(0x000000, 0);
+
+      // Materials
+      const orangeMat = new THREE.MeshStandardMaterial({ color: 0xFF6E00, transparent: true, opacity: 0.7 });
+      const darkMat = new THREE.MeshStandardMaterial({ color: 0x111113, transparent: true, opacity: 0.4 });
+      const wireMat = new THREE.MeshBasicMaterial({ color: 0xFF6E00, wireframe: true, transparent: true, opacity: 0.25 });
+
+      // Light
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(ambientLight);
+      const pointLight = new THREE.PointLight(0xFF6E00, 1.5, 100);
+      pointLight.position.set(10, 10, 10);
+      scene.add(pointLight);
+
+      // Particles array
+      const particles = [];
+      const geometries = [
+        new THREE.IcosahedronGeometry(1, 0),
+        new THREE.SphereGeometry(0.8, 8, 8),
+        new THREE.BoxGeometry(1.2, 1.2, 1.2),
+        new THREE.TetrahedronGeometry(1),
+        new THREE.OctahedronGeometry(1, 0)
+      ];
+
+      for (let i = 0; i < 28; i++) {
+        const geo = geometries[Math.floor(Math.random() * geometries.length)];
+        const mat = i % 3 === 0 ? orangeMat : (i % 3 === 1 ? darkMat : wireMat);
+        const mesh = new THREE.Mesh(geo, mat.clone());
+
+        const spread = 28;
+        mesh.position.set(
+          (Math.random() - 0.5) * spread,
+          (Math.random() - 0.5) * spread * 0.7,
+          (Math.random() - 0.5) * 20 - 5
+        );
+
+        const s = 0.3 + Math.random() * 1.2;
+        mesh.scale.setScalar(s);
+
+        mesh.rotation.set(
+          Math.random() * Math.PI * 2,
+          Math.random() * Math.PI * 2,
+          Math.random() * Math.PI * 2
+        );
+
+        mesh.userData = {
+          rotSpeed: { x: (Math.random() - 0.5) * 0.008, y: (Math.random() - 0.5) * 0.012, z: (Math.random() - 0.5) * 0.006 },
+          floatSpeed: 0.3 + Math.random() * 0.7,
+          floatAmp: 0.04 + Math.random() * 0.08,
+          origY: mesh.position.y,
+          origX: mesh.position.x,
+          phase: Math.random() * Math.PI * 2
+        };
+
+        scene.add(mesh);
+        particles.push(mesh);
+      }
+
+      // Mouse parallax
+      let mouseX = 0, mouseY = 0;
+      let targetX = 0, targetY = 0;
+
+      window.addEventListener('mousemove', e => {
+        mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+        mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+      }, { passive: true });
+
+      // Animation loop
+      const clock = new THREE.Clock();
+      function heroAnimate() {
+        requestAnimationFrame(heroAnimate);
+        const t = clock.getElapsedTime();
+
+        // Smooth mouse follow
+        targetX += (mouseX - targetX) * 0.04;
+        targetY += (mouseY - targetY) * 0.04;
+
+        // Camera subtle tilt
+        camera.rotation.y = targetX * 0.08;
+        camera.rotation.x = -targetY * 0.05;
+
+        particles.forEach(p => {
+          const ud = p.userData;
+          p.rotation.x += ud.rotSpeed.x;
+          p.rotation.y += ud.rotSpeed.y;
+          p.rotation.z += ud.rotSpeed.z;
+
+          // Float
+          p.position.y = ud.origY + Math.sin(t * ud.floatSpeed + ud.phase) * ud.floatAmp * 4;
+
+          // Parallax push
+          p.position.x = ud.origX + targetX * (1.5 + ud.floatSpeed);
+        });
+
+        renderer.render(scene, camera);
+      }
+      heroAnimate();
+
+      // Resize
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    })();
+
+    // ============================================================
+    // THREE.JS — AR CANVAS (Mid-page)
+    // ============================================================
+    (function initARThree() {
+      const canvas = document.getElementById('ar-canvas');
+      if (!canvas || typeof THREE === 'undefined') return;
+
+      const scene = new THREE.Scene();
+      const w = canvas.parentElement.offsetWidth;
+      const h = 400;
+      const camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 1000);
+      camera.position.z = 5;
+
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      renderer.setSize(w, h);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setClearColor(0x000000, 0);
+
+      // Torus knot wireframe
+      const geo = new THREE.TorusKnotGeometry(1.4, 0.45, 120, 16);
+      const wireMat = new THREE.MeshBasicMaterial({ color: 0xFF6E00, wireframe: true, transparent: true, opacity: 0.85 });
+      const torusKnot = new THREE.Mesh(geo, wireMat);
+      scene.add(torusKnot);
+
+      // Inner solid
+      const solidMat = new THREE.MeshStandardMaterial({ color: 0xFF6E00, transparent: true, opacity: 0.08 });
+      const torusKnotSolid = new THREE.Mesh(geo, solidMat);
+      scene.add(torusKnotSolid);
+
+      // Icosahedron surrounding
+      const icoGeo = new THREE.IcosahedronGeometry(2.8, 1);
+      const icoMat = new THREE.MeshBasicMaterial({ color: 0xFF6E00, wireframe: true, transparent: true, opacity: 0.08 });
+      const ico = new THREE.Mesh(icoGeo, icoMat);
+      scene.add(ico);
+
+      const light = new THREE.PointLight(0xFF6E00, 2, 50);
+      light.position.set(5, 5, 5);
+      scene.add(light);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+
+      let scrollVelocity = 0;
+      let lastScrollYAR = window.scrollY;
+
+      window.addEventListener('scroll', () => {
+        scrollVelocity = window.scrollY - lastScrollYAR;
+        lastScrollYAR = window.scrollY;
+      }, { passive: true });
+
+      const clockAR = new THREE.Clock();
+      function arAnimate() {
+        requestAnimationFrame(arAnimate);
+        const t = clockAR.getElapsedTime();
+
+        const baseSpeed = 0.004;
+        const scrollBoost = Math.abs(scrollVelocity) * 0.002;
+        const speed = baseSpeed + scrollBoost;
+
+        torusKnot.rotation.x += speed * 0.7;
+        torusKnot.rotation.y += speed;
+        torusKnotSolid.rotation.x = torusKnot.rotation.x;
+        torusKnotSolid.rotation.y = torusKnot.rotation.y;
+        ico.rotation.y -= speed * 0.3;
+        ico.rotation.x += speed * 0.15;
+
+        scrollVelocity *= 0.9; // decay
+
+        renderer.render(scene, camera);
+      }
+      arAnimate();
+
+      window.addEventListener('resize', () => {
+        const nw = canvas.parentElement.offsetWidth;
+        camera.aspect = nw / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(nw, h);
+      });
+    })();
+
+    // ============================================================
+    // FOOTER STAR FIELD (CSS)
+    // ============================================================
+    (function createFooterStars() {
+      const container = document.getElementById('footer-stars');
+      if (!container) return;
+      for (let i = 0; i < 80; i++) {
+        const star = document.createElement('div');
+        star.className = 'footer-star';
+        const size = Math.random() * 2 + 1;
+        star.style.cssText = `
+          width: ${size}px;
+          height: ${size}px;
+          left: ${Math.random() * 100}%;
+          top: ${Math.random() * 100}%;
+          animation-duration: ${2 + Math.random() * 4}s;
+          animation-delay: ${Math.random() * 4}s;
+          opacity: 0;
+        `;
+        container.appendChild(star);
+      }
+    })();
+
+    // ============================================================
+    // MAGNETIC BUTTONS
+    // ============================================================
+    function initMagnetic() {
+      document.querySelectorAll('.magnetic-btn').forEach(btn => {
+        btn.addEventListener('mousemove', e => {
+          const rect = btn.getBoundingClientRect();
+          const dx = e.clientX - (rect.left + rect.width / 2);
+          const dy = e.clientY - (rect.top + rect.height / 2);
+          gsap.to(btn, { x: dx * 0.3, y: dy * 0.3, duration: 0.4, ease: 'power3.out' });
+        });
+        btn.addEventListener('mouseleave', () => {
+          gsap.to(btn, { x: 0, y: 0, duration: 0.7, ease: 'elastic.out(1, 0.3)' });
+        });
+      });
+    }
+    initMagnetic();
+
+    // ============================================================
+    // OBSERVER — TESTIMONIAL SLIDER
+    // ============================================================
+    (function initObserverSlider() {
+      const slides = gsap.utils.toArray('.testimonial-slide');
+      const dots = document.querySelectorAll('.slide-dot');
+      const slideNumEl = document.getElementById('current-slide-num');
+      let currentSlide = 0;
+      let animating = false;
+
+      function updateDots(idx) {
+        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+        if (slideNumEl) {
+          slideNumEl.textContent = String(idx + 1).padStart(2, '0');
+        }
+      }
+
+      function goTo(idx) {
+        if (animating || idx === currentSlide) return;
+        animating = true;
+
+        const dir = idx > currentSlide ? 1 : -1;
+        const outgoing = slides[currentSlide];
+        const incoming = slides[idx];
+
+        gsap.to(outgoing, {
+          yPercent: -100 * dir,
+          autoAlpha: 0,
+          duration: 0.55,
+          ease: 'power3.in'
+        });
+
+        gsap.fromTo(incoming,
+          { yPercent: 100 * dir, autoAlpha: 0 },
+          {
+            yPercent: 0,
+            autoAlpha: 1,
+            duration: 0.7,
+            ease: 'power3.out',
+            delay: 0.1,
+            onComplete: () => { animating = false; }
+          }
+        );
+
+        currentSlide = idx;
+        updateDots(currentSlide);
+      }
+
+      try {
+        Observer.create({
+          target: '#testimonial-section',
+          type: 'wheel,touch,pointer',
+          preventDefault: true,
+          onUp: () => { if (currentSlide < slides.length - 1) goTo(currentSlide + 1); },
+          onDown: () => { if (currentSlide > 0) goTo(currentSlide - 1); },
+          tolerance: 50
+        });
+      } catch(e) { console.warn('Observer failed:', e); }
+
+      // Click dots
+      dots.forEach((dot, i) => {
+        dot.addEventListener('click', () => goTo(i));
+      });
+
+      // Click arrows
+      const prevBtn = document.getElementById('obs-prev');
+      const nextBtn = document.getElementById('obs-next');
+      if (prevBtn) prevBtn.addEventListener('click', () => { if (currentSlide > 0) goTo(currentSlide - 1); });
+      if (nextBtn) nextBtn.addEventListener('click', () => { if (currentSlide < slides.length - 1) goTo(currentSlide + 1); });
+    })();
+
+    // ============================================================
+    // FAQ ACCORDION
+    // ============================================================
+    (function initFAQ() {
+      const items = document.querySelectorAll('.faq-item');
+      let openIdx = -1;
+
+      function closeItem(idx) {
+        const answer = document.getElementById('faq-a-' + idx);
+        const icon = document.getElementById('faq-icon-' + idx);
+        if (!answer) return;
+        gsap.to(answer, { maxHeight: 0, duration: 0.4, ease: 'power2.inOut' });
+        if (icon) {
+          icon.textContent = '+';
+          gsap.to(icon, { rotation: 0, duration: 0.3 });
+        }
+      }
+
+      function openItem(idx) {
+        const answer = document.getElementById('faq-a-' + idx);
+        const icon = document.getElementById('faq-icon-' + idx);
+        if (!answer) return;
+        const inner = answer.querySelector('.faq-answer-inner');
+        const h = inner ? inner.scrollHeight : 200;
+        gsap.to(answer, { maxHeight: h + 20, duration: 0.5, ease: 'power2.out' });
+        if (icon) {
+          icon.textContent = '−';
+          gsap.to(icon, { rotation: 180, duration: 0.3 });
+        }
+      }
+
+      items.forEach((item, i) => {
+        const q = document.getElementById('faq-q-' + i);
+        if (!q) return;
+        q.addEventListener('click', () => {
+          if (openIdx === i) {
+            closeItem(i);
+            openIdx = -1;
+          } else {
+            if (openIdx >= 0) closeItem(openIdx);
+            openItem(i);
+            openIdx = i;
+          }
+        });
+      });
+    })();
+
+    // ============================================================
+    // BUDGET ESTIMATOR
+    // ============================================================
+    (function initEstimator() {
+      const slider = document.getElementById('student-slider');
+      const studentDisplay = document.getElementById('student-count-display');
+      const priceDisplay = document.getElementById('price-display');
+      const bdStudents = document.getElementById('bd-students');
+      const bdBase = document.getElementById('bd-base');
+      const bdTotal = document.getElementById('bd-total');
+      const waBtn = document.getElementById('wa-estimate-btn');
+
+      if (!slider) return;
+
+      const addons = [
+        { id: 'ar',        price: 2500000,  rowId: 'bd-ar-row' },
+        { id: '4k',        price: 3000000,  rowId: 'bd-4k-row' },
+        { id: 'cover',     price: 1500000,  rowId: 'bd-cover-row' },
+        { id: 'mascot',    price: 2000000,  rowId: 'bd-mascot-row' },
+        { id: 'hardcover', price: 1200000,  rowId: 'bd-hardcover-row' }
+      ];
+
+      const checkedState = {};
+      addons.forEach(a => { checkedState[a.id] = false; });
+
+      function calcBasePrice(students) {
+        const base = 8000000;
+        const perStudent = students * 15000;
+        return base + perStudent;
+      }
+
+      function formatRp(val) {
+        if (val >= 1000000) {
+          const jt = val / 1000000;
+          return 'Rp ' + jt.toFixed(jt % 1 === 0 ? 0 : 1).replace('.', ',') + ' jt';
+        }
+        return 'Rp ' + val.toLocaleString('id-ID');
+      }
+
+      let currentDisplayedPrice = 0;
+
+      function updatePrice() {
+        const students = parseInt(slider.value);
+        const base = calcBasePrice(students);
+        let addonsTotal = 0;
+        addons.forEach(a => {
+          if (checkedState[a.id]) addonsTotal += a.price;
+        });
+        const total = base + addonsTotal;
+
+        if (studentDisplay) studentDisplay.textContent = students.toLocaleString('id-ID');
+        if (bdStudents) bdStudents.textContent = students.toLocaleString('id-ID');
+        if (bdBase) bdBase.textContent = formatRp(base);
+        if (bdTotal) bdTotal.textContent = formatRp(total);
+
+        // GSAP tween price counter
+        gsap.to({ val: currentDisplayedPrice }, {
+          val: total,
+          duration: 0.6,
+          ease: 'power2.out',
+          onUpdate: function() {
+            const v = Math.round(this.targets()[0].val);
+            if (priceDisplay) priceDisplay.textContent = formatRp(v);
+          }
+        });
+        currentDisplayedPrice = total;
+
+        // Update slider gradient
+        const pct = ((students - 50) / 950) * 100;
+        slider.style.setProperty('--pct', pct + '%');
+
+        // Update WA link
+        if (waBtn) {
+          const msg = encodeURIComponent(`Halo Fourjective! Saya tertarik dengan paket buku tahunan.\n\nEstimasi saya:\n- Jumlah siswa: ${students}\n- Total estimasi: ${formatRp(total)}\n\nMohon informasi lebih lanjut. Terima kasih!`);
+          waBtn.href = `https://wa.me/6281234567890?text=${msg}`;
+        }
+      }
+
+      // Slider input
+      slider.addEventListener('input', updatePrice);
+
+      // Toggle options
+      addons.forEach(a => {
+        const optEl = document.getElementById('opt-' + a.id);
+        const chkEl = document.getElementById('chk-' + a.id);
+        const rowEl = document.getElementById(a.rowId);
+        if (!optEl) return;
+
+        optEl.addEventListener('click', () => {
+          checkedState[a.id] = !checkedState[a.id];
+          optEl.classList.toggle('checked', checkedState[a.id]);
+          const svg = chkEl ? chkEl.querySelector('svg') : null;
+          if (svg) svg.style.display = checkedState[a.id] ? 'block' : 'none';
+          if (rowEl) rowEl.style.setProperty('display', checkedState[a.id] ? 'flex' : 'none', 'important');
+          updatePrice();
+        });
+      });
+
+      updatePrice();
+    })();
+
+    // ============================================================
+    // FLIP PORTFOLIO FILTER
+    // ============================================================
+    (function initFlipFilter() {
+      const grid = document.getElementById('portfolio-grid');
+      const buttons = document.querySelectorAll('.filter-btn');
+      if (!grid || typeof Flip === 'undefined') {
+        // Fallback without Flip
+        buttons.forEach(btn => {
+          btn.addEventListener('click', () => {
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const filter = btn.dataset.filter;
+            document.querySelectorAll('.portfolio-card').forEach(card => {
+              card.style.display = (filter === 'all' || card.dataset.category === filter) ? '' : 'none';
+            });
+          });
+        });
+        return;
+      }
+
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          buttons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const filter = btn.dataset.filter;
+
+          const cards = document.querySelectorAll('.portfolio-card');
+          const state = Flip.getState(cards);
+
+          cards.forEach(card => {
+            const visible = filter === 'all' || card.dataset.category === filter;
+            card.style.display = visible ? '' : 'none';
+          });
+
+          Flip.from(state, {
+            duration: 0.6,
+            ease: 'power2.inOut',
+            stagger: 0.06,
+            absolute: true,
+            onLeave: els => gsap.to(els, { opacity: 0, scale: 0.85, duration: 0.3 }),
+            onEnter: els => gsap.from(els, { opacity: 0, scale: 0.85, duration: 0.4 })
+          });
+        });
+      });
+    })();
+
+    // ============================================================
+    // GSAP matchMedia — ALL SCROLL + ENTER ANIMATIONS
+    // ============================================================
+    const mm = gsap.matchMedia();
+
+    mm.add({
+      isDesktop: '(min-width: 768px)',
+      isMobile: '(max-width: 767px)',
+      reduceMotion: '(prefers-reduced-motion: reduce)'
+    }, context => {
+      const { isDesktop, reduceMotion } = context.conditions;
+
+      // Skip all animations for reduced-motion
+      if (reduceMotion) {
+        // Just show everything
+        gsap.set(['#mascot-left','#mascot-right','#hero-logo-wrap','#hero-label','#hero-ctas','#hero-stats','#hero-sub'], { opacity: 1, clearProps: 'all' });
+        return;
+      }
+
+      // =====================================================
+      // HERO ENTRANCE
+      // =====================================================
+      const tl = gsap.timeline({ delay: 1.9 });
+
+      tl.to('#hero-logo-wrap', { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 0)
+        .to('#hero-label', { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 0.1);
+
+      // SplitText hero lines
+      document.fonts.ready.then(() => {
+        try {
+          const heroSplit = SplitText.create('.hero-line', { type: 'lines', mask: 'lines' });
+          tl.from(heroSplit.lines, {
+            y: '110%',
+            opacity: 0,
+            duration: 1.1,
+            ease: 'power4.out',
+            stagger: 0.14
+          }, 0.15);
+        } catch(e) {
+          // Fallback
+          tl.from('.hero-line', { y: 40, opacity: 0, duration: 0.8, stagger: 0.14 }, 0.15);
+        }
+      });
+
+      // ScrambleText subtitle
+      try {
+        tl.to('#hero-sub', {
+          duration: 1.5,
+          opacity: 1,
+          scrambleText: {
+            text: 'Studio produksi kreatif terbaik untuk buku tahunan, sinematografi 4K, dan pengalaman augmented reality yang tak terlupakan.',
+            chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+            revealDelay: 0.3,
+            speed: 0.4
+          }
+        }, 0.8);
+      } catch(e) {
+        tl.to('#hero-sub', { opacity: 1, duration: 0.8 }, 0.8);
+      }
+
+      tl.to('#hero-ctas', { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 1.2);
+
+      // Mascot entrance
+      tl.from('#mascot-left', { x: -300, opacity: 0, duration: 1.2, ease: 'power4.out' }, 0.6);
+      tl.from('#mascot-right', { x: 300, opacity: 0, duration: 1.2, ease: 'power4.out' }, 0.7);
+
+      // Then add float classes
+      tl.call(() => {
+        document.getElementById('mascot-left').classList.add('mascot-float');
+        document.getElementById('mascot-right').classList.add('mascot-float-right');
+      });
+
+      // Hero stats counter
+      tl.to('#hero-stats', { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 1.4);
+      tl.call(() => {
+        document.querySelectorAll('.counter').forEach(el => {
+          const target = parseInt(el.dataset.target);
+          gsap.to({ val: 0 }, {
+            val: target,
+            duration: 1.5,
+            ease: 'power2.out',
+            onUpdate: function() {
+              el.textContent = Math.round(this.targets()[0].val);
+            }
+          });
+        });
+      }, null, 1.5);
+
+      // =====================================================
+      // ROTATING STAMP — scroll velocity
+      // =====================================================
+      let stampRot = 0;
+      ScrollTrigger.create({
+        start: 'top top',
+        end: '9999',
+        onUpdate: self => {
+          const vel = self.getVelocity();
+          stampRot += vel * 0.008;
+          gsap.set('#rotating-stamp', { rotation: stampRot });
+
+          // Card stamps
+          document.querySelectorAll('.rotating-stamp-card').forEach(s => {
+            gsap.set(s, { rotation: stampRot * 0.5 });
+          });
+        }
+      });
+
+      // =====================================================
+      // MANIFESTO WORD SCRUB
+      // =====================================================
+      const manifestoText = document.querySelector('.manifesto-text');
+      if (manifestoText) {
+        const rawHTML = manifestoText.innerHTML;
+        // Wrap each word in a span (preserve existing spans)
+        const wrapped = rawHTML.replace(/(?<!<[^>]*)(\b\S+\b)(?![^<]*>)/g, (match, word) => {
+          if (match.trim() === '') return match;
+          return `<span class="manifesto-word">${word}</span>`;
+        });
+
+        // Actually we do a safer approach: split text nodes only
+        function wrapWords(el) {
+          const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+          const textNodes = [];
+          let node;
+          while ((node = walker.nextNode())) {
+            textNodes.push(node);
+          }
+          textNodes.forEach(tn => {
+            const parent = tn.parentNode;
+            if (parent.classList && (parent.classList.contains('manifesto-word') || parent.classList.contains('manifesto-highlight-trigger'))) return;
+            const words = tn.textContent.split(/(\s+)/);
+            const frag = document.createDocumentFragment();
+            words.forEach(w => {
+              if (/^\s+$/.test(w) || w === '') {
+                frag.appendChild(document.createTextNode(w));
+              } else {
+                const span = document.createElement('span');
+                span.className = 'manifesto-word';
+                span.textContent = w;
+                frag.appendChild(span);
+              }
+            });
+            parent.replaceChild(frag, tn);
+          });
+        }
+        wrapWords(manifestoText);
+
+        const mWords = gsap.utils.toArray('.manifesto-word');
+        gsap.to(mWords, {
+          opacity: 1,
+          color: '#111113',
+          stagger: { each: 0.04 },
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '.manifesto-section',
+            start: 'top 70%',
+            end: 'bottom 30%',
+            scrub: 2
+          }
+        });
+
+        // Highlight trigger
+        const highlight = document.querySelector('.manifesto-highlight-trigger');
+        if (highlight) {
+          ScrollTrigger.create({
+            trigger: highlight,
+            start: 'top 70%',
+            onEnter: () => {
+              gsap.to(highlight, { color: '#FF6E00', scale: 1.04, duration: 0.5, ease: 'back.out(1.5)', transformOrigin: 'left center' });
+            }
+          });
+        }
+      }
+
+      // =====================================================
+      // STACKING SERVICE PANELS
+      // =====================================================
+      const stackPanels = document.querySelectorAll('.stack-panel');
+      stackPanels.forEach((panel, i) => {
+        ScrollTrigger.create({
+          trigger: panel,
+          start: 'top top',
+          pin: true,
+          pinSpacing: false,
+          anticipatePin: 1,
+          end: '+=150%',
+          id: 'stack-' + i,
+          onUpdate: self => {
+            const prog = document.getElementById('panel-prog-' + (i + 1));
+            if (prog) prog.style.width = (self.progress * 100) + '%';
+          }
+        });
+      });
+
+      // Panel mascot entrances
+      ScrollTrigger.create({
+        trigger: '#panel-1',
+        start: 'top 80%',
+        onEnter: () => {
+          gsap.to('#panel1-mascot', { opacity: 1, x: 0, duration: 1, ease: 'power3.out' });
+        }
+      });
+      gsap.set('#panel1-mascot', { x: -100 });
+
+      ScrollTrigger.create({
+        trigger: '#panel-2',
+        start: 'top 80%',
+        onEnter: () => {
+          gsap.to('#panel2-mascot', { opacity: 1, x: 0, duration: 1, ease: 'power3.out' });
+        }
+      });
+      gsap.set('#panel2-mascot', { x: 100 });
+
+      // =====================================================
+      // HORIZONTAL SCROLL GALLERY
+      // =====================================================
+      const hPin = document.getElementById('h-pin');
+      const hTrack = document.getElementById('h-track');
+
+      if (hPin && hTrack && isDesktop) {
+        const hTween = gsap.to(hTrack, {
+          x: () => -(hTrack.scrollWidth - window.innerWidth + 160),
+          ease: 'none',
+          duration: 1
+        });
+
+        const hST = ScrollTrigger.create({
+          animation: hTween,
+          trigger: hPin,
+          pin: true,
+          scrub: 1,
+          end: () => '+=' + (hTrack.scrollWidth - window.innerWidth + 160),
+          invalidateOnRefresh: true
+        });
+
+        // Card scale animations
+        document.querySelectorAll('.h-card').forEach(card => {
+          gsap.fromTo(card,
+            { scale: 0.85 },
+            {
+              scale: 1,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: card,
+                containerAnimation: hTween,
+                start: 'left 80%',
+                end: 'right 60%',
+                scrub: true
+              }
+            }
+          );
+        });
+      }
+
+      // =====================================================
+      // MASCOT PARADE
+      // =====================================================
+      ScrollTrigger.create({
+        trigger: '#mascot-parade',
+        start: 'top 75%',
+        onEnter: () => {
+          gsap.to('#pm-tl', { x: 0, opacity: 1, duration: 1, ease: 'power3.out' });
+          gsap.to('#pm-tr', { x: 0, opacity: 1, duration: 1, ease: 'power3.out', delay: 0.1 });
+          gsap.to('#pm-bl', { x: 0, opacity: 1, duration: 1, ease: 'power3.out', delay: 0.2 });
+          gsap.to('#pm-br', { x: 0, opacity: 1, duration: 1, ease: 'power3.out', delay: 0.15 });
+          gsap.to('#pm-mid', { scale: 1, opacity: 1, rotation: 0, duration: 1.2, ease: 'back.out(1.4)' });
+        }
+      });
+
+      gsap.set('#pm-tl', { x: -400, opacity: 0 });
+      gsap.set('#pm-tr', { x: 400, opacity: 0 });
+      gsap.set('#pm-bl', { x: -400, opacity: 0 });
+      gsap.set('#pm-br', { x: 400, opacity: 0 });
+      gsap.set('#pm-mid', { scale: 0, opacity: 0, rotation: -30 });
+
+      // Parade headline
+      ScrollTrigger.create({
+        trigger: '#parade-headline',
+        start: 'top 80%',
+        onEnter: () => {
+          try {
+            const split = SplitText.create('#parade-headline', { type: 'lines', mask: 'lines' });
+            gsap.from(split.lines, { y: '100%', opacity: 0, duration: 0.9, stagger: 0.12, ease: 'power4.out' });
+          } catch(e) {
+            gsap.from('#parade-headline', { y: 40, opacity: 0, duration: 0.9 });
+          }
+        }
+      });
+
+      // =====================================================
+      // PARALLAX CINEMA
+      // =====================================================
+      const cinemaBg = document.getElementById('cinema-bg');
+      const cinemaText = document.getElementById('cinema-text');
+
+      if (cinemaBg) {
+        gsap.to(cinemaBg, {
+          yPercent: 20,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '#cinema-section',
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: true
+          }
+        });
+      }
+
+      if (cinemaText) {
+        gsap.to(cinemaText, {
+          yPercent: -12,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '#cinema-section',
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: true
+          }
+        });
+      }
+
+      // DrawSVG underline
+      const underlinePath = document.querySelector('#cinema-underline path');
+      if (underlinePath) {
+        try {
+          gsap.from(underlinePath, {
+            drawSVG: '0%',
+            duration: 1.5,
+            ease: 'power2.inOut',
+            scrollTrigger: {
+              trigger: '#cinema-section',
+              start: 'top 70%'
+            }
+          });
+        } catch(e) {
+          // Manually animate stroke-dashoffset
+          const length = 500;
+          underlinePath.style.strokeDasharray = length;
+          underlinePath.style.strokeDashoffset = length;
+          gsap.to(underlinePath, {
+            strokeDashoffset: 0,
+            duration: 1.5,
+            ease: 'power2.inOut',
+            scrollTrigger: {
+              trigger: '#cinema-section',
+              start: 'top 70%'
+            }
+          });
+        }
+      }
+
+      // =====================================================
+      // TIMELINE STEPS — BATCH STAGGER
+      // =====================================================
+      const tlSteps = document.querySelectorAll('.timeline-step');
+      gsap.from(tlSteps, {
+        y: 60,
+        opacity: 0,
+        duration: 0.8,
+        stagger: 0.2,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: '#timeline-steps',
+          start: 'top 80%'
+        }
+      });
+
+      // SVG timeline line draw
+      const tlLinePath = document.getElementById('tl-line-path');
+      if (tlLinePath) {
+        gsap.to(tlLinePath, {
+          strokeDashoffset: 0,
+          duration: 2,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '#timeline-steps',
+            start: 'top 80%',
+            end: 'bottom 30%',
+            scrub: 1
+          }
+        });
+      }
+
+      // =====================================================
+      // SCRAMBLE TEXT CTA
+      // =====================================================
+      const scrambleHeadline = document.getElementById('scramble-headline');
+      if (scrambleHeadline) {
+        const originalText = scrambleHeadline.textContent.trim();
+        ScrollTrigger.create({
+          trigger: '#scramble-section',
+          start: 'top 70%',
+          once: true,
+          onEnter: () => {
+            try {
+              gsap.to(scrambleHeadline, {
+                duration: 1.8,
+                scrambleText: {
+                  text: originalText,
+                  chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#',
+                  revealDelay: 0.3,
+                  speed: 0.5
+                }
+              });
+            } catch(e) { /* ScrambleText not loaded, text stays as-is */ }
+
+            // Subtext reveal
+            gsap.to('#scramble-sub', {
+              y: 0,
+              opacity: 1,
+              duration: 0.8,
+              ease: 'power3.out',
+              delay: 0.6
+            });
+          }
+        });
+      }
+
+      // =====================================================
+      // GENERAL SECTION REVEALS
+      // =====================================================
+      gsap.utils.toArray('.section-label').forEach(el => {
+        gsap.from(el, {
+          x: -30,
+          opacity: 0,
+          duration: 0.7,
+          ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%' }
+        });
+      });
+
+      // =====================================================
+      // REFRESH ScrollTrigger after all is set
+      // =====================================================
+      ScrollTrigger.refresh();
+    });
+
+    // ============================================================
+    // LUCIDE ICONS INIT
+    // ============================================================
+    if (typeof lucide !== 'undefined') {
+      try { lucide.createIcons(); } catch(e) {}
+    }
+
+  })();
+  </script>
+
+</body>
+</html>

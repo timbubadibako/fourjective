@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fourjective Studio — Digital Paper (Pin 09 Reference)</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Paytone+One&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Rubik:wght@800;900&family=Syne:wght@700;800;900&family=Unbounded:wght@700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              orange: '#FF6E00',
+              lime: '#D4FF00',
+              pink: '#FF4EA8',
+              cyan: '#00F0FF',
+              yellow: '#FFDF00',
+              paper: '#FAF8F3',
+              dark: '#0A0A0C',
+              zinc: '#16161A'
+            }
+          },
+          fontFamily: {
+            rubik: ['"Rubik"', 'sans-serif'],
+            dela: ['"Dela Gothic One"', 'cursive'],
+            paytone: ['"Paytone One"', 'sans-serif'],
+            syne: ['Syne', 'sans-serif'],
+            unbounded: ['Unbounded', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <style>
+    /* Sawtooth / Zigzag Borders */
+    .sawtooth-top {
+      background: radial-gradient(circle, transparent, transparent 50%), #0A0A0C;
+      mask-image: linear-gradient(to bottom, black 100%, black 100%);
+    }
+    
+    .zigzag-divider-down {
+      height: 24px;
+      background: repeating-linear-gradient(-45deg, #0A0A0C 0, #0A0A0C 12px, transparent 12px, transparent 24px),
+                  repeating-linear-gradient(45deg, #0A0A0C 0, #0A0A0C 12px, transparent 12px, transparent 24px);
+      background-size: 24px 24px;
+    }
+
+    .zigzag-divider-up {
+      height: 24px;
+      background: repeating-linear-gradient(-45deg, #FAF8F3 0, #FAF8F3 12px, transparent 12px, transparent 24px),
+                  repeating-linear-gradient(45deg, #FAF8F3 0, #FAF8F3 12px, transparent 12px, transparent 24px);
+      background-size: 24px 24px;
+    }
+
+    /* 3D Inflated Balloon Text */
+    .balloon-text {
+      font-family: 'Unbounded', sans-serif;
+      text-transform: uppercase;
+      color: #FF52AB;
+      font-weight: 900;
+      text-shadow: 
+        0 2px 0 #ff2592,
+        0 4px 0 #e60074,
+        0 6px 0 #cc0067,
+        0 8px 0 #b3005a,
+        0 12px 18px rgba(255, 37, 146, 0.45),
+        0 20px 30px rgba(0, 0, 0, 0.25);
+      position: relative;
+      display: inline-block;
+      letter-spacing: -0.04em;
+    }
+
+    /* Fanned Paper Typography (BuMaGa Style) - Static, Raw Paper Cut, No Hover Jump */
+    .letter-stack {
+      position: relative;
+      display: inline-block;
+      cursor: default;
+      user-select: none;
+      transform-style: preserve-3d;
+    }
+    .sticker-layer {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Unbounded', sans-serif;
+      font-weight: 900;
+      line-height: 1;
+      pointer-events: none;
+      transform-origin: 50% 50%;
+      will-change: transform;
+    }
+    /* Front top face: Light sheen from top-left, clean paper edge, no outer white stroke */
+    .layer-top {
+      position: relative;
+      z-index: 30;
+      background: 
+        radial-gradient(ellipse at 18% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.45) 24%, rgba(255, 255, 255, 0) 55%),
+        linear-gradient(135deg, #FFBCE4 0%, #FF5FB4 35%, #FF2B99 70%, #DE0A77 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.45));
+    }
+    .pill-loop {
+      height: 48px;
+      border: 5px solid #0A0A0C;
+      border-radius: 9999px;
+      background: transparent;
+    }
+
+    .balloon-text::after {
+      content: attr(data-text);
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 2;
+      background: linear-gradient(180deg, #FFFFFF 0%, #FF99D0 35%, #FF52AB 70%, #E60074 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Hazard Warning Tape */
+    .hazard-tape-yellow {
+      background: repeating-linear-gradient(
+        -45deg,
+        #FFDF00,
+        #FFDF00 24px,
+        #E5C500 24px,
+        #E5C500 48px
+      );
+    }
+    .hazard-tape-black {
+      background: #0A0A0C;
+    }
+
+    /* Sticker pop out of cards */
+    .pop-card {
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+    }
+    .pop-card:hover {
+      transform: translateY(-8px) scale(1.02);
+    }
+    .pop-card:hover .pop-image {
+      transform: translateY(-16px) scale(1.08) rotate(-2deg);
+    }
+    .pop-image {
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Pixel Grid Texture */
+    .bg-pixel-grid {
+      background-size: 32px 32px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    }
+
+    /* Badge Marquee */
+    @keyframes marquee {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-50%); }
+    }
+    .animate-marquee {
+      display: flex;
+      width: max-content;
+      animation: marquee 25s linear infinite;
+    }
+    .animate-marquee:hover {
+      animation-play-state: paused;
+    }
+  </style>
+</head>
+<body class="bg-brand-paper text-brand-dark font-sans antialiased overflow-x-hidden selection:bg-brand-orange selection:text-white">
+
+  <!-- Top Floating Switcher / Reference Inspector -->
+  <aside aria-label="Reference Panel" class="fixed bottom-5 right-5 z-50 flex items-center gap-2 bg-brand-dark/95 backdrop-blur-md p-2 rounded-full border border-white/20 shadow-2xl">
+    <button onclick="toggleRefModal()" class="flex items-center gap-2 px-4 py-2 bg-brand-lime text-black font-extrabold text-xs rounded-full hover:scale-105 transition-transform shadow-lg">
+      <i data-lucide="eye" class="w-4 h-4"></i>
+      <span>Bandingkan Pin 09</span>
+    </button>
+    <a href="index.html" class="px-3 py-2 text-white/80 hover:text-white text-xs font-bold rounded-full hover:bg-white/10 transition-colors">
+      Hub Mockup
+    </a>
+  </aside>
+
+  <!-- Modal Reference Comparison -->
+  <div id="ref-modal" class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-brand-dark border border-white/20 rounded-2xl max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl w-full">
+      <div class="p-4 border-b border-white/10 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="px-2.5 py-1 bg-brand-lime text-black text-xs font-black rounded">PIN 09</span>
+          <h3 class="text-white font-syne font-bold text-sm">Referensi: Digital Paper / Bumaga Style (2160x3840 px)</h3>
+        </div>
+        <button onclick="toggleRefModal()" class="text-white/70 hover:text-white p-1 rounded-lg hover:bg-white/10">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="p-4 overflow-y-auto flex justify-center bg-black/40">
+        <img src="references/desain-web/09_Pin_1151936410989953989.jpg" alt="Pin 09 Reference" class="max-w-full h-auto rounded-lg shadow-2xl border border-white/10">
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= NAVBAR ================= -->
+  <header class="w-full bg-brand-paper border-b border-black/10 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <a href="#" class="flex items-center gap-2 group">
+          <img src="images/fourjective-logo.svg" alt="Fourjective" class="w-9 h-9 group-hover:rotate-12 transition-transform duration-300">
+          <span class="font-unbounded font-black tracking-tighter text-lg text-black">FOURJECTIVE</span>
+        </a>
+        <span class="hidden sm:inline-block text-[10px] font-extrabold uppercase px-2 py-0.5 bg-black text-white rounded tracking-widest">DIGITAL STUDIO</span>
+      </div>
+
+      <nav class="hidden md:flex items-center gap-8 text-xs font-extrabold uppercase tracking-wider text-black/80">
+        <a href="#layanan" class="hover:text-brand-orange transition-colors">Layanan</a>
+        <a href="#karya" class="hover:text-brand-orange transition-colors">Karya Unggulan</a>
+        <a href="#tim" class="hover:text-brand-orange transition-colors">Tim Kami</a>
+        <a href="#tanya" class="hover:text-brand-orange transition-colors">FAQ</a>
+      </nav>
+
+      <div class="flex items-center gap-3">
+        <a href="https://wa.me/6281234567890" target="_blank" class="px-5 py-2.5 bg-black hover:bg-brand-orange text-white text-xs font-black uppercase tracking-wider rounded-full transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2">
+          <span>Diskusikan Projek</span>
+          <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= HERO SECTION (BUMAGA STYLE) ================= -->
+  <section class="pt-12 pb-20 px-6 max-w-7xl mx-auto text-center relative">
+    
+    <!-- Floating micro-stickers -->
+    <div class="hidden lg:block absolute top-8 left-12 rotate-[-12deg] animate-bounce duration-1000">
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-brand-lime text-black font-extrabold text-[11px] rounded-full border-2 border-black shadow-[3px_3px_0px_#000]">
+        ★ NO BORING YEARBOOK!
+      </span>
+    </div>
+    <div class="hidden lg:block absolute top-14 right-16 rotate-[15deg]">
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-brand-pink text-white font-extrabold text-[11px] rounded-full border-2 border-black shadow-[3px_3px_0px_#000]">
+        ✦ SINEMATIK 4K
+      </span>
+    </div>
+
+    <!-- Small kicker text -->
+    <div class="inline-flex items-center gap-2 px-3.5 py-1 bg-black/5 rounded-full border border-black/10 text-xs font-extrabold uppercase tracking-widest text-black/70 mb-6">
+      <span class="w-2 h-2 rounded-full bg-brand-orange animate-ping"></span>
+      CREATIVE PRODUCTION STUDIO
+    </div>
+
+    <!-- Subtitle banner with Stadium Pill Loop (Exact Pin 09 Style) -->
+    <div class="flex items-center justify-center gap-3 sm:gap-6 max-w-5xl mx-auto w-full my-4">
+      <span class="font-unbounded font-black text-3xl sm:text-5xl md:text-6xl tracking-tight text-black leading-none uppercase">
+        DIGITAL
+      </span>
+
+      <!-- Elongated Stadium Pill Loop (Exact like БЮ[____]РО) -->
+      <div class="pill-loop flex-grow max-w-xs sm:max-w-md hidden sm:flex items-center justify-center cursor-pointer group" title="Fourjective Digital Studio">
+        <span class="text-[10px] font-mono tracking-widest text-black/40 group-hover:text-brand-pink transition-colors uppercase font-bold">
+          ★ CREATIVE YEARBOOK & CINEMA ★
+        </span>
+      </div>
+
+      <span class="font-unbounded font-black text-3xl sm:text-5xl md:text-6xl tracking-tight text-black leading-none uppercase">
+        STUDIO
+      </span>
+    </div>
+
+    <!-- FANNED STICKER TYPOGRAPHY "fourjectiv" (Edge-to-Edge, Zero Excessive Margin) -->
+    <div class="my-4 sm:my-6 relative w-full flex items-center justify-between overflow-visible px-2 sm:px-4" id="hero-sticker-container"></div>
+
+
+    <!-- Sub description & Pill Button -->
+    <p class="max-w-xl mx-auto text-sm md:text-base font-medium text-black/70 leading-relaxed mb-8">
+      Mewujudkan konsep buku tahunan paling liar, sinematografi memukau, dan arsip kenangan sekolah yang bikin kalian bangga selamanya.
+    </p>
+
+    <div class="flex flex-wrap items-center justify-center gap-4">
+      <a href="#karya" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs md:text-sm uppercase tracking-wider rounded-full shadow-[4px_4px_0px_#000] hover:shadow-[2px_2px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center gap-2">
+        <span>Lihat Portofolio</span>
+        <i data-lucide="sparkles" class="w-4 h-4"></i>
+      </a>
+      <a href="#layanan" class="px-8 py-3.5 bg-white hover:bg-black hover:text-white text-black font-black text-xs md:text-sm uppercase tracking-wider rounded-full border-2 border-black shadow-[4px_4px_0px_#000] transition-all">
+        Eksplor Layanan
+      </a>
+    </div>
+
+    <!-- Mascot & Cloud Accents -->
+    <div class="mt-12 flex items-center justify-center gap-6 opacity-90">
+      <img src="images/landing-page/hero/mascot-left.svg" alt="Mascot Left" class="w-16 h-16 md:w-20 md:h-20 animate-pulse">
+      <span class="font-unbounded font-bold text-xs uppercase tracking-widest text-black/40">✦ DO THE BEST FOR THE BEST MOMENT ✦</span>
+      <img src="images/landing-page/hero/mascot-right.svg" alt="Mascot Right" class="w-16 h-16 md:w-20 md:h-20 animate-pulse">
+    </div>
+  </section>
+
+  <!-- ================= SAWTOOTH TRANSITION TO DARK ================= -->
+  <div class="w-full h-8 overflow-hidden relative">
+    <svg viewBox="0 0 1200 24" preserveAspectRatio="none" class="w-full h-full text-brand-dark fill-current">
+      <path d="M0,24 L20,0 L40,24 L60,0 L80,24 L100,0 L120,24 L140,0 L160,24 L180,0 L200,24 L220,0 L240,24 L260,0 L280,24 L300,0 L320,24 L340,0 L360,24 L380,0 L400,24 L420,0 L440,24 L460,0 L480,24 L500,0 L520,24 L540,0 L560,24 L580,0 L600,24 L620,0 L640,24 L660,0 L680,24 L700,0 L720,24 L740,0 L760,24 L780,0 L800,24 L820,0 L840,24 L860,0 L880,24 L900,0 L920,24 L940,0 L960,24 L980,0 L1000,24 L1020,0 L1040,24 L1060,0 L1080,24 L1100,0 L1120,24 L1140,0 L1160,24 L1180,0 L1200,24 Z"></path>
+    </svg>
+  </div>
+
+  <!-- ================= SECTION 2: DELAEM VSE / VALUE PROPOSITION ================= -->
+  <section class="bg-brand-dark text-white py-20 px-6 relative bg-pixel-grid overflow-hidden">
+    <!-- Retro Pixel Icons Background Floating -->
+    <div class="absolute top-10 left-10 text-brand-lime opacity-30 text-2xl font-mono">▲ ■ ★</div>
+    <div class="absolute bottom-10 right-12 text-brand-pink opacity-30 text-2xl font-mono">👾 ✦ 🕹️</div>
+
+    <div class="max-w-5xl mx-auto text-center">
+      <h2 class="font-unbounded font-black text-xl sm:text-2xl md:text-3xl uppercase tracking-wider mb-8 text-white/90">
+        KAMI LAKUKAN SEMUANYA AGAR BUKU TAHUNAN KALIAN:
+      </h2>
+
+      <!-- Floating colorful pill capsules (exact Bumaga style) -->
+      <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-4 max-w-4xl mx-auto">
+        <span class="px-6 py-3 bg-brand-pink text-white font-unbounded font-extrabold text-sm sm:text-base rounded-full border-2 border-white/40 shadow-[4px_4px_0px_#000] hover:scale-105 transition-transform cursor-default">
+          DISUKAI SEMUA
+        </span>
+        <span class="px-6 py-3 bg-brand-cyan text-black font-unbounded font-extrabold text-sm sm:text-base rounded-full border-2 border-white/40 shadow-[4px_4px_0px_#000] hover:scale-105 transition-transform cursor-default">
+          DIINGAT SELAMANYA
+        </span>
+        <span class="px-6 py-3 bg-brand-lime text-black font-unbounded font-extrabold text-sm sm:text-base rounded-full border-2 border-white/40 shadow-[4px_4px_0px_#000] hover:scale-105 transition-transform cursor-default">
+          JADI REBUTAN
+        </span>
+        <span class="px-6 py-3 bg-brand-orange text-white font-unbounded font-extrabold text-sm sm:text-base rounded-full border-2 border-white/40 shadow-[4px_4px_0px_#000] hover:scale-105 transition-transform cursor-default">
+          DIBICARAKAN
+        </span>
+        <span class="px-6 py-3 bg-brand-yellow text-black font-unbounded font-extrabold text-sm sm:text-base rounded-full border-2 border-white/40 shadow-[4px_4px_0px_#000] hover:scale-105 transition-transform cursor-default">
+          PALING BERGAYA!
+        </span>
+      </div>
+
+      <!-- Small icons row -->
+      <div class="mt-12 flex items-center justify-center gap-8 text-white/40">
+        <i data-lucide="heart" class="w-6 h-6 text-brand-pink fill-current"></i>
+        <span class="w-12 h-0.5 bg-white/20"></span>
+        <i data-lucide="smile" class="w-6 h-6 text-brand-lime"></i>
+        <span class="w-12 h-0.5 bg-white/20"></span>
+        <i data-lucide="star" class="w-6 h-6 text-brand-yellow fill-current"></i>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SAWTOOTH TRANSITION TO PAPER ================= -->
+  <div class="w-full h-8 overflow-hidden relative bg-brand-dark">
+    <svg viewBox="0 0 1200 24" preserveAspectRatio="none" class="w-full h-full text-brand-paper fill-current">
+      <path d="M0,0 L20,24 L40,0 L60,24 L80,0 L100,24 L120,0 L140,24 L160,0 L180,24 L200,0 L220,24 L240,0 L260,24 L280,0 L300,24 L320,0 L340,24 L360,0 L380,24 L400,0 L420,24 L440,0 L460,24 L480,0 L500,24 L520,0 L540,24 L560,0 L580,24 L600,0 L620,24 L640,0 L660,24 L680,0 L700,24 L720,0 L740,24 L760,0 L780,24 L800,0 L820,24 L840,0 L860,24 L880,0 L900,24 L920,0 L940,24 L960,0 L980,24 L1000,0 L1020,24 L1040,0 L1060,24 L1080,0 L1100,24 L1120,0 L1140,24 L1160,0 L1180,24 L1200,0 Z"></path>
+    </svg>
+  </div>
+
+  <!-- ================= SECTION 3: STATEMENT & STATS ================= -->
+  <section class="py-16 px-6 max-w-6xl mx-auto text-center">
+    <!-- Lime pill badge -->
+    <div class="inline-block px-5 py-2 bg-brand-lime text-black font-unbounded font-black text-xs md:text-sm uppercase rounded-full border-2 border-black shadow-[3px_3px_0px_#000] mb-6">
+      ★ 200+ PROJEK BUKU TAHUNAN SELESAI ★
+    </div>
+
+    <h2 class="font-unbounded font-black text-3xl sm:text-5xl md:text-6xl text-black uppercase tracking-tight max-w-4xl mx-auto leading-tight">
+      SANGAT MENGERTI AMBISI KELAS KALIAN
+    </h2>
+
+    <!-- Sub badges -->
+    <div class="flex flex-wrap items-center justify-center gap-3 mt-6">
+      <span class="px-4 py-1.5 bg-black text-white font-extrabold text-xs rounded-full uppercase">
+        15+ Creative Crew
+      </span>
+      <span class="px-4 py-1.5 bg-brand-orange text-white font-extrabold text-xs rounded-full uppercase">
+        6 Tahun Berkarya
+      </span>
+      <span class="px-4 py-1.5 bg-white text-black border border-black font-extrabold text-xs rounded-full uppercase">
+        12 Kota di Indonesia
+      </span>
+    </div>
+
+    <p class="max-w-xl mx-auto text-sm text-black/60 mt-6 leading-relaxed">
+      Fourjective menghadirkan solusi visual terpadu mulai dari konsep kreatif, storyboard, sesi photoshoot outdoor/studio, hingga produksi cetak hardcover standar pameran seni.
+    </p>
+  </section>
+
+  <!-- ================= DOUBLE CROSSING HAZARD TAPES ================= -->
+  <div class="relative py-12 overflow-hidden my-6">
+    <!-- Tape 1 (Yellow Hazard, Angled Down-Right) -->
+    <div class="hazard-tape-yellow text-black font-unbounded font-black text-xs md:text-sm tracking-widest py-3 border-y-2 border-black shadow-lg transform -rotate-2 -mx-10 relative z-20">
+      <div class="animate-marquee whitespace-nowrap">
+        <span class="mx-4">✦ FOURJECTIVE CREATIVE ✦ NO BORING YEARBOOK ✦ 4K CINEMATOGRAPHY ✦ AR INTERACTIVE FILTER ✦ ZINE EDITION ✦ STREETWEAR PHOTOGRAPHY ✦</span>
+        <span class="mx-4">✦ FOURJECTIVE CREATIVE ✦ NO BORING YEARBOOK ✦ 4K CINEMATOGRAPHY ✦ AR INTERACTIVE FILTER ✦ ZINE EDITION ✦ STREETWEAR PHOTOGRAPHY ✦</span>
+      </div>
+    </div>
+
+    <!-- Tape 2 (Black Hazard, Angled Up-Right, Crossing Tape 1) -->
+    <div class="hazard-tape-black text-brand-yellow font-unbounded font-black text-xs md:text-sm tracking-widest py-3 border-y-2 border-brand-yellow/30 shadow-2xl transform rotate-2 -mx-10 -mt-6 relative z-10">
+      <div class="animate-marquee whitespace-nowrap" style="animation-direction: reverse;">
+        <span class="mx-4">★ SMAN 1 JAKARTA ★ SMA TARUNA NUSANTARA ★ SMAN 3 BANDUNG ★ SMAN 8 YOGYAKARTA ★ SMA AL-AZHAR ★ SMA LABSCHOOL ★</span>
+        <span class="mx-4">★ SMAN 1 JAKARTA ★ SMA TARUNA NUSANTARA ★ SMAN 3 BANDUNG ★ SMAN 8 YOGYAKARTA ★ SMA AL-AZHAR ★ SMA LABSCHOOL ★</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SECTION 4: PORTOFOLIO / KARYA (КЕЙСЫ) ================= -->
+  <section id="karya" class="py-20 px-6 max-w-7xl mx-auto">
+    <div class="text-center mb-16">
+      <span class="text-xs font-black uppercase tracking-widest px-3 py-1 bg-black text-white rounded">PORTOFOLIO</span>
+      <h2 class="font-unbounded font-black text-3xl sm:text-5xl text-black uppercase mt-3">
+        KARYA UNGGULAN
+      </h2>
+      <p class="text-xs sm:text-sm font-medium text-black/60 mt-2">Buku tahunan sekolah dengan karakter visual unik dan berani.</p>
+    </div>
+
+    <!-- 8 Rounded Cards with Pop-out Covers (Exact Bumaga Grid) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 pt-8">
+      
+      <!-- Card 1: Cyberpunk -->
+      <div class="pop-card bg-[#D1E8FF] rounded-3xl p-6 pt-12 border-2 border-black shadow-[5px_5px_0px_#000] relative flex flex-col justify-between">
+        <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-4/5 h-36 flex items-center justify-center">
+          <img src="images/landing-page/portfolio/colorfull.png" alt="Cyberpunk" class="pop-image w-full h-full object-contain drop-shadow-xl">
+        </div>
+        <div class="mt-20 text-center">
+          <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 bg-black/10 text-black rounded">SMAN 1 Bandung</span>
+          <h3 class="font-unbounded font-bold text-base text-black mt-2">«Cyberpunk 2024»</h3>
+          <p class="text-[11px] text-black/70 mt-1">Neon lighting, holographic jacket, & 4K aftermovie.</p>
+        </div>
+      </div>
+
+      <!-- Card 2: Zine Edition -->
+      <div class="pop-card bg-[#D6FFB2] rounded-3xl p-6 pt-12 border-2 border-black shadow-[5px_5px_0px_#000] relative flex flex-col justify-between">
+        <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-4/5 h-36 flex items-center justify-center">
+          <img src="images/landing-page/portfolio/jumanji.png" alt="Jumanji" class="pop-image w-full h-full object-contain drop-shadow-xl">
+        </div>
+        <div class="mt-20 text-center">
+          <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 bg-black/10 text-black rounded">SMAN 3 Yogyakarta</span>
+          <h3 class="font-unbounded font-bold text-base text-black mt-2">«Jungle Explorer»</h3>
+          <p class="text-[11px] text-black/70 mt-1">Editorial safari, earth tone palette, zine layout.</p>
+        </div>
+      </div>
+
+      <!-- Card 3: Barbie Dream -->
+      <div class="pop-card bg-[#FFD1EC] rounded-3xl p-6 pt-12 border-2 border-black shadow-[5px_5px_0px_#000] relative flex flex-col justify-between">
+        <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-4/5 h-36 flex items-center justify-center">
+          <img src="images/landing-page/portfolio/barbie.png" alt="Barbie" class="pop-image w-full h-full object-contain drop-shadow-xl">
+        </div>
+        <div class="mt-20 text-center">
+          <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 bg-black/10 text-black rounded">SMA Taruna Bangsa</span>
+          <h3 class="font-unbounded font-bold text-base text-black mt-2">«Pastel Dream»</h3>
+          <p class="text-[11px] text-black/70 mt-1">Y2K pink aesthetic, gloss cover, sparkle sticker kit.</p>
+        </div>
+      </div>
+
+      <!-- Card 4: Dark Noir -->
+      <div class="pop-card bg-[#FFE2A9] rounded-3xl p-6 pt-12 border-2 border-black shadow-[5px_5px_0px_#000] relative flex flex-col justify-between">
+        <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-4/5 h-36 flex items-center justify-center">
+          <img src="images/landing-page/portfolio/dark.png" alt="Dark" class="pop-image w-full h-full object-contain drop-shadow-xl">
+        </div>
+        <div class="mt-20 text-center">
+          <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 bg-black/10 text-black rounded">SMA 8 Jakarta</span>
+          <h3 class="font-unbounded font-bold text-base text-black mt-2">«Midnight Noir»</h3>
+          <p class="text-[11px] text-black/70 mt-1">Monochrome cinematic, foil stamp, velvet book cover.</p>
+        </div>
+      </div>
+
+      <!-- Card 5: Zombie Apocalypse -->
+      <div class="pop-card bg-[#FFB6B6] rounded-3xl p-6 pt-12 border-2 border-black shadow-[5px_5px_0px_#000] relative flex flex-col justify-between">
+        <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-4/5 h-36 flex items-center justify-center">
+          <img src="images/landing-page/portfolio/zombie.png" alt="Zombie" class="pop-image w-full h-full object-contain drop-shadow-xl">
+        </div>
+        <div class="mt-20 text-center">
+          <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 bg-black/10 text-black rounded">SMAN 2 Surabaya</span>
+          <h3 class="font-unbounded font-bold text-base text-black mt-2">«Zombie Survival»</h3>
+          <p class="text-[11px] text-black/70 mt-1">Grunge art direction, distress effect, special cosplay.</p>
+        </div>
+      </div>
+
+      <!-- Card 6: Editorial Vogue -->
+      <div class="pop-card bg-[#E4D5FF] rounded-3xl p-6 pt-12 border-2 border-black shadow-[5px_5px_0px_#000] relative flex flex-col justify-between">
+        <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-4/5 h-36 flex items-center justify-center">
+          <img src="images/landing-page/hero/mascot-1.svg" alt="Mascot" class="pop-image w-full h-full object-contain drop-shadow-xl">
+        </div>
+        <div class="mt-20 text-center">
+          <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 bg-black/10 text-black rounded">SMA Labschool</span>
+          <h3 class="font-unbounded font-bold text-base text-black mt-2">«High Street Fashion»</h3>
+          <p class="text-[11px] text-black/70 mt-1">Editorial magazine format, clean Swiss typography.</p>
+        </div>
+      </div>
+
+      <!-- Card 7: Y2K Nostalgia -->
+      <div class="pop-card bg-[#B8F3FF] rounded-3xl p-6 pt-12 border-2 border-black shadow-[5px_5px_0px_#000] relative flex flex-col justify-between">
+        <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-4/5 h-36 flex items-center justify-center">
+          <img src="images/landing-page/hero/mascot-2.svg" alt="Mascot 2" class="pop-image w-full h-full object-contain drop-shadow-xl">
+        </div>
+        <div class="mt-20 text-center">
+          <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 bg-black/10 text-black rounded">SMAN 5 Semarang</span>
+          <h3 class="font-unbounded font-bold text-base text-black mt-2">«Digi-Retro 2000»</h3>
+          <p class="text-[11px] text-black/70 mt-1">CD-ROM box packaging, pixel sticker sheet bonus.</p>
+        </div>
+      </div>
+
+      <!-- Card 8: Minimalist Pure -->
+      <div class="pop-card bg-[#E1FFAE] rounded-3xl p-6 pt-12 border-2 border-black shadow-[5px_5px_0px_#000] relative flex flex-col justify-between">
+        <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-4/5 h-36 flex items-center justify-center">
+          <img src="images/fourjective-logo.svg" alt="Logo" class="pop-image w-3/5 h-full object-contain drop-shadow-xl">
+        </div>
+        <div class="mt-20 text-center">
+          <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 bg-black/10 text-black rounded">SMA Al-Azhar</span>
+          <h3 class="font-unbounded font-bold text-base text-black mt-2">«Monolith Studio»</h3>
+          <p class="text-[11px] text-black/70 mt-1">Hardbound linen cloth, debossed metallic copper.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= SECTION 5: SERVICES / APA YANG KAMI KERJAKAN ================= -->
+  <section id="layanan" class="py-20 px-6 bg-white border-y-2 border-black">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-12">
+        <span class="px-3.5 py-1 bg-brand-lime text-black font-black text-xs uppercase tracking-wider rounded-full border border-black shadow-[2px_2px_0px_#000]">
+          APA YANG KAMI KERJAKAN?
+        </span>
+        <h2 class="font-unbounded font-black text-3xl sm:text-5xl text-black uppercase mt-4">
+          KONTEN KREATIF DARI NOL TANPA RIBET
+        </h2>
+        <p class="text-sm text-black/60 max-w-lg mx-auto mt-2">
+          Kami mendampingi OSIS dan panitia buku tahunan dari riset tema sampai cetakan terkirim ke tangan setiap siswa.
+        </p>
+      </div>
+
+      <!-- Service Chips with Icons (Bumaga Style) -->
+      <div class="flex flex-wrap items-center justify-center gap-4 max-w-4xl mx-auto">
+        <div class="flex items-center gap-2.5 px-6 py-3.5 bg-brand-paper rounded-full border-2 border-black shadow-[4px_4px_0px_#000] hover:bg-brand-yellow transition-colors font-unbounded font-bold text-xs sm:text-sm">
+          <i data-lucide="video" class="w-4 h-4 text-blue-600"></i>
+          <span>SINEMATOGRAFI 4K & TEASER</span>
+        </div>
+
+        <div class="flex items-center gap-2.5 px-6 py-3.5 bg-brand-paper rounded-full border-2 border-black shadow-[4px_4px_0px_#000] hover:bg-brand-lime transition-colors font-unbounded font-bold text-xs sm:text-sm">
+          <i data-lucide="scan" class="w-4 h-4 text-brand-orange"></i>
+          <span>AUGMENTED REALITY (AR) SCAN</span>
+        </div>
+
+        <div class="flex items-center gap-2.5 px-6 py-3.5 bg-brand-paper rounded-full border-2 border-black shadow-[4px_4px_0px_#000] hover:bg-brand-pink hover:text-white transition-colors font-unbounded font-bold text-xs sm:text-sm">
+          <i data-lucide="camera" class="w-4 h-4"></i>
+          <span>EDITORIAL CONCEPT PHOTOSHOOT</span>
+        </div>
+
+        <div class="flex items-center gap-2.5 px-6 py-3.5 bg-brand-paper rounded-full border-2 border-black shadow-[4px_4px_0px_#000] hover:bg-brand-cyan transition-colors font-unbounded font-bold text-xs sm:text-sm">
+          <i data-lucide="palette" class="w-4 h-4 text-purple-600"></i>
+          <span>CUSTOM MASCOT & DOODLE ART</span>
+        </div>
+
+        <div class="flex items-center gap-2.5 px-6 py-3.5 bg-brand-paper rounded-full border-2 border-black shadow-[4px_4px_0px_#000] hover:bg-brand-orange hover:text-white transition-colors font-unbounded font-bold text-xs sm:text-sm">
+          <i data-lucide="book-open" class="w-4 h-4"></i>
+          <span>HARDCOVER FOIL & LUXURY BINDING</span>
+        </div>
+
+        <div class="flex items-center gap-2.5 px-6 py-3.5 bg-brand-paper rounded-full border-2 border-black shadow-[4px_4px_0px_#000] hover:bg-brand-yellow transition-colors font-unbounded font-bold text-xs sm:text-sm">
+          <i data-lucide="package" class="w-4 h-4 text-pink-600"></i>
+          <span>STIKER PACK & BOX PACKAGING</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SECTION 6: SQUAD / TIM KAMI (НАША КОМАНДА) ================= -->
+  <section id="tim" class="py-20 px-6 max-w-7xl mx-auto">
+    <div class="text-center mb-16">
+      <span class="text-xs font-black uppercase tracking-widest px-3 py-1 bg-black text-white rounded">BEHIND THE SCENES</span>
+      <h2 class="font-unbounded font-black text-3xl sm:text-5xl text-black uppercase mt-3">
+        CREATIVE SQUAD
+      </h2>
+      <p class="text-xs sm:text-sm text-black/60 mt-2">Anak-anak muda gila visual di balik karya Fourjective.</p>
+    </div>
+
+    <!-- Squad Polaroid Cards with Vibrant Borders -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
+      
+      <!-- Member 1 -->
+      <div class="bg-white p-3 rounded-2xl border-4 border-blue-500 shadow-[4px_4px_0px_#000] hover:-translate-y-2 transition-transform">
+        <div class="aspect-square bg-blue-100 rounded-xl overflow-hidden mb-3 border border-black/10">
+          <img src="images/about/model1.png" alt="Rama" class="w-full h-full object-cover">
+        </div>
+        <div class="bg-black text-white text-center py-1.5 px-2 rounded-lg">
+          <p class="font-unbounded font-extrabold text-[11px] leading-tight">RAMA</p>
+          <p class="text-[9px] text-white/70 tracking-wider">DIRECTOR</p>
+        </div>
+      </div>
+
+      <!-- Member 2 -->
+      <div class="bg-white p-3 rounded-2xl border-4 border-yellow-400 shadow-[4px_4px_0px_#000] hover:-translate-y-2 transition-transform">
+        <div class="aspect-square bg-yellow-100 rounded-xl overflow-hidden mb-3 border border-black/10">
+          <img src="images/about/model2.png" alt="Sarah" class="w-full h-full object-cover">
+        </div>
+        <div class="bg-black text-white text-center py-1.5 px-2 rounded-lg">
+          <p class="font-unbounded font-extrabold text-[11px] leading-tight">SARAH</p>
+          <p class="text-[9px] text-white/70 tracking-wider">ART DIRECTOR</p>
+        </div>
+      </div>
+
+      <!-- Member 3 -->
+      <div class="bg-white p-3 rounded-2xl border-4 border-pink-500 shadow-[4px_4px_0px_#000] hover:-translate-y-2 transition-transform">
+        <div class="aspect-square bg-pink-100 rounded-xl overflow-hidden mb-3 border border-black/10">
+          <img src="images/about/model3.png" alt="Dion" class="w-full h-full object-cover">
+        </div>
+        <div class="bg-black text-white text-center py-1.5 px-2 rounded-lg">
+          <p class="font-unbounded font-extrabold text-[11px] leading-tight">DION</p>
+          <p class="text-[9px] text-white/70 tracking-wider">LEAD CINEMA</p>
+        </div>
+      </div>
+
+      <!-- Member 4 -->
+      <div class="bg-white p-3 rounded-2xl border-4 border-brand-lime shadow-[4px_4px_0px_#000] hover:-translate-y-2 transition-transform">
+        <div class="aspect-square bg-lime-100 rounded-xl overflow-hidden mb-3 border border-black/10">
+          <img src="images/about/model4.png" alt="Maya" class="w-full h-full object-cover">
+        </div>
+        <div class="bg-black text-white text-center py-1.5 px-2 rounded-lg">
+          <p class="font-unbounded font-extrabold text-[11px] leading-tight">MAYA</p>
+          <p class="text-[9px] text-white/70 tracking-wider">EDITORIAL</p>
+        </div>
+      </div>
+
+      <!-- Member 5 -->
+      <div class="bg-white p-3 rounded-2xl border-4 border-purple-500 shadow-[4px_4px_0px_#000] hover:-translate-y-2 transition-transform">
+        <div class="aspect-square bg-purple-100 rounded-xl overflow-hidden mb-3 border border-black/10 flex items-center justify-center">
+          <img src="images/landing-page/hero/mascot-left.svg" alt="Mascot Kiri" class="w-4/5 h-4/5 object-contain">
+        </div>
+        <div class="bg-black text-white text-center py-1.5 px-2 rounded-lg">
+          <p class="font-unbounded font-extrabold text-[11px] leading-tight">BARON</p>
+          <p class="text-[9px] text-white/70 tracking-wider">MASCOT #1</p>
+        </div>
+      </div>
+
+      <!-- Member 6 -->
+      <div class="bg-white p-3 rounded-2xl border-4 border-brand-cyan shadow-[4px_4px_0px_#000] hover:-translate-y-2 transition-transform">
+        <div class="aspect-square bg-cyan-100 rounded-xl overflow-hidden mb-3 border border-black/10 flex items-center justify-center">
+          <img src="images/landing-page/hero/mascot-right.svg" alt="Mascot Kanan" class="w-4/5 h-4/5 object-contain">
+        </div>
+        <div class="bg-black text-white text-center py-1.5 px-2 rounded-lg">
+          <p class="font-unbounded font-extrabold text-[11px] leading-tight">ZORO</p>
+          <p class="text-[9px] text-white/70 tracking-wider">MASCOT #2</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= SECTION 7: ORDER / CONTACT (ПОРАБОТАЕМ ВМЕСТЕ?) ================= -->
+  <section class="bg-brand-dark text-white py-20 px-6 relative bg-pixel-grid">
+    <div class="max-w-3xl mx-auto">
+      <div class="text-center mb-10">
+        <div class="inline-flex items-center gap-2 text-brand-yellow font-mono text-sm mb-2">
+          <span>★</span> <span>KOLABORASI BERSAMA</span> <span>★</span>
+        </div>
+        <h2 class="font-unbounded font-black text-3xl sm:text-5xl uppercase tracking-tight text-white">
+          MULAI PROJEK BERSAMA?
+        </h2>
+        <p class="text-xs sm:text-sm text-white/60 mt-2">Ceritakan kebutuhan buku tahunan sekolahmu, kami hitungkan estimasi anggarannya.</p>
+      </div>
+
+      <!-- Clean Brutalist Form -->
+      <form class="space-y-4 bg-black/60 p-6 sm:p-10 rounded-3xl border border-white/20 shadow-2xl backdrop-blur-md">
+        <div>
+          <label class="block text-xs font-mono uppercase tracking-widest text-white/70 mb-2">Nama Lengkap / Perwakilan OSIS</label>
+          <input type="text" placeholder="Contoh: Farhan Syahputra" class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm text-white placeholder-white/40 focus:outline-none focus:border-brand-lime">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-mono uppercase tracking-widest text-white/70 mb-2">Nomor WhatsApp</label>
+            <input type="tel" placeholder="0812-XXXX-XXXX" class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm text-white placeholder-white/40 focus:outline-none focus:border-brand-lime">
+          </div>
+          <div>
+            <label class="block text-xs font-mono uppercase tracking-widest text-white/70 mb-2">Asal Sekolah & Kota</label>
+            <input type="text" placeholder="SMAN 1 Bandung" class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm text-white placeholder-white/40 focus:outline-none focus:border-brand-lime">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-mono uppercase tracking-widest text-white/70 mb-2">Konsep / Ide Impian Kamu</label>
+          <textarea rows="3" placeholder="Ceritakan konsep yang kalian suka (Cyberpunk, Vintage, Y2K, Film Horror, dll)..." class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm text-white placeholder-white/40 focus:outline-none focus:border-brand-lime"></textarea>
+        </div>
+
+        <button type="button" onclick="alert('Terima kasih! Tim Fourjective akan segera membalas via WhatsApp.')" class="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-unbounded font-black text-sm uppercase tracking-wider rounded-xl shadow-[4px_4px_0px_#FFF] hover:shadow-[2px_2px_0px_#FFF] hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
+          Kirim via WhatsApp Sekarang →
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ================= SECTION 8: FAQ & SOCIAL CAPSULES (ОТВЕТИМ НА ВСЕ ВОПРОСЫ) ================= -->
+  <footer id="tanya" class="py-20 px-6 bg-brand-paper border-t-2 border-black">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="font-unbounded font-black text-2xl sm:text-4xl text-black uppercase mb-10">
+        KAMI SIAP JAWAB SEMUA PERTANYAAN
+      </h2>
+
+      <!-- Social Floating Pills (Exact Bumaga Bottom Style) -->
+      <div class="relative w-full max-w-lg mx-auto py-10 flex items-center justify-center">
+        <!-- Rotated capsules -->
+        <div class="flex flex-wrap items-center justify-center gap-4">
+          <a href="https://wa.me/6281234567890" target="_blank" class="flex items-center gap-2 px-6 py-3 bg-brand-yellow rounded-full border-2 border-black shadow-[4px_4px_0px_#000] hover:scale-105 transition-transform font-bold text-xs uppercase">
+            <i data-lucide="phone" class="w-4 h-4"></i>
+            <span>WhatsApp Admin</span>
+          </a>
+
+          <a href="https://instagram.com" target="_blank" class="flex items-center gap-2 px-6 py-3 bg-brand-pink text-white rounded-full border-2 border-black shadow-[4px_4px_0px_#000] hover:scale-105 transition-transform font-bold text-xs uppercase">
+            <i data-lucide="instagram" class="w-4 h-4"></i>
+            <span>@fourjective</span>
+          </a>
+
+          <a href="https://tiktok.com" target="_blank" class="flex items-center gap-2 px-6 py-3 bg-brand-cyan text-black rounded-full border-2 border-black shadow-[4px_4px_0px_#000] hover:scale-105 transition-transform font-bold text-xs uppercase">
+            <i data-lucide="music-2" class="w-4 h-4"></i>
+            <span>TikTok Showcase</span>
+          </a>
+
+          <a href="mailto:hello@fourjective.com" class="flex items-center gap-2 px-6 py-3 bg-brand-lime text-black rounded-full border-2 border-black shadow-[4px_4px_0px_#000] hover:scale-105 transition-transform font-bold text-xs uppercase">
+            <i data-lucide="mail" class="w-4 h-4"></i>
+            <span>hello@fourjective.com</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="mt-12 pt-8 border-t border-black/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-black/60 font-bold">
+        <p>© 2024 FOURJECTIVE STUDIO. DO THE BEST FOR THE BEST MOMENT.</p>
+        <div class="flex items-center gap-4">
+          <span>INSPIRASI: PIN 09 BUMAGA</span>
+          <span class="w-1 h-1 rounded-full bg-black"></span>
+          <span>JAKARTA • BANDUNG • YOGYA</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    function toggleRefModal() {
+      const modal = document.getElementById('ref-modal');
+      modal.classList.toggle('hidden');
+      modal.classList.toggle('flex');
+    }
+
+    // ================= FANNED PAPER TYPOGRAPHY ENGINE (fourjectiv) =================
+    (function initFannedStickers() {
+      const container = document.getElementById('hero-sticker-container');
+      if (!container) return;
+
+      const chars = ['4', 'j', 'e', 'c', 't', 'i', 'v'];
+      const TOTAL_LAYERS = 6;
+      const topGradient = 'radial-gradient(ellipse at 16% 16%, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.45) 24%, rgba(255, 255, 255, 0) 52%), linear-gradient(135deg, #FFC2E6 0%, #FF60B7 35%, #FF2B99 75%, #F5188E 100%)';
+      const layers = [
+        '#F72493', // Layer 1 (pure vibrant pink)
+        '#EF148A', // Layer 2 (~0.05 step)
+        '#E60580', // Layer 3
+        '#DC0076', // Layer 4
+        '#D0006E'  // Layer 5 (rich pink, NO dark maroon)
+      ];
+      const shadowBase = 'rgba(130, 0, 65, ';
+
+      // Strict unified left-down paper fan perspective (persis seperti BuMaGa)
+      const BASE_VECTOR = { dx: -4.2, dy: 5.8, rot: -1.1 };
+      const CHAR_TUNING = {
+        '4': { baseRot: -2.5, dx: -4.5, dy: 5.8, rot: -1.2 },
+        'j': { baseRot: -1.5, dx: -4.2, dy: 6.2, rot: -1.3 },
+        'e': { baseRot: 1.0,  dx: -4.0, dy: 5.6, rot: -1.0 },
+        'c': { baseRot: -1.8, dx: -4.3, dy: 5.8, rot: -1.2 },
+        't': { baseRot: 1.0,  dx: -3.8, dy: 6.0, rot: -0.9 },
+        'i': { baseRot: -0.5, dx: -3.4, dy: 6.2, rot: -0.8 },
+        'v': { baseRot: 2.0,  dx: -4.0, dy: 5.8, rot: -1.0 }
+      };
+
+      chars.forEach((char, idx) => {
+        const stack = document.createElement('div');
+        stack.className = 'letter-stack';
+        stack.dataset.char = char;
+
+        const tuning = CHAR_TUNING[char.toLowerCase()] || { baseRot: 0, ...BASE_VECTOR };
+        stack.style.fontSize = 'clamp(3.8rem, min(14vw, 24vh), 14rem)';
+        stack.style.fontFamily = "'Rubik', sans-serif";
+        stack.style.fontWeight = '900';
+        stack.style.transform = `rotate(${tuning.baseRot}deg)`;
+
+        for (let l = TOTAL_LAYERS - 1; l >= 0; l--) {
+          const layerSpan = document.createElement('span');
+          layerSpan.className = 'sticker-layer layer-' + l;
+          layerSpan.textContent = char;
+
+          const offsetX = tuning.dx * l;
+          const offsetY = tuning.dy * l;
+          const offsetRot = tuning.rot * l;
+
+          layerSpan.style.transform = `translate(${offsetX}px, ${offsetY}px) rotate(${offsetRot}deg)`;
+
+          if (l === 0) {
+            // FRONT FACE: Light from top-left, NO outer stroke
+            layerSpan.classList.add('layer-top');
+            layerSpan.style.backgroundImage = topGradient;
+            layerSpan.style.webkitBackgroundClip = 'text';
+            layerSpan.style.webkitTextFillColor = 'transparent';
+            layerSpan.style.zIndex = '30';
+          } else {
+            // BACK STACK: Strict descending order and accumulating shadows
+            const layerColor = layers[l - 1];
+            layerSpan.style.color = layerColor;
+            layerSpan.style.zIndex = (30 - l * 5).toString();
+
+            if (l === 1) {
+              layerSpan.style.filter = `drop-shadow(1px 1.5px 1px ${shadowBase}0.24))`;
+            } else if (l === 2) {
+              layerSpan.style.filter = `drop-shadow(1.5px 2.5px 2px ${shadowBase}0.35))`;
+            } else if (l === 3) {
+              layerSpan.style.filter = `drop-shadow(2px 4px 3px ${shadowBase}0.48))`;
+            } else if (l === 4) {
+              layerSpan.style.filter = `drop-shadow(3px 6px 5px ${shadowBase}0.62))`;
+            } else if (l === TOTAL_LAYERS - 1) {
+              layerSpan.style.filter = `
+                drop-shadow(4px 8px 6px ${shadowBase}0.75))
+                drop-shadow(6px 14px 16px rgba(0, 0, 0, 0.40))
+                drop-shadow(10px 24px 32px rgba(0, 0, 0, 0.22))
+              `;
+            }
+          }
+
+          stack.appendChild(layerSpan);
+        }
+
+        container.appendChild(stack);
+      });
+    })();
+</body>
+</html>

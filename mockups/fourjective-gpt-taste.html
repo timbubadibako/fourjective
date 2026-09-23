@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FOURJECTIVE | Haute-Couture School Yearbook Production</title>
+
+  <!-- Typography Stack: Satoshi (Display/Headlines) via Fontshare + Plus Jakarta Sans (Body) via Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@500,700,800,900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Satoshi', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            void: '#09090B',
+            surface: '#121215',
+            elevated: '#18181D',
+            hairline: '#27272E',
+            subtle: '#8E8E9A',
+            brand: {
+              orange: '#FF6E00',
+              glow: 'rgba(255, 110, 0, 0.18)',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- GSAP Core & ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <style>
+    :root {
+      --brand-orange: #FF6E00;
+      --void: #09090B;
+      --hairline: #27272E;
+    }
+
+    body {
+      background-color: #09090B;
+      color: #EDEDF0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow-x: hidden;
+      selection-background-color: #FF6E00;
+      selection-color: #FFFFFF;
+    }
+
+    /* Ambient noise overlay for editorial luxury feel */
+    .ambient-noise {
+      background-image: radial-gradient(rgba(255, 110, 0, 0.08) 1px, transparent 0);
+      background-size: 32px 32px;
+    }
+
+    /* Custom Cursor Follower */
+    #cursor-ball {
+      position: fixed;
+      top: 0; left: 0;
+      width: 32px; height: 32px;
+      border-radius: 9999px;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      border: 1px solid rgba(255, 110, 0, 0.5);
+      background: rgba(255, 110, 0, 0.08);
+      transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                  height 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                  border-color 0.2s ease,
+                  background 0.2s ease;
+    }
+    #cursor-ball.active {
+      width: 64px; height: 64px;
+      background: rgba(255, 110, 0, 0.16);
+      border-color: rgba(255, 110, 0, 0.9);
+    }
+    #cursor-center-dot {
+      position: fixed;
+      top: 0; left: 0;
+      width: 4px; height: 4px;
+      border-radius: 9999px;
+      background: #FF6E00;
+      pointer-events: none;
+      z-index: 10000;
+      transform: translate(-50%, -50%);
+    }
+
+    /* Scrubbing text word defaults */
+    .scrub-char {
+      opacity: 0.12;
+      transition: opacity 0.1s ease;
+      display: inline-block;
+    }
+
+    /* Horizontal Accordion Slices */
+    .accordion-panel {
+      transition: flex 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .accordion-panel:hover {
+      flex: 3 !important;
+    }
+
+    /* Infinite Marquee Track */
+    @keyframes marquee-left {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-50%); }
+    }
+    .animate-marquee {
+      display: flex;
+      width: max-content;
+      animation: marquee-left 32s linear infinite;
+    }
+    .animate-marquee:hover {
+      animation-play-state: paused;
+    }
+
+    /* Pill Image embedded inside headlines */
+    .inline-pill-img {
+      display: inline-block;
+      vertical-align: middle;
+      height: 0.82em;
+      width: 2.1em;
+      border-radius: 9999px;
+      background-size: cover;
+      background-position: center;
+      margin: 0 0.18em;
+      border: 1px solid rgba(255, 110, 0, 0.4);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    }
+  </style>
+</head>
+<body class="selection:bg-brand-orange selection:text-white">
+
+  <!-- ================= MOUSE FOLLOWER ================= -->
+  <div id="cursor-ball" class="hidden md:block"></div>
+  <div id="cursor-center-dot" class="hidden md:block"></div>
+
+  <!-- ================= FLOATING GLASS PILL NAVBAR ================= -->
+  <div class="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
+    <nav class="pointer-events-auto bg-surface/85 backdrop-blur-xl border border-hairline px-6 py-3 rounded-full flex items-center gap-8 shadow-2xl shadow-black/80">
+      <a href="#" class="flex items-center gap-2.5 group">
+        <span class="w-7 h-7 rounded-full bg-brand-orange text-void font-display font-black text-xs flex items-center justify-center group-hover:scale-105 transition-transform">
+          4J
+        </span>
+        <span class="font-display font-bold text-sm tracking-tight text-white group-hover:text-brand-orange transition-colors">
+          FOURJECTIVE
+        </span>
+      </a>
+
+      <div class="hidden md:flex items-center gap-6 text-xs font-medium text-subtle">
+        <a href="#karya" class="hover:text-white transition-colors">Portofolio</a>
+        <a href="#bento" class="hover:text-white transition-colors">Spesifikasi</a>
+        <a href="#filosofi" class="hover:text-white transition-colors">Filosofi</a>
+        <a href="#tema" class="hover:text-white transition-colors">Edisi Konsep</a>
+        <a href="#investasi" class="hover:text-white transition-colors">Investasi</a>
+      </div>
+
+      <a href="https://wa.me/628123456789" target="_blank" class="bg-brand-orange text-void text-xs font-bold px-4 py-2 rounded-full hover:bg-white transition-colors duration-300">
+        Konsultasi
+      </a>
+    </nav>
+  </div>
+
+  <main class="overflow-x-hidden w-full max-w-full">
+
+    <!-- ================= ATTENTION (HERO): CINEMATIC CENTER ================= -->
+    <section class="relative min-h-[92vh] flex items-center justify-center pt-32 pb-24 px-6 ambient-noise border-b border-hairline/60">
+      
+      <!-- Ambient Radial Backlight -->
+      <div class="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden">
+        <div class="w-[720px] h-[720px] rounded-full bg-brand-orange/10 blur-[140px] transform -translate-y-12"></div>
+      </div>
+
+      <div class="max-w-6xl w-full mx-auto text-center relative z-10">
+        
+        <!-- Sub-headline Category Tag -->
+        <p class="text-xs md:text-sm font-semibold tracking-widest text-brand-orange uppercase mb-8">
+          Haute-Couture Yearbooks &bull; Batch Angkatan 2026/2027
+        </p>
+
+        <!-- The 2-Line Strict Wide Headline with Inline Image Pill -->
+        <h1 class="font-display font-black text-white text-[clamp(2.75rem,5.8vw,5.5rem)] leading-[1.05] tracking-tight mb-8">
+          ARSIP MAKAKARYA 
+          <span class="inline-pill-img" style="background-image: url('images/landing-page/portfolio/dark.png');"></span>
+          BAGI GENERASI
+          <br class="hidden sm:inline" />
+          YANG MENOLAK BIASA.
+        </h1>
+
+        <!-- Crisp Editorial Subtitle -->
+        <p class="max-w-2xl mx-auto text-subtle text-base md:text-xl font-normal leading-relaxed mb-12">
+          Kami merekonstruksi buku tahunan sekolah dari sekadar katalog cetak konvensional menjadi artefak koleksi bernilai sinematik, didukung jilid eksklusif dan pengalaman interaktif Augmented Reality.
+        </p>
+
+        <!-- Two High-Contrast CTAs -->
+        <div class="flex flex-wrap items-center justify-center gap-5">
+          <a href="#karya" class="bg-brand-orange text-void font-display font-bold text-sm md:text-base px-8 py-4 rounded-full hover:bg-white hover:shadow-xl hover:shadow-brand-orange/20 transition-all duration-300 transform hover:-translate-y-0.5">
+            Eksplorasi Karya Unggulan
+          </a>
+          <a href="#bento" class="bg-elevated border border-hairline hover:border-brand-orange/60 text-white font-display font-semibold text-sm md:text-base px-8 py-4 rounded-full transition-all duration-300">
+            Standar Produksi Kami
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================= INFINITE MARQUEE STRIP ================= -->
+    <div class="border-b border-hairline/60 bg-surface/50 py-5 overflow-hidden">
+      <div class="animate-marquee flex items-center gap-12 font-display text-xs md:text-sm font-bold tracking-widest uppercase text-subtle/80">
+        <span>CINEMATIC GRADE 4K</span>
+        <span class="text-brand-orange">&bull;</span>
+        <span>AUGMENTED REALITY SYSTEM</span>
+        <span class="text-brand-orange">&bull;</span>
+        <span>MAGAZINE EDITORIAL CURATION</span>
+        <span class="text-brand-orange">&bull;</span>
+        <span>SWISS ARCHIVAL BINDING</span>
+        <span class="text-brand-orange">&bull;</span>
+        <span>CUSTOM ART DIRECTION</span>
+        <span class="text-brand-orange">&bull;</span>
+        <span>FOURJECTIVE STUDIO BANDUNG</span>
+        <span class="text-brand-orange">&bull;</span>
+        <!-- Duplicated for seamless loop -->
+        <span>CINEMATIC GRADE 4K</span>
+        <span class="text-brand-orange">&bull;</span>
+        <span>AUGMENTED REALITY SYSTEM</span>
+        <span class="text-brand-orange">&bull;</span>
+        <span>MAGAZINE EDITORIAL CURATION</span>
+        <span class="text-brand-orange">&bull;</span>
+        <span>SWISS ARCHIVAL BINDING</span>
+        <span class="text-brand-orange">&bull;</span>
+        <span>CUSTOM ART DIRECTION</span>
+        <span class="text-brand-orange">&bull;</span>
+        <span>FOURJECTIVE STUDIO BANDUNG</span>
+        <span class="text-brand-orange">&bull;</span>
+      </div>
+    </div>
+
+    <!-- ================= INTEREST: THE MATHEMATICALLY GAPLESS BENTO GRID ================= -->
+    <section id="bento" class="py-32 md:py-48 px-6 max-w-7xl mx-auto">
+      
+      <!-- Section Header -->
+      <div class="max-w-3xl mb-16">
+        <h2 class="font-display font-black text-3xl md:text-5xl text-white tracking-tight leading-tight mb-4">
+          Spesifikasi Teknis Tanpa Kompromi.
+        </h2>
+        <p class="text-subtle text-base md:text-lg">
+          Setiap instrumen produksi dikalibrasi untuk menghasilkan ketajaman warna presisi, ketahanan fisik puluhan tahun, dan kedalaman narasi emosional.
+        </p>
+      </div>
+
+      <!-- Bento Grid: grid-flow-dense with mathematically interlocking cells -->
+      <div class="grid grid-cols-12 auto-rows-[280px] gap-6 grid-flow-dense">
+        
+        <!-- CARD 1: 7 cols, 2 rows (Large Hero Focus) -->
+        <div class="col-span-12 lg:col-span-7 row-span-2 bg-surface rounded-3xl border border-hairline overflow-hidden relative group">
+          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105 opacity-40 mix-blend-luminosity contrast-125" style="background-image: url('images/landing-page/portfolio/dark.png');"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-void via-void/70 to-transparent"></div>
+          <div class="relative h-full p-8 md:p-12 flex flex-col justify-end z-10">
+            <span class="text-brand-orange text-xs font-bold uppercase tracking-wider mb-3">Sinematografi & Visual</span>
+            <h3 class="font-display font-black text-2xl md:text-4xl text-white mb-4 leading-tight">
+              Produksi Visual Cinema Grade 4K.
+            </h3>
+            <p class="text-subtle text-sm md:text-base max-w-lg leading-relaxed">
+              Perekaman dengan lensa prime anamorphic, color grading standar layar lebar, serta arahan gestur artistik yang menolak pose seragam kaku.
+            </p>
+            <div class="flex items-center gap-6 mt-8 pt-6 border-t border-hairline/80">
+              <div>
+                <div class="font-display font-bold text-xl text-white">4K RAW</div>
+                <div class="text-[11px] text-subtle">Capture Fidelity</div>
+              </div>
+              <div class="w-px h-8 bg-hairline"></div>
+              <div>
+                <div class="font-display font-bold text-xl text-white">10-Bit</div>
+                <div class="text-[11px] text-subtle">DCI-P3 Color Space</div>
+              </div>
+              <div class="w-px h-8 bg-hairline"></div>
+              <div>
+                <div class="font-display font-bold text-xl text-white">Custom Luts</div>
+                <div class="text-[11px] text-subtle">School-Specific Tone</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 2: 5 cols, 1 row (AR Integration) -->
+        <div class="col-span-12 sm:col-span-6 lg:col-span-5 row-span-1 bg-surface rounded-3xl border border-hairline p-8 flex flex-col justify-between relative overflow-hidden group hover:border-brand-orange/40 transition-colors">
+          <div class="flex items-start justify-between">
+            <div class="w-10 h-10 rounded-2xl bg-brand-orange/10 border border-brand-orange/30 flex items-center justify-center text-brand-orange">
+              <i data-lucide="layers" class="w-5 h-5"></i>
+            </div>
+            <span class="text-xs font-semibold text-subtle">Interaktivitas Digital</span>
+          </div>
+          <div>
+            <h3 class="font-display font-bold text-xl text-white mb-2">Augmented Reality Terintegrasi</h3>
+            <p class="text-subtle text-xs md:text-sm leading-relaxed">
+              Arahkan kamera smartphone ke foto halaman buku, dan potret bergerak hidup dengan rekaman suara asli angkatan.
+            </p>
+          </div>
+        </div>
+
+        <!-- CARD 3: 5 cols, 1 row (Editorial Layout) -->
+        <div class="col-span-12 sm:col-span-6 lg:col-span-5 row-span-1 bg-surface rounded-3xl border border-hairline p-8 flex flex-col justify-between relative overflow-hidden group hover:border-brand-orange/40 transition-colors">
+          <div class="flex items-start justify-between">
+            <div class="w-10 h-10 rounded-2xl bg-white/5 border border-hairline flex items-center justify-center text-white">
+              <i data-lucide="compass" class="w-5 h-5"></i>
+            </div>
+            <span class="text-xs font-semibold text-subtle">Editorial Craft</span>
+          </div>
+          <div>
+            <h3 class="font-display font-bold text-xl text-white mb-2">Tipografi & Kurasi Majalah</h3>
+            <p class="text-subtle text-xs md:text-sm leading-relaxed">
+              Grid tata letak asimetris yang dinamis terinspirasi majalah mode global, menghindari template monoton antar kelas.
+            </p>
+          </div>
+        </div>
+
+        <!-- CARD 4: 12 cols, 1 row (Signature Archival Binding) -->
+        <div class="col-span-12 row-span-1 bg-elevated rounded-3xl border border-hairline p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+          <div class="max-w-xl">
+            <span class="text-brand-orange text-xs font-bold uppercase tracking-wider block mb-2">Material Preservasi</span>
+            <h3 class="font-display font-bold text-2xl text-white mb-2">
+              Jilid Hardcover Swiss Bound & Kertas Bebas Asam
+            </h3>
+            <p class="text-subtle text-sm leading-relaxed">
+              Kertas art-paper 190gsm dengan laminasi anti-debu dan jahitan benang ganda yang menjamin buku terbuka rata 180 derajat tanpa merusak jilidan hingga puluhan tahun mendatang.
+            </p>
+          </div>
+          <div class="flex items-center gap-4 flex-shrink-0">
+            <div class="px-5 py-3 rounded-2xl bg-surface border border-hairline text-center">
+              <div class="font-display font-black text-xl text-brand-orange">190gsm</div>
+              <div class="text-[10px] text-subtle uppercase">Archival Paper</div>
+            </div>
+            <div class="px-5 py-3 rounded-2xl bg-surface border border-hairline text-center">
+              <div class="font-display font-black text-xl text-white">180&deg;</div>
+              <div class="text-[10px] text-subtle uppercase">Lay-Flat Binding</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================= DESIRE (GSAP SPLIT PINNING): FILOSOFI & MANIFESTO ================= -->
+    <section id="filosofi" class="py-32 md:py-48 px-6 max-w-7xl mx-auto border-t border-hairline/60">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+        
+        <!-- Left Column: Pinned during scroll -->
+        <div class="lg:col-span-5 gsap-pin-target">
+          <p class="text-xs font-bold text-brand-orange uppercase tracking-widest mb-4">
+            Manifesto Fourjective
+          </p>
+          <h2 class="font-display font-black text-3xl md:text-5xl text-white tracking-tight leading-tight mb-6">
+            Kenangan Yang Menolak Untuk Dilupakan.
+          </h2>
+          <p class="text-subtle text-base leading-relaxed mb-8">
+            Kami memandang masa SMA dan kelulusan bukan sekadar penutupan kalender akademik, melainkan titik balik formasi karakter manusia. Setiap halaman yang kami buat didedikasikan untuk menghormati momen autentik tersebut.
+          </p>
+          <div class="inline-flex items-center gap-3 text-sm font-semibold text-white">
+            <span class="w-8 h-px bg-brand-orange"></span>
+            <span>Standar Kurasi Studio Terbimbing</span>
+          </div>
+        </div>
+
+        <!-- Right Column: Scrolling Cards with Scale/Fade Trigger -->
+        <div class="lg:col-span-7 space-y-8">
+          
+          <div class="gsap-scroll-card p-8 md:p-10 rounded-3xl bg-surface border border-hairline">
+            <div class="text-brand-orange font-display font-black text-4xl mb-4">01</div>
+            <h3 class="font-display font-bold text-xl text-white mb-3">Kolaborasi Konsep Tanpa Batas</h3>
+            <p class="text-subtle text-sm md:text-base leading-relaxed">
+              Kami tidak memaksakan satu tema kaku ke seluruh angkatan. Tim kreatif kami mengadakan workshop intensif bersama panitia buku sekolah untuk menggali jati diri dan kultur unik setiap kelas.
+            </p>
+          </div>
+
+          <div class="gsap-scroll-card p-8 md:p-10 rounded-3xl bg-surface border border-hairline">
+            <div class="text-brand-orange font-display font-black text-4xl mb-4">02</div>
+            <h3 class="font-display font-bold text-xl text-white mb-3">Eksekusi Fotografi Berkarakter</h3>
+            <p class="text-subtle text-sm md:text-base leading-relaxed">
+              Dari set studio editorial high-fashion, tema industrial noir, hingga petualangan alam terbuka — setiap set dirancang dengan tata cahaya sinematik dan arahan wardrobe mendalam.
+            </p>
+          </div>
+
+          <div class="gsap-scroll-card p-8 md:p-10 rounded-3xl bg-surface border border-hairline">
+            <div class="text-brand-orange font-display font-black text-4xl mb-4">03</div>
+            <h3 class="font-display font-bold text-xl text-white mb-3">Transparansi Finansial & Garansi Cetak</h3>
+            <p class="text-subtle text-sm md:text-base leading-relaxed">
+              Tidak ada biaya terselubung. Sampel dummy cetak fisik disediakan sebelum produksi massal, lengkap dengan jaminan penggantian bila terjadi cacat produksi.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================= SCRUBBING TEXT REVEAL SECTION ================= -->
+    <section class="py-28 md:py-40 px-6 max-w-5xl mx-auto text-center border-t border-hairline/60">
+      <p class="text-xs font-bold text-brand-orange tracking-widest uppercase mb-8">Pernyataan Sikap</p>
+      <div id="scrub-paragraph" class="font-display font-black text-2xl sm:text-4xl md:text-5xl leading-tight text-white">
+        Buku tahunan Anda akan bertahan lebih lama dari feed media sosial, tren algoritma, dan ponsel pintar Anda. Ia adalah saksi nyata bahwa Anda pernah tertawa, berjuang, dan bersinar bersama di tempat yang sama.
+      </div>
+    </section>
+
+    <!-- ================= HORIZONTAL EXPANDABLE ACCORDION: TEMA VISUAL ================= -->
+    <section id="tema" class="py-32 md:py-48 px-6 max-w-7xl mx-auto border-t border-hairline/60">
+      
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+        <div>
+          <p class="text-xs font-bold text-brand-orange uppercase tracking-widest mb-3">Eksplorasi Konseptual</p>
+          <h2 class="font-display font-black text-3xl md:text-5xl text-white tracking-tight leading-tight">
+            Pilihan Tema Editorial Angkatan.
+          </h2>
+        </div>
+        <p class="text-subtle text-sm max-w-md">
+          Arahkan kursor ke tiap panel untuk mengeksplorasi moodboard dan atmosfer artistik yang dapat disesuaikan bagi sekolah Anda.
+        </p>
+      </div>
+
+      <!-- Horizontal Accordion Container -->
+      <div class="flex flex-col lg:flex-row h-[560px] gap-4">
+        
+        <!-- Panel 1: Dark Noir -->
+        <div class="accordion-panel flex-1 bg-surface rounded-3xl border border-hairline overflow-hidden relative group cursor-pointer">
+          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105 opacity-50 mix-blend-luminosity contrast-125" style="background-image: url('images/landing-page/portfolio/dark.png');"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-void via-void/40 to-transparent"></div>
+          <div class="relative h-full p-8 flex flex-col justify-between z-10">
+            <span class="font-display font-bold text-xs text-brand-orange uppercase tracking-wider">Edisi 01</span>
+            <div>
+              <h3 class="font-display font-black text-2xl md:text-3xl text-white mb-2">Dark Cinematic</h3>
+              <p class="text-subtle text-xs md:text-sm line-clamp-2 group-hover:line-clamp-none transition-all">
+                Pencahayaan dramatis kontras tinggi bergaya poster film laga independen dan editorial fashion malam.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 2: Colorfull Pop -->
+        <div class="accordion-panel flex-1 bg-surface rounded-3xl border border-hairline overflow-hidden relative group cursor-pointer">
+          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105 opacity-50 mix-blend-luminosity contrast-125" style="background-image: url('images/landing-page/portfolio/colorfull.png');"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-void via-void/40 to-transparent"></div>
+          <div class="relative h-full p-8 flex flex-col justify-between z-10">
+            <span class="font-display font-bold text-xs text-brand-orange uppercase tracking-wider">Edisi 02</span>
+            <div>
+              <h3 class="font-display font-black text-2xl md:text-3xl text-white mb-2">Vivid Chromatic</h3>
+              <p class="text-subtle text-xs md:text-sm line-clamp-2 group-hover:line-clamp-none transition-all">
+                Eksplorasi warna neon dan saturasi tinggi yang memancarkan energi muda dan keberanian berekspresi.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 3: Barbie Chic -->
+        <div class="accordion-panel flex-1 bg-surface rounded-3xl border border-hairline overflow-hidden relative group cursor-pointer">
+          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105 opacity-50 mix-blend-luminosity contrast-125" style="background-image: url('images/landing-page/portfolio/barbie.png');"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-void via-void/40 to-transparent"></div>
+          <div class="relative h-full p-8 flex flex-col justify-between z-10">
+            <span class="font-display font-bold text-xs text-brand-orange uppercase tracking-wider">Edisi 03</span>
+            <div>
+              <h3 class="font-display font-black text-2xl md:text-3xl text-white mb-2">Retro High-Chic</h3>
+              <p class="text-subtle text-xs md:text-sm line-clamp-2 group-hover:line-clamp-none transition-all">
+                Estetika pastel retro dengan sentuhan glamor editorial majalah era 90-an yang ceria dan terkonsep.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 4: Jumanji Adventure -->
+        <div class="accordion-panel flex-1 bg-surface rounded-3xl border border-hairline overflow-hidden relative group cursor-pointer">
+          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105 opacity-50 mix-blend-luminosity contrast-125" style="background-image: url('images/landing-page/portfolio/jumanji.png');"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-void via-void/40 to-transparent"></div>
+          <div class="relative h-full p-8 flex flex-col justify-between z-10">
+            <span class="font-display font-bold text-xs text-brand-orange uppercase tracking-wider">Edisi 04</span>
+            <div>
+              <h3 class="font-display font-black text-2xl md:text-3xl text-white mb-2">Wild Expedition</h3>
+              <p class="text-subtle text-xs md:text-sm line-clamp-2 group-hover:line-clamp-none transition-all">
+                Nuansa penjelajahan alam dengan palet earthy tone, tekstur organik, dan dinamisme outdoor.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================= ACTION: INVESTASI & FINAL CTA ================= -->
+    <section id="investasi" class="py-32 md:py-48 px-6 max-w-7xl mx-auto border-t border-hairline/60">
+      
+      <!-- Section Header -->
+      <div class="text-center max-w-2xl mx-auto mb-20">
+        <p class="text-xs font-bold text-brand-orange uppercase tracking-widest mb-3">Paket Kemitraan Sekolah</p>
+        <h2 class="font-display font-black text-3xl md:text-5xl text-white tracking-tight leading-tight mb-4">
+          Investasi Transparan. Tanpa Biaya Tersembunyi.
+        </h2>
+        <p class="text-subtle text-sm md:text-base">
+          Disesuaikan dengan jumlah siswa angkatan dan preferensi teknologi yang diinginkan panitia.
+        </p>
+      </div>
+
+      <!-- Pricing Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+        
+        <!-- Tier 1: Editorial Classic -->
+        <div class="bg-surface rounded-3xl border border-hairline p-8 flex flex-col justify-between">
+          <div>
+            <span class="text-xs font-bold text-subtle uppercase tracking-wider block mb-2">Paket Esensial</span>
+            <h3 class="font-display font-black text-2xl text-white mb-4">Editorial Classic</h3>
+            <div class="text-3xl font-display font-bold text-white mb-6">
+              Rp 320.000 <span class="text-xs text-subtle font-normal">/ siswa</span>
+            </div>
+            <ul class="space-y-3.5 text-xs md:text-sm text-subtle border-t border-hairline/80 pt-6">
+              <li class="flex items-center gap-3 text-white">
+                <i data-lucide="check" class="w-4 h-4 text-brand-orange"></i> Hardcover Jahit Benang 150 Halaman
+              </li>
+              <li class="flex items-center gap-3 text-white">
+                <i data-lucide="check" class="w-4 h-4 text-brand-orange"></i> 1 Hari Sesi Foto Studio / Outdoor
+              </li>
+              <li class="flex items-center gap-3 text-white">
+                <i data-lucide="check" class="w-4 h-4 text-brand-orange"></i> Layout Tipografi Majalah Custom
+              </li>
+              <li class="flex items-center gap-3">
+                <i data-lucide="minus" class="w-4 h-4 text-subtle"></i> Belum Termasuk Fitur Video AR
+              </li>
+            </ul>
+          </div>
+          <div class="pt-8">
+            <a href="https://wa.me/628123456789?text=Halo%20Fourjective,%20saya%20tertarik%20dengan%20Paket%20Editorial%20Classic" target="_blank" class="block w-full text-center bg-elevated hover:bg-white hover:text-void border border-hairline text-white text-xs font-bold py-3.5 rounded-full transition-all duration-300">
+              Pilih Paket Esensial
+            </a>
+          </div>
+        </div>
+
+        <!-- Tier 2: Cinematic AR (Featured High Contrast) -->
+        <div class="bg-elevated rounded-3xl border-2 border-brand-orange p-8 flex flex-col justify-between relative shadow-2xl shadow-brand-orange/10">
+          <div class="absolute -top-3.5 left-1/2 transform -translate-x-1/2 bg-brand-orange text-void text-[11px] font-black uppercase tracking-widest px-4 py-1 rounded-full">
+            Pilihan Terfavorit
+          </div>
+          <div>
+            <span class="text-xs font-bold text-brand-orange uppercase tracking-wider block mb-2">Paket Lengkap</span>
+            <h3 class="font-display font-black text-2xl text-white mb-4">Cinematic AR Suite</h3>
+            <div class="text-3xl font-display font-bold text-white mb-6">
+              Rp 450.000 <span class="text-xs text-subtle font-normal">/ siswa</span>
+            </div>
+            <ul class="space-y-3.5 text-xs md:text-sm text-white border-t border-hairline/80 pt-6">
+              <li class="flex items-center gap-3">
+                <i data-lucide="check" class="w-4 h-4 text-brand-orange"></i> Hardcover Lay-Flat 190 Halaman
+              </li>
+              <li class="flex items-center gap-3">
+                <i data-lucide="check" class="w-4 h-4 text-brand-orange"></i> 2 Hari Sesi Foto & Video Sinematik 4K
+              </li>
+              <li class="flex items-center gap-3">
+                <i data-lucide="check" class="w-4 h-4 text-brand-orange"></i> Integrasi Augmented Reality Seluruh Kelas
+              </li>
+              <li class="flex items-center gap-3">
+                <i data-lucide="check" class="w-4 h-4 text-brand-orange"></i> Video Teaser & Aftermovie Angkatan
+              </li>
+              <li class="flex items-center gap-3">
+                <i data-lucide="check" class="w-4 h-4 text-brand-orange"></i> Box Kemasan Eksklusif per Siswa
+              </li>
+            </ul>
+          </div>
+          <div class="pt-8">
+            <a href="https://wa.me/628123456789?text=Halo%20Fourjective,%20saya%20tertarik%20dengan%20Paket%20Cinematic%20AR%20Suite" target="_blank" class="block w-full text-center bg-brand-orange hover:bg-white text-void text-xs font-bold py-3.5 rounded-full transition-all duration-300">
+              Pilih Paket Lengkap
+            </a>
+          </div>
+        </div>
+
+        <!-- Tier 3: Bespoke Masterpiece -->
+        <div class="bg-surface rounded-3xl border border-hairline p-8 flex flex-col justify-between">
+          <div>
+            <span class="text-xs font-bold text-subtle uppercase tracking-wider block mb-2">Koleksi Terbatas</span>
+            <h3 class="font-display font-black text-2xl text-white mb-4">Bespoke Masterpiece</h3>
+            <div class="text-3xl font-display font-bold text-white mb-6">
+              Rp 580.000 <span class="text-xs text-subtle font-normal">/ siswa</span>
+            </div>
+            <ul class="space-y-3.5 text-xs md:text-sm text-subtle border-t border-hairline/80 pt-6">
+              <li class="flex items-center gap-3 text-white">
+                <i data-lucide="check" class="w-4 h-4 text-brand-orange"></i> Custom Fabric Cover / Acrylic Emboss
+              </li>
+              <li class="flex items-center gap-3 text-white">
+                <i data-lucide="check" class="w-4 h-4 text-brand-orange"></i> 3 Hari Sesi All-Access Creative Director
+              </li>
+              <li class="flex items-center gap-3 text-white">
+                <i data-lucide="check" class="w-4 h-4 text-brand-orange"></i> Full Film Pendek Dokumenter Angkatan
+              </li>
+              <li class="flex items-center gap-3 text-white">
+                <i data-lucide="check" class="w-4 h-4 text-brand-orange"></i> Pameran Mini Galeri Saat Peluncuran
+              </li>
+            </ul>
+          </div>
+          <div class="pt-8">
+            <a href="https://wa.me/628123456789?text=Halo%20Fourjective,%20saya%20tertarik%20dengan%20Paket%20Bespoke%20Masterpiece" target="_blank" class="block w-full text-center bg-elevated hover:bg-white hover:text-void border border-hairline text-white text-xs font-bold py-3.5 rounded-full transition-all duration-300">
+              Konsultasi Khusus
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Final Master CTA Banner -->
+      <div class="mt-20 p-10 md:p-16 rounded-3xl bg-surface border border-hairline text-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-radial-gradient from-brand-orange/10 via-transparent to-transparent pointer-events-none"></div>
+        <h3 class="font-display font-black text-2xl sm:text-4xl text-white mb-4 relative z-10">
+          Siap Menciptakan Sejarah Angkatan Anda?
+        </h3>
+        <p class="text-subtle text-sm md:text-base max-w-xl mx-auto mb-8 relative z-10">
+          Slot produksi terbatas per semester untuk menjaga kualitas jilidan fisik dan ketajaman kurasi visual.
+        </p>
+        <a href="https://wa.me/628123456789?text=Halo%20Fourjective,%20kami%20ingin%20jadwalkan%20presentasi%20di%20sekolah" target="_blank" class="inline-flex items-center gap-3 bg-brand-orange text-void font-display font-bold text-sm px-8 py-4 rounded-full hover:bg-white transition-all duration-300 relative z-10">
+          <span>Jadwalkan Presentasi di Sekolah</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
+      </div>
+
+    </section>
+
+    <!-- ================= CLEAN EDITORIAL FOOTER ================= -->
+    <footer class="border-t border-hairline/80 bg-void py-16 px-6">
+      <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+        <div>
+          <div class="flex items-center gap-3 mb-2">
+            <span class="w-6 h-6 rounded-full bg-brand-orange text-void font-display font-black text-xs flex items-center justify-center">
+              4J
+            </span>
+            <span class="font-display font-bold text-base tracking-tight text-white">FOURJECTIVE</span>
+          </div>
+          <p class="text-xs text-subtle">
+            Studio Produksi Buku Tahunan & Visual Sinematik &bull; Bandung, Indonesia
+          </p>
+        </div>
+
+        <div class="flex items-center gap-8 text-xs font-medium text-subtle">
+          <a href="#karya" class="hover:text-white transition-colors">Portofolio</a>
+          <a href="#bento" class="hover:text-white transition-colors">Spesifikasi</a>
+          <a href="#investasi" class="hover:text-white transition-colors">Investasi</a>
+          <a href="https://wa.me/628123456789" class="text-brand-orange hover:underline">WhatsApp Resmi</a>
+        </div>
+
+        <div class="text-xs text-subtle/60">
+          &copy; 2026 Fourjective Creative Studio. Hak Cipta Dilindungi.
+        </div>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- ================= GSAP SCRIPTS & LOGIC ================= -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initialize Lucide Icons
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+
+      // Register GSAP Plugin
+      gsap.registerPlugin(ScrollTrigger);
+
+      // ================= CUSTOM CURSOR (QUICKTO) =================
+      const cursorBall = document.getElementById('cursor-ball');
+      const cursorDot = document.getElementById('cursor-center-dot');
+
+      if (cursorBall && cursorDot && window.innerWidth >= 768) {
+        const xBall = gsap.quickTo(cursorBall, 'x', { duration: 0.35, ease: 'power3' });
+        const yBall = gsap.quickTo(cursorBall, 'y', { duration: 0.35, ease: 'power3' });
+        const xDot = gsap.quickTo(cursorDot, 'x', { duration: 0.08, ease: 'none' });
+        const yDot = gsap.quickTo(cursorDot, 'y', { duration: 0.08, ease: 'none' });
+
+        window.addEventListener('mousemove', (e) => {
+          xBall(e.clientX);
+          yBall(e.clientY);
+          xDot(e.clientX);
+          yDot(e.clientY);
+        }, { passive: true });
+
+        // Expand cursor on interactive links & cards
+        document.querySelectorAll('a, button, .accordion-panel').forEach(el => {
+          el.addEventListener('mouseenter', () => cursorBall.classList.add('active'));
+          el.addEventListener('mouseleave', () => cursorBall.classList.remove('active'));
+        });
+      }
+
+      // ================= GSAP MATCHMEDIA FOR ACCESSIBILITY & RESPONSIVENESS =================
+      const mm = gsap.matchMedia();
+
+      mm.add({
+        isDesktop: '(min-width: 1024px)',
+        reduceMotion: '(prefers-reduced-motion: reduce)'
+      }, (context) => {
+        const { isDesktop, reduceMotion } = context.conditions;
+
+        if (reduceMotion) return;
+
+        // 1. PINNING: Pin left column in Filosofi section while right cards scroll
+        if (isDesktop) {
+          ScrollTrigger.create({
+            trigger: '#filosofi',
+            start: 'top 120px',
+            end: 'bottom bottom',
+            pin: '.gsap-pin-target',
+            pinSpacing: false,
+            anticipatePin: 1
+          });
+        }
+
+        // 2. SCROLL CARD SCALE & FADE
+        document.querySelectorAll('.gsap-scroll-card').forEach(card => {
+          gsap.fromTo(card,
+            { scale: 0.94, opacity: 0.6 },
+            {
+              scale: 1,
+              opacity: 1,
+              duration: 0.8,
+              ease: 'power2.out',
+              scrollTrigger: {
+                trigger: card,
+                start: 'top 85%',
+                end: 'top 45%',
+                scrub: true
+              }
+            }
+          );
+        });
+
+        // 3. SCRUBBING PARAGRAPH TEXT REVEAL
+        const paragraphEl = document.getElementById('scrub-paragraph');
+        if (paragraphEl) {
+          const rawWords = paragraphEl.textContent.trim().split(/\s+/);
+          paragraphEl.innerHTML = '';
+          rawWords.forEach(w => {
+            const span = document.createElement('span');
+            span.className = 'scrub-char mr-2';
+            span.textContent = w;
+            paragraphEl.appendChild(span);
+          });
+
+          const wordSpans = paragraphEl.querySelectorAll('.scrub-char');
+          gsap.to(wordSpans, {
+            opacity: 1,
+            stagger: 0.05,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: paragraphEl,
+              start: 'top 75%',
+              end: 'bottom 40%',
+              scrub: 1.5
+            }
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

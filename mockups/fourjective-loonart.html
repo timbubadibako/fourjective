@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fourjective × Loon Art Aesthetic | Yearbook Creative Lab</title>
+  
+  <!-- Fonts: Oswald (Headlines) & Plus Jakarta Sans (Body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            headline: ['Oswald', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            canvas: '#FAF6F0',
+            paper: '#FFFFFF',
+            dark: '#18181B',
+            muted: '#71717A',
+            accent: {
+              yellow: '#FDE047',
+              lilac: '#DDD6FE',
+              coral: '#FB7185',
+              mint: '#A7F3D0',
+              blue: '#BAE6FD',
+              purple: '#7C3AED'
+            }
+          },
+          boxShadow: {
+            'brutal': '4px 4px 0px #18181B',
+            'brutal-lg': '6px 6px 0px #18181B',
+            'brutal-xl': '8px 8px 0px #18181B',
+            'brutal-sm': '2px 2px 0px #18181B',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- GSAP & ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <style>
+    body {
+      background-color: #FAF6F0;
+      color: #18181B;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow-x: hidden;
+    }
+    
+    /* Noise texture overlay */
+    .bg-noise {
+      background-image: radial-gradient(rgba(24, 24, 27, 0.08) 1px, transparent 0);
+      background-size: 24px 24px;
+    }
+
+    /* Sticker floating badges */
+    .sticker-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+      border: 2px solid #18181B;
+      box-shadow: 2px 2px 0px #18181B;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .sticker-badge:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 3px 3px 0px #18181B;
+    }
+
+    /* Marquee Track */
+    .marquee-track {
+      display: flex;
+      width: max-content;
+      animation: marquee 25s linear infinite;
+    }
+    .marquee-track:hover {
+      animation-play-state: paused;
+    }
+    @keyframes marquee {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* Equalizer animation for music widget */
+    .bar {
+      display: inline-block;
+      width: 3px;
+      background: #18181B;
+      border-radius: 2px;
+      animation: equalize 1s infinite alternate ease-in-out;
+    }
+    .bar:nth-child(1) { height: 14px; animation-delay: 0.1s; }
+    .bar:nth-child(2) { height: 20px; animation-delay: 0.3s; }
+    .bar:nth-child(3) { height: 8px;  animation-delay: 0.5s; }
+    .bar:nth-child(4) { height: 16px; animation-delay: 0.2s; }
+    @keyframes equalize {
+      0% { transform: scaleY(0.4); }
+      100% { transform: scaleY(1); }
+    }
+    .equalizer-paused .bar {
+      animation: none;
+      height: 4px;
+    }
+  </style>
+</head>
+<body class="relative min-h-screen bg-noise selection:bg-[#FDE047] selection:text-black">
+
+  <!-- ================= TOP NOTICE BAR ================= -->
+  <div class="border-b-2 border-dark bg-accent-yellow px-4 py-2 font-headline text-xs md:text-sm tracking-wider uppercase text-center font-bold">
+    <div class="flex items-center justify-center gap-2">
+      <span class="inline-block w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+      <span>FOURJECTIVE 2026/2027 BOOKING BATCH 1 OPEN: TERSISA 4 SLOT ANGKATAN JABODETABEK & JAWA BARAT</span>
+    </div>
+  </div>
+
+  <!-- ================= FLOATING NAVBAR ================= -->
+  <header class="sticky top-4 z-50 px-4 md:px-8 max-w-7xl mx-auto">
+    <nav class="bg-paper border-2 border-dark rounded-2xl shadow-brutal px-5 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="#" class="flex items-center gap-2 group">
+          <div class="w-10 h-10 rounded-xl bg-dark text-accent-yellow flex items-center justify-center font-headline font-bold text-xl border-2 border-dark group-hover:rotate-6 transition-transform">
+            4J
+          </div>
+          <div>
+            <span class="font-headline font-bold text-2xl tracking-wide leading-none block">FOURJECTIVE</span>
+            <span class="text-[10px] font-bold uppercase tracking-widest text-muted block">Yearbook & Creative Lab</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="hidden lg:flex items-center gap-8 font-headline font-medium text-lg uppercase tracking-wide">
+        <a href="#services" class="hover:text-accent-purple transition-colors flex items-center gap-1">
+          Layanan
+          <span class="text-[9px] bg-accent-lilac border border-dark px-1.5 py-0.5 rounded-full font-sans font-bold">4 Lab</span>
+        </a>
+        <a href="#flipbook" class="hover:text-accent-purple transition-colors">Demo 3D E-Book</a>
+        <a href="#portfolio" class="hover:text-accent-purple transition-colors">Portofolio Angkatan</a>
+        <a href="#stats" class="hover:text-accent-purple transition-colors">Statistik</a>
+        <a href="#quote" class="hover:text-accent-purple transition-colors">Estimator Biaya</a>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="#quote" class="hidden sm:inline-flex items-center gap-2 bg-accent-yellow text-dark font-headline text-base uppercase font-bold px-4 py-2 rounded-xl border-2 border-dark shadow-brutal-sm hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+          Mulai Projek
+        </a>
+        <a href="https://wa.me/628123456789" target="_blank" class="p-2 rounded-xl border-2 border-dark bg-accent-mint hover:bg-emerald-300 transition-colors shadow-brutal-sm" title="WhatsApp Konsultasi">
+          <i data-lucide="message-circle" class="w-5 h-5 text-dark"></i>
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ================= HERO SECTION (LOON ART INFLUENCE) ================= -->
+  <section class="relative pt-12 pb-20 md:pt-20 md:pb-32 px-4 md:px-8 max-w-7xl mx-auto overflow-hidden">
+    
+    <!-- Floating Sticker Pins -->
+    <div class="absolute top-10 left-6 -rotate-6 hidden lg:block z-10 hero-sticker">
+      <span class="sticker-badge bg-accent-coral text-white">
+        <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+        CINEMATIC 4K REWIND
+      </span>
+    </div>
+
+    <div class="absolute top-8 right-12 rotate-3 hidden lg:block z-10 hero-sticker">
+      <span class="sticker-badge bg-accent-lilac text-dark">
+        <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
+        AUGMENTED REALITY (AR) READY
+      </span>
+    </div>
+
+    <div class="absolute bottom-16 left-12 rotate-2 hidden lg:block z-10 hero-sticker">
+      <span class="sticker-badge bg-accent-mint text-dark">
+        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+        100% GARANSI SELESAI TEPAT WAKTU
+      </span>
+    </div>
+
+    <!-- Main Hero Content -->
+    <div class="text-center max-w-4xl mx-auto space-y-6">
+      
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border-2 border-dark bg-white shadow-brutal-sm text-xs font-bold uppercase tracking-wider">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        Eksplorasi Format Buku Tahunan Generasi Baru
+      </div>
+
+      <h1 class="hero-title font-headline font-bold text-5xl sm:text-7xl md:text-8xl tracking-tight uppercase leading-[0.95] text-dark">
+        REKAYASA MEMORI <br/>
+        <span class="relative inline-block text-accent-purple">
+          TERBAIK SEKOLAH
+          <svg class="absolute -bottom-2 left-0 w-full" height="12" viewBox="0 0 100 12" preserveAspectRatio="none">
+            <path d="M0,8 Q50,0 100,8" stroke="#FDE047" stroke-width="6" fill="none" stroke-linecap="round"/>
+          </svg>
+        </span>
+      </h1>
+
+      <p class="hero-desc font-sans text-base md:text-xl text-stone-700 max-w-2xl mx-auto leading-relaxed">
+        Fourjective bukan sekadar percetakan biasa. Kami memadukan sinematografi film pendek, teknologi Augmented Reality (AR), kurasi editorial majalah, dan cetak eksklusif agar masa sekolahmu abadi.
+      </p>
+
+      <!-- Action Buttons -->
+      <div class="hero-actions flex flex-wrap items-center justify-center gap-4 pt-4">
+        <a href="#flipbook" class="inline-flex items-center gap-3 bg-dark text-white font-headline text-lg uppercase font-bold px-7 py-3.5 rounded-2xl border-2 border-dark shadow-brutal hover:bg-accent-purple hover:text-white transition-all transform hover:-translate-y-1">
+          <i data-lucide="book-open" class="w-5 h-5 text-accent-yellow"></i>
+          Buka Demo 3D E-Book
+        </a>
+        <a href="#services" class="inline-flex items-center gap-3 bg-white text-dark font-headline text-lg uppercase font-bold px-7 py-3.5 rounded-2xl border-2 border-dark shadow-brutal hover:bg-accent-yellow transition-all transform hover:-translate-y-1">
+          <i data-lucide="sparkles" class="w-5 h-5 text-dark"></i>
+          Jelajahi 4 Layanan
+        </a>
+      </div>
+
+      <!-- Trust Badges -->
+      <div class="pt-8 flex flex-wrap items-center justify-center gap-6 text-xs uppercase font-bold tracking-wider text-muted">
+        <span class="flex items-center gap-1.5"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i> Bebas Revisi Layout</span>
+        <span class="flex items-center gap-1.5"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i> Drone 4K Termasuk</span>
+        <span class="flex items-center gap-1.5"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i> Studio Delivery Ke Sekolah</span>
+      </div>
+    </div>
+
+    <!-- Interactive Hero Graphic Showcase (Loon Art Card Stack Style) -->
+    <div class="mt-14 relative max-w-5xl mx-auto hero-cards-container">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Card 1: Photography -->
+        <div class="bg-paper border-2 border-dark rounded-3xl p-6 shadow-brutal hover:shadow-brutal-xl transition-all duration-300 transform md:-rotate-2 group">
+          <div class="flex justify-between items-start mb-4">
+            <span class="sticker-badge bg-accent-yellow text-dark">01 / CONCEPT</span>
+            <i data-lucide="sparkles" class="w-5 h-5 text-dark group-hover:rotate-45 transition-transform"></i>
+          </div>
+          <div class="h-44 rounded-2xl border-2 border-dark bg-stone-100 overflow-hidden relative mb-4">
+            <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=600&q=80" alt="Photoshoot Angkatan" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <span class="absolute bottom-2 left-2 bg-dark/80 backdrop-blur text-white text-[11px] font-bold px-2 py-0.5 rounded-md">Retro School Theme</span>
+          </div>
+          <h3 class="font-headline font-bold text-2xl uppercase">Photoshoot & Studio Delivery</h3>
+          <p class="text-sm text-stone-600 mt-1">Sesi foto tematik indoor & outdoor dengan lighting studio langsung dibawa ke sekolahmu.</p>
+        </div>
+
+        <!-- Card 2: Cinematic Film -->
+        <div class="bg-paper border-2 border-dark rounded-3xl p-6 shadow-brutal hover:shadow-brutal-xl transition-all duration-300 transform md:rotate-1 md:-translate-y-4 group">
+          <div class="flex justify-between items-start mb-4">
+            <span class="sticker-badge bg-accent-coral text-white">02 / CINEMATIC</span>
+            <span class="flex h-3 w-3 relative">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+            </span>
+          </div>
+          <div class="h-44 rounded-2xl border-2 border-dark bg-dark overflow-hidden relative mb-4 flex items-center justify-center">
+            <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80" alt="Video Movie" class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500" />
+            <div class="absolute w-12 h-12 rounded-full bg-white border-2 border-dark flex items-center justify-center shadow-brutal-sm">
+              <i data-lucide="play" class="w-5 h-5 text-dark ml-0.5"></i>
+            </div>
+          </div>
+          <h3 class="font-headline font-bold text-2xl uppercase">Short Movie & Aftermovie</h3>
+          <p class="text-sm text-stone-600 mt-1">Bukan sekadar kompilasi foto, kami memproduksi film naratif angkatan berstandar festival.</p>
+        </div>
+
+        <!-- Card 3: Augmented Reality -->
+        <div class="bg-paper border-2 border-dark rounded-3xl p-6 shadow-brutal hover:shadow-brutal-xl transition-all duration-300 transform md:rotate-2 group">
+          <div class="flex justify-between items-start mb-4">
+            <span class="sticker-badge bg-accent-lilac text-dark">03 / DIGITAL AR</span>
+            <i data-lucide="zap" class="w-5 h-5 text-accent-purple group-hover:scale-125 transition-transform"></i>
+          </div>
+          <div class="h-44 rounded-2xl border-2 border-dark bg-stone-100 overflow-hidden relative mb-4">
+            <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80" alt="AR Book" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <span class="absolute top-2 right-2 bg-accent-yellow text-dark text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border border-dark">Scan via HP</span>
+          </div>
+          <h3 class="font-headline font-bold text-2xl uppercase">Augmented Reality Book</h3>
+          <p class="text-sm text-stone-600 mt-1">Arahkan kamera HP ke halaman buku, dan tonton foto bergerak menjadi video hidup seketika.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= RUNNING MARQUEE ================= -->
+  <div class="border-y-2 border-dark bg-dark text-accent-yellow py-3 overflow-hidden select-none">
+    <div class="marquee-track flex items-center gap-8 font-headline font-bold text-xl md:text-2xl uppercase tracking-widest">
+      <span>★ FOURJECTIVE CREATIVE LAB</span>
+      <span>★ DO THE BEST FOR THE BEST MOMENT</span>
+      <span>★ 100% HUMAN SOUL</span>
+      <span>★ 4K CINEMATIC REWIND</span>
+      <span>★ AR SMART YEARBOOK</span>
+      <span>★ CUSTOM MERCHANDISE</span>
+      <span>★ BEBAS REVISI DESIGN</span>
+      <span>★ FOURJECTIVE CREATIVE LAB</span>
+      <span>★ DO THE BEST FOR THE BEST MOMENT</span>
+      <span>★ 100% HUMAN SOUL</span>
+      <span>★ 4K CINEMATIC REWIND</span>
+      <span>★ AR SMART YEARBOOK</span>
+    </div>
+  </div>
+
+  <!-- ================= QUANTITATIVE STATS (SCROLLTRIGGER ANIMATED) ================= -->
+  <section id="stats" class="py-16 md:py-24 px-4 md:px-8 max-w-7xl mx-auto">
+    <div class="bg-paper border-2 border-dark rounded-3xl p-8 md:p-12 shadow-brutal">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-y-2 md:divide-y-0 md:divide-x-2 divide-dark/20">
+        
+        <div class="pt-4 md:pt-0">
+          <div class="font-headline font-bold text-5xl md:text-7xl text-dark flex items-center justify-center">
+            <span class="counter-num" data-target="150">0</span><span class="text-accent-purple">+</span>
+          </div>
+          <p class="font-headline text-base md:text-lg uppercase text-stone-700 tracking-wider mt-1">Sekolah & Angkatan</p>
+          <span class="text-xs text-muted">Jabodetabek, Bandung, Jogja</span>
+        </div>
+
+        <div class="pt-4 md:pt-0 md:pl-6">
+          <div class="font-headline font-bold text-5xl md:text-7xl text-dark flex items-center justify-center">
+            <span class="counter-num" data-target="45000">0</span><span class="text-accent-coral">+</span>
+          </div>
+          <p class="font-headline text-base md:text-lg uppercase text-stone-700 tracking-wider mt-1">Siswa Terdokumentasi</p>
+          <span class="text-xs text-muted">Senyuman & Cerita Abadi</span>
+        </div>
+
+        <div class="pt-4 md:pt-0 md:pl-6">
+          <div class="font-headline font-bold text-5xl md:text-7xl text-dark flex items-center justify-center">
+            <span class="counter-num" data-target="100">0</span><span class="text-emerald-500">%</span>
+          </div>
+          <p class="font-headline text-base md:text-lg uppercase text-stone-700 tracking-wider mt-1">AR Enabled Yearbook</p>
+          <span class="text-xs text-muted">Scan & Tonton Video</span>
+        </div>
+
+        <div class="pt-4 md:pt-0 md:pl-6">
+          <div class="font-headline font-bold text-5xl md:text-7xl text-dark flex items-center justify-center">
+            <span class="counter-num" data-target="8">0</span><span class="text-accent-yellow">Th</span>
+          </div>
+          <p class="font-headline text-base md:text-lg uppercase text-stone-700 tracking-wider mt-1">Dedikasi Pengalaman</p>
+          <span class="text-xs text-muted">Konsistensi Mutu Cetak</span>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 3D DIGITAL FLIPBOOK INTERACTIVE SHOWCASE ================= -->
+  <section id="flipbook" class="py-16 md:py-24 px-4 md:px-8 max-w-7xl mx-auto">
+    <div class="text-center max-w-2xl mx-auto mb-12">
+      <span class="sticker-badge bg-accent-blue text-dark mb-3">
+        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+        INTERACTIVE DEMO
+      </span>
+      <h2 class="font-headline font-bold text-4xl md:text-6xl uppercase tracking-tight">
+        DEMO 3D DIGITAL E-BOOK
+      </h2>
+      <p class="text-stone-600 mt-2 text-base md:text-lg">
+        Buku fisik Fourjective dapat dibuka di mana saja melalui smartphone atau laptop dengan pengalaman membalik halaman yang nyata.
+      </p>
+    </div>
+
+    <!-- Flipbook Viewer Box -->
+    <div class="bg-dark text-white border-3 border-dark rounded-3xl p-6 md:p-12 shadow-brutal-xl relative overflow-hidden">
+      <!-- Top controls -->
+      <div class="flex flex-wrap items-center justify-between pb-6 border-b border-white/20 gap-4">
+        <div class="flex items-center gap-3">
+          <span class="w-3 h-3 rounded-full bg-red-500"></span>
+          <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
+          <span class="w-3 h-3 rounded-full bg-green-500"></span>
+          <span class="font-headline font-medium text-sm md:text-base tracking-wider uppercase ml-2 text-white/80">
+            SMA NEGERI 28 JAKARTA — ANGKATAN 36 "VALKYRIE"
+          </span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-mono bg-white/10 px-3 py-1 rounded-full border border-white/20" id="page-counter">
+            Spread 02 / 12
+          </span>
+          <button id="toggle-fullscreen" class="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors" title="Zoom Mode">
+            <i data-lucide="maximize-2" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Spread Presentation -->
+      <div class="py-8 md:py-12 flex items-center justify-center relative">
+        
+        <!-- Spread Container -->
+        <div class="relative w-full max-w-4xl aspect-[16/10] bg-stone-900 rounded-2xl border-2 border-white/20 shadow-2xl flex overflow-hidden group" id="spread-container">
+          
+          <!-- Left Page -->
+          <div class="w-1/2 h-full bg-[#FAF6F0] text-dark p-6 md:p-10 border-r-2 border-dark/20 relative flex flex-col justify-between" id="page-left">
+            <div>
+              <div class="flex justify-between items-center mb-4">
+                <span class="text-[10px] font-bold uppercase tracking-widest text-muted">Science & Tech Class</span>
+                <span class="font-mono text-xs text-muted">#PAGE-18</span>
+              </div>
+              <h3 class="font-headline font-bold text-2xl md:text-4xl uppercase leading-none">
+                LABORATORIUM & TAWAS
+              </h3>
+              <p class="text-xs md:text-sm text-stone-600 mt-3 line-clamp-4">
+                "Tiga tahun kita berkutat dengan larutan kimia dan rumus fisika yang tak berujung, tapi yang paling berharga adalah canda tawa di meja paling belakang saat jam kosong."
+              </p>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-dark/10 flex items-center justify-between">
+              <span class="sticker-badge bg-accent-coral text-white text-[9px]">AR VIDEO ATTACHED</span>
+              <span class="text-[11px] font-bold uppercase text-stone-500">Wali Kelas: Drs. Hartono</span>
+            </div>
+          </div>
+
+          <!-- Right Page -->
+          <div class="w-1/2 h-full bg-stone-200 relative overflow-hidden flex items-center justify-center" id="page-right">
+            <img id="spread-img" src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1000&q=80" alt="Students Yearbook" class="w-full h-full object-cover transition-opacity duration-300" />
+            
+            <!-- AR Scan Overlay Pin -->
+            <div class="absolute bottom-4 right-4 bg-dark/90 backdrop-blur border border-accent-yellow rounded-xl p-3 text-left max-w-[200px] shadow-lg">
+              <div class="flex items-center gap-1.5 text-accent-yellow text-xs font-bold uppercase mb-1">
+                <i data-lucide="scan" class="w-4 h-4"></i> AR Ready
+              </div>
+              <p class="text-[10px] text-stone-300 leading-tight">Scan foto ini dengan aplikasi Fourjective untuk menonton video rewind kelas.</p>
+            </div>
+          </div>
+
+          <!-- Center Book Spine Shadow -->
+          <div class="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-full bg-gradient-to-r from-black/30 via-transparent to-black/30 pointer-events-none"></div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Flip Buttons -->
+      <div class="flex items-center justify-center gap-4 pt-4">
+        <button id="btn-prev-page" class="inline-flex items-center gap-2 bg-white text-dark font-headline text-base uppercase font-bold px-5 py-2.5 rounded-xl border-2 border-dark shadow-brutal hover:bg-accent-yellow transition-all">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> Halaman Sebelumnya
+        </button>
+        <button id="btn-next-page" class="inline-flex items-center gap-2 bg-accent-yellow text-dark font-headline text-base uppercase font-bold px-5 py-2.5 rounded-xl border-2 border-dark shadow-brutal hover:bg-white transition-all">
+          Halaman Berikutnya <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 4 SERVICE LABS (ACCORDION / TABS) ================= -->
+  <section id="services" class="py-16 md:py-24 px-4 md:px-8 max-w-7xl mx-auto">
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+      <div>
+        <span class="sticker-badge bg-accent-lilac text-dark mb-3">OUR CORE DISCIPLINES</span>
+        <h2 class="font-headline font-bold text-4xl md:text-6xl uppercase tracking-tight">
+          4 PILAR PRODUKSI FOURJECTIVE
+        </h2>
+      </div>
+      <p class="text-stone-600 max-w-md text-sm md:text-base">
+        Setiap projek ditangani oleh spesialis departemen: Sutradara, Fotografer Editorial, Desainer Grafis, dan Tim Cetak Presisi.
+      </p>
+    </div>
+
+    <!-- 4 Pillar Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      
+      <!-- Lab 1 -->
+      <div class="bg-paper border-2 border-dark rounded-3xl p-8 shadow-brutal hover:shadow-brutal-xl transition-all duration-300">
+        <div class="flex justify-between items-start mb-6">
+          <div class="w-12 h-12 rounded-2xl bg-accent-yellow border-2 border-dark flex items-center justify-center shadow-brutal-sm">
+            <i data-lucide="camera" class="w-6 h-6 text-dark"></i>
+          </div>
+          <span class="font-headline font-bold text-3xl text-stone-300">01</span>
+        </div>
+        <h3 class="font-headline font-bold text-3xl uppercase">Studio & Photoshoot Delivery</h3>
+        <p class="text-stone-600 mt-2 text-sm md:text-base leading-relaxed">
+          Kami memindahkan studio foto komersial lengkap dengan lighting pro, background cyclorama, dan props tematik langsung ke aula atau lapangan sekolahmu.
+        </p>
+        <ul class="mt-6 space-y-2.5 text-sm font-medium border-t-2 border-dark/10 pt-6">
+          <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-accent-purple font-bold"></i> Sesi Foto Kelas, Guru, Ekstrakurikuler, & Angkatan</li>
+          <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-accent-purple font-bold"></i> Pengarah Gaya & Moodboard Khusus per Kelas</li>
+          <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-accent-purple font-bold"></i> Color Grading Retouching Halus & Natural</li>
+        </ul>
+      </div>
+
+      <!-- Lab 2 -->
+      <div class="bg-paper border-2 border-dark rounded-3xl p-8 shadow-brutal hover:shadow-brutal-xl transition-all duration-300">
+        <div class="flex justify-between items-start mb-6">
+          <div class="w-12 h-12 rounded-2xl bg-accent-coral border-2 border-dark flex items-center justify-center shadow-brutal-sm text-white">
+            <i data-lucide="video" class="w-6 h-6"></i>
+          </div>
+          <span class="font-headline font-bold text-3xl text-stone-300">02</span>
+        </div>
+        <h3 class="font-headline font-bold text-3xl uppercase">Cinematic Aftermovie & Rewind</h3>
+        <p class="text-stone-600 mt-2 text-sm md:text-base leading-relaxed">
+          Dokumentasi audio-visual sinematik 4K lengkap dengan wawancara sentimental, drone aerial shoot, dan soundtrack original yang menggetarkan hati.
+        </p>
+        <ul class="mt-6 space-y-2.5 text-sm font-medium border-t-2 border-dark/10 pt-6">
+          <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-accent-coral font-bold"></i> Teaser Instagram Reels & TikTok Unlimited Trend</li>
+          <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-accent-coral font-bold"></i> Film Pendek / Aftermovie Angkatan Resolusi 4K</li>
+          <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-accent-coral font-bold"></i> Pilot Drone Berlisensi untuk Aerial School Views</li>
+        </ul>
+      </div>
+
+      <!-- Lab 3 -->
+      <div class="bg-paper border-2 border-dark rounded-3xl p-8 shadow-brutal hover:shadow-brutal-xl transition-all duration-300">
+        <div class="flex justify-between items-start mb-6">
+          <div class="w-12 h-12 rounded-2xl bg-accent-lilac border-2 border-dark flex items-center justify-center shadow-brutal-sm">
+            <i data-lucide="layers" class="w-6 h-6 text-dark"></i>
+          </div>
+          <span class="font-headline font-bold text-3xl text-stone-300">03</span>
+        </div>
+        <h3 class="font-headline font-bold text-3xl uppercase">Augmented Reality & Web Portal</h3>
+        <p class="text-stone-600 mt-2 text-sm md:text-base leading-relaxed">
+          Menghubungkan cetakan kertas fisik dengan dunia digital tanpa batas. Cukup arahkan smartphone ke buku untuk streaming kenangan bergerak.
+        </p>
+        <ul class="mt-6 space-y-2.5 text-sm font-medium border-t-2 border-dark/10 pt-6">
+          <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-accent-purple font-bold"></i> AR Scan Video Interaktif Terintegrasi Cover & Isi</li>
+          <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-accent-purple font-bold"></i> E-Book Flipbook Cloud Selamanya (Lifetime Archive)</li>
+          <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-accent-purple font-bold"></i> Database Kontak Alumni Digital Terenkripsi Aman</li>
+        </ul>
+      </div>
+
+      <!-- Lab 4 -->
+      <div class="bg-paper border-2 border-dark rounded-3xl p-8 shadow-brutal hover:shadow-brutal-xl transition-all duration-300">
+        <div class="flex justify-between items-start mb-6">
+          <div class="w-12 h-12 rounded-2xl bg-accent-mint border-2 border-dark flex items-center justify-center shadow-brutal-sm">
+            <i data-lucide="package" class="w-6 h-6 text-dark"></i>
+          </div>
+          <span class="font-headline font-bold text-3xl text-stone-300">04</span>
+        </div>
+        <h3 class="font-headline font-bold text-3xl uppercase">Premium Print & Box Merch</h3>
+        <p class="text-stone-600 mt-2 text-sm md:text-base leading-relaxed">
+          Kualitas cetak offset presisi tinggi dengan jilid jahit benang kokoh, laminasi doff velvet, foil embossing, dan boks packaging kustom.
+        </p>
+        <ul class="mt-6 space-y-2.5 text-sm font-medium border-t-2 border-dark/10 pt-6">
+          <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600 font-bold"></i> Kertas Art Paper / Fancy Import 150-210 GSM</li>
+          <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600 font-bold"></i> Hardcover Rigid Box dengan Magnet Lock Kustom</li>
+          <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600 font-bold"></i> Merch Angkatan: Kaos, Totebag, Lanyard, & Medali</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= INTERACTIVE ESTIMATOR & INQUIRY ================= -->
+  <section id="quote" class="py-16 md:py-24 px-4 md:px-8 max-w-5xl mx-auto">
+    <div class="bg-accent-yellow border-3 border-dark rounded-3xl p-8 md:p-12 shadow-brutal-xl">
+      <div class="text-center max-w-xl mx-auto mb-10">
+        <span class="sticker-badge bg-white text-dark mb-2">SIMULASI CEPAT</span>
+        <h2 class="font-headline font-bold text-3xl md:text-5xl uppercase tracking-tight">
+          ESTIMASI PAKET ANGKATAN
+        </h2>
+        <p class="text-stone-800 text-sm md:text-base mt-2">
+          Pilih jumlah siswa dan paket fitur yang diinginkan untuk mendapatkan rekomendasi anggaran terbaik.
+        </p>
+      </div>
+
+      <div class="bg-white border-2 border-dark rounded-2xl p-6 md:p-8 shadow-brutal space-y-6">
+        
+        <!-- Slider Siswa -->
+        <div>
+          <div class="flex justify-between items-center mb-2 font-headline font-bold text-lg uppercase">
+            <span>Estimasi Jumlah Siswa:</span>
+            <span class="bg-dark text-accent-yellow px-3 py-1 rounded-lg text-xl" id="student-display">250 Siswa</span>
+          </div>
+          <input type="range" min="80" max="600" step="10" value="250" class="w-full h-3 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-dark" id="student-slider">
+          <div class="flex justify-between text-xs text-stone-500 font-bold mt-1">
+            <span>80 Siswa</span>
+            <span>250 Siswa</span>
+            <span>600+ Siswa</span>
+          </div>
+        </div>
+
+        <!-- Pilihan Paket -->
+        <div>
+          <label class="block font-headline font-bold text-lg uppercase mb-3">Tingkat Paket:</label>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            <label class="border-2 border-dark rounded-xl p-4 cursor-pointer hover:bg-accent-lilac/30 transition-all flex flex-col justify-between package-card bg-accent-lilac/20">
+              <input type="radio" name="package" value="essential" class="sr-only" checked>
+              <div>
+                <span class="font-headline font-bold text-xl uppercase block">1. Paket Signature</span>
+                <p class="text-xs text-stone-600 mt-1">Buku Hardcover + Photoshoot Studio + E-Book Flipbook</p>
+              </div>
+              <span class="font-headline font-bold text-lg text-accent-purple mt-3">Mulai Rp 275rb/siswa</span>
+            </label>
+
+            <label class="border-2 border-dark rounded-xl p-4 cursor-pointer hover:bg-accent-yellow/30 transition-all flex flex-col justify-between package-card">
+              <input type="radio" name="package" value="ar-plus" class="sr-only">
+              <div>
+                <span class="font-headline font-bold text-xl uppercase block">2. Paket AR + Cinema</span>
+                <p class="text-xs text-stone-600 mt-1">Buku Hardcover + Augmented Reality + Teaser & Aftermovie</p>
+              </div>
+              <span class="font-headline font-bold text-lg text-dark mt-3">Mulai Rp 360rb/siswa</span>
+            </label>
+
+            <label class="border-2 border-dark rounded-xl p-4 cursor-pointer hover:bg-accent-coral/30 transition-all flex flex-col justify-between package-card">
+              <input type="radio" name="package" value="ultimate" class="sr-only">
+              <div>
+                <span class="font-headline font-bold text-xl uppercase block">3. Paket Ultimate Box</span>
+                <p class="text-xs text-stone-600 mt-1">Full AR + Short Movie 4K + Rigid Box Kustom + Merch Set</p>
+              </div>
+              <span class="font-headline font-bold text-lg text-accent-coral mt-3">Mulai Rp 465rb/siswa</span>
+            </label>
+
+          </div>
+        </div>
+
+        <!-- Summary & WA CTA -->
+        <div class="pt-4 border-t-2 border-dark/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <span class="text-xs text-stone-500 font-bold uppercase block">Rekomendasi Anggaran Total Angkatan:</span>
+            <span class="font-headline font-bold text-3xl md:text-4xl text-dark" id="total-estimate">Rp 68.750.000</span>
+          </div>
+          <button id="send-wa-quote" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-dark text-white font-headline text-lg uppercase font-bold px-8 py-3.5 rounded-xl border-2 border-dark shadow-brutal hover:bg-emerald-600 transition-all">
+            <i data-lucide="message-square" class="w-5 h-5 text-accent-yellow"></i>
+            Klaim Diskon & Proposal PDF
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="bg-dark text-white border-t-2 border-dark pt-16 pb-28 px-4 md:px-8">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
+      
+      <div class="space-y-4">
+        <div class="flex items-center gap-2">
+          <div class="w-10 h-10 rounded-xl bg-accent-yellow text-dark flex items-center justify-center font-headline font-bold text-xl">
+            4J
+          </div>
+          <span class="font-headline font-bold text-3xl tracking-wide">FOURJECTIVE</span>
+        </div>
+        <p class="text-stone-400 text-sm leading-relaxed">
+          Laboratorium kreatif buku tahunan, produksi film pendek masa sekolah, dan integrasi Augmented Reality. Do the best for the best moment.
+        </p>
+      </div>
+
+      <div>
+        <h4 class="font-headline font-bold text-xl uppercase text-accent-yellow mb-4">Layanan Studio</h4>
+        <ul class="space-y-2 text-sm text-stone-300">
+          <li><a href="#services" class="hover:text-white transition-colors">Photoshoot & Studio Delivery</a></li>
+          <li><a href="#services" class="hover:text-white transition-colors">Aftermovie & Drone Rewind</a></li>
+          <li><a href="#services" class="hover:text-white transition-colors">Augmented Reality Book</a></li>
+          <li><a href="#services" class="hover:text-white transition-colors">Custom Packaging & Merch</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="font-headline font-bold text-xl uppercase text-accent-yellow mb-4">Hubungi Kami</h4>
+        <ul class="space-y-2 text-sm text-stone-300">
+          <li class="flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4 text-accent-yellow"></i> Jakarta & Jawa Barat</li>
+          <li class="flex items-center gap-2"><i data-lucide="mail" class="w-4 h-4 text-accent-yellow"></i> halo@fourjective.com</li>
+          <li class="flex items-center gap-2"><i data-lucide="phone" class="w-4 h-4 text-accent-yellow"></i> +62 812-3456-7890</li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="font-headline font-bold text-xl uppercase text-accent-yellow mb-4">Legal & Hak Cipta</h4>
+        <p class="text-xs text-stone-400 leading-relaxed">
+          &copy; 2026 PT Fourjective Kreasi Abadi. Seluruh hak cipta dilindungi undang-undang. Desain diadaptasi dengan estetika editorial modern.
+        </p>
+        <div class="mt-4 flex gap-2">
+          <span class="sticker-badge bg-white/10 text-white border-white/20 text-[10px]">VERIFIED CREATIVE LAB</span>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- ================= FLOATING NOSTALGIC AUDIO PLAYER (SIGNATURE LOON ART PATTERN) ================= -->
+  <aside class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 bg-paper border-2 border-dark rounded-full px-4 py-2.5 shadow-brutal flex items-center gap-4 transition-all duration-300 hover:scale-105">
+    
+    <!-- Equalizer Visualizer -->
+    <div class="flex items-end gap-1 h-5 pl-1" id="equalizer-bars">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </div>
+
+    <!-- Song Info -->
+    <div class="text-left select-none pr-2">
+      <p class="text-[10px] font-bold text-muted uppercase tracking-widest leading-none">Fourjective Nostalgia Tape</p>
+      <p class="font-headline font-bold text-sm leading-tight text-dark" id="music-title">Masa SMA — Lofi Sunset Session</p>
+    </div>
+
+    <!-- Play/Pause Button -->
+    <button id="audio-toggle" class="w-8 h-8 rounded-full bg-accent-yellow border-2 border-dark flex items-center justify-center shadow-brutal-sm hover:bg-white transition-colors" title="Putar / Hentikan Musik Nostalgia">
+      <i data-lucide="volume-2" class="w-4 h-4 text-dark" id="audio-icon"></i>
+    </button>
+  </aside>
+
+  <!-- Script for GSAP, ScrollTrigger & Interactions -->
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Register GSAP ScrollTrigger
+    gsap.registerPlugin(ScrollTrigger);
+
+    // ================= GSAP ANIMATIONS =================
+    // 1. Hero Entrance Timeline
+    const heroTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    heroTl
+      .from('.hero-title', { y: 60, opacity: 0, duration: 1 })
+      .from('.hero-desc', { y: 30, opacity: 0, duration: 0.8 }, '-=0.6')
+      .from('.hero-actions', { y: 20, opacity: 0, duration: 0.6 }, '-=0.4')
+      .from('.hero-sticker', { scale: 0, rotate: 0, opacity: 0, stagger: 0.15, ease: 'back.out(1.7)' }, '-=0.4')
+      .from('.hero-cards-container > div > div', { y: 60, opacity: 0, stagger: 0.2, duration: 0.8 }, '-=0.4');
+
+    // 2. Stats Number Counter Animation
+    const counterElements = document.querySelectorAll('.counter-num');
+    counterElements.forEach(el => {
+      const targetVal = parseInt(el.getAttribute('data-target'), 10);
+      ScrollTrigger.create({
+        trigger: '#stats',
+        start: 'top 80%',
+        once: true,
+        onEnter: () => {
+          gsap.to(el, {
+            innerText: targetVal,
+            duration: 2,
+            snap: { innerText: 1 },
+            ease: 'power2.out',
+            onUpdate: function() {
+              el.innerText = Math.ceil(this.targets()[0].innerText).toLocaleString('id-ID');
+            }
+          });
+        }
+      });
+    });
+
+    // 3. Service Cards Scroll Reveal
+    gsap.from('#services .bg-paper', {
+      scrollTrigger: {
+        trigger: '#services',
+        start: 'top 75%',
+      },
+      y: 50,
+      opacity: 0,
+      stagger: 0.15,
+      duration: 0.8,
+      ease: 'power2.out'
+    });
+
+    // ================= 3D FLIPBOOK MOCK INTERACTION =================
+    const sampleSpreads = [
+      {
+        title: "LABORATORIUM & TAWAS",
+        tag: "Science & Tech Class",
+        desc: "Tiga tahun kita berkutat dengan larutan kimia dan rumus fisika yang tak berujung, tapi yang paling berharga adalah canda tawa di meja paling belakang saat jam kosong.",
+        img: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1000&q=80",
+        spreadNum: "Spread 02 / 12",
+        teacher: "Wali Kelas: Drs. Hartono"
+      },
+      {
+        title: "LAPANGAN BASKET SORE",
+        tag: "Sport & Brotherhood",
+        desc: "Keringat di jam olahraga terakhir, teriakan suporter saat DBL, dan es teh manis kantin Bu Joko yang selalu jadi penutup sore terbaik angkatan kita.",
+        img: "https://images.unsplash.com/photo-1519452635265-7b1fbfd1e4e0?auto=format&fit=crop&w=1000&q=80",
+        spreadNum: "Spread 03 / 12",
+        teacher: "Coach: Wahyu Nugroho"
+      },
+      {
+        title: "PANGGUNG SENI PENUTUP",
+        tag: "Arts & Festival Night",
+        desc: "Malam puncak pensi saat lampu sorot padam dan confetti berterbangan. Kita semua bernyanyi bersama menyadari bahwa masa seragam putih abu-abu ini resmi berakhir.",
+        img: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1000&q=80",
+        spreadNum: "Spread 04 / 12",
+        teacher: "Ketua Pensi: M. Daffa"
+      }
+    ];
+
+    let currentSpreadIdx = 0;
+    const spreadContainer = document.getElementById('spread-container');
+    const spreadImg = document.getElementById('spread-img');
+    const pageCounter = document.getElementById('page-counter');
+    const pageLeft = document.getElementById('page-left');
+
+    function updateSpread(idx) {
+      const data = sampleSpreads[idx];
+      gsap.to(spreadContainer, {
+        scale: 0.97,
+        opacity: 0.7,
+        duration: 0.15,
+        onComplete: () => {
+          pageCounter.textContent = data.spreadNum;
+          pageLeft.querySelector('h3').textContent = data.title;
+          pageLeft.querySelector('p').textContent = `"${data.desc}"`;
+          pageLeft.querySelector('.text-\\[10px\\]').textContent = data.tag;
+          spreadImg.src = data.img;
+          gsap.to(spreadContainer, { scale: 1, opacity: 1, duration: 0.25 });
+        }
+      });
+    }
+
+    document.getElementById('btn-next-page').addEventListener('click', () => {
+      currentSpreadIdx = (currentSpreadIdx + 1) % sampleSpreads.length;
+      updateSpread(currentSpreadIdx);
+    });
+
+    document.getElementById('btn-prev-page').addEventListener('click', () => {
+      currentSpreadIdx = (currentSpreadIdx - 1 + sampleSpreads.length) % sampleSpreads.length;
+      updateSpread(currentSpreadIdx);
+    });
+
+    // ================= INTERACTIVE ESTIMATOR LOGIC =================
+    const slider = document.getElementById('student-slider');
+    const studentDisplay = document.getElementById('student-display');
+    const totalEstimate = document.getElementById('total-estimate');
+    const packageCards = document.querySelectorAll('.package-card');
+
+    const rates = {
+      'essential': 275000,
+      'ar-plus': 360000,
+      'ultimate': 465000
+    };
+
+    let selectedPackage = 'essential';
+
+    function calculateTotal() {
+      const count = parseInt(slider.value, 10);
+      studentDisplay.textContent = `${count} Siswa`;
+      const pricePerStudent = rates[selectedPackage] || 275000;
+      const total = count * pricePerStudent;
+      totalEstimate.textContent = `Rp ${total.toLocaleString('id-ID')}`;
+    }
+
+    slider.addEventListener('input', calculateTotal);
+
+    packageCards.forEach(card => {
+      card.addEventListener('click', () => {
+        packageCards.forEach(c => {
+          c.classList.remove('bg-accent-lilac/20', 'bg-accent-yellow/20', 'bg-accent-coral/20');
+        });
+        const input = card.querySelector('input');
+        input.checked = true;
+        selectedPackage = input.value;
+        card.classList.add('bg-accent-yellow/20');
+        calculateTotal();
+      });
+    });
+
+    document.getElementById('send-wa-quote').addEventListener('click', () => {
+      const count = slider.value;
+      const pkgName = selectedPackage.toUpperCase();
+      const msg = encodeURIComponent(`Halo Tim Fourjective! Saya ingin konsultasi konsep & penawaran buku tahunan:\n- Estimasi Siswa: ${count}\n- Opsi Paket: ${pkgName}\nMohon kirimkan katalog dan info slot tanggal photoshoot ya!`);
+      window.open(`https://wa.me/628123456789?text=${msg}`, '_blank');
+    });
+
+    // ================= SIMULATED AMBIENT AUDIO PLAYER =================
+    const audioToggle = document.getElementById('audio-toggle');
+    const audioIcon = document.getElementById('audio-icon');
+    const eqBars = document.getElementById('equalizer-bars');
+    let isPlaying = false;
+    let audioCtx = null;
+    let osc = null;
+    let gainNode = null;
+
+    // Web Audio API ambient nostalgic warm lofi chord generator
+    function playNostalgicDrone() {
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        osc = audioCtx.createOscillator();
+        gainNode = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(220, audioCtx.currentTime); // A3 nostalgic tone
+        gainNode.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        osc.start();
+      } catch (e) {
+        console.log('Audio ambient init:', e);
+      }
+    }
+
+    function stopNostalgicDrone() {
+      if (osc) {
+        try {
+          osc.stop();
+          osc.disconnect();
+          osc = null;
+        } catch (e) {}
+      }
+    }
+
+    audioToggle.addEventListener('click', () => {
+      isPlaying = !isPlaying;
+      if (isPlaying) {
+        playNostalgicDrone();
+        eqBars.classList.remove('equalizer-paused');
+        audioIcon.setAttribute('data-lucide', 'volume-x');
+      } else {
+        stopNostalgicDrone();
+        eqBars.classList.add('equalizer-paused');
+        audioIcon.setAttribute('data-lucide', 'volume-2');
+      }
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

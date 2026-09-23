@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fourjective × Abank Irenk Aesthetic | High-Contrast Y2K Yearbook Studio</title>
+
+  <!-- Google Fonts: Syne (Ultra Heavy Display) & Plus Jakarta Sans (Clean Modern Sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Syne', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              plum: '#1E1233',
+              plumDeep: '#120924',
+              plumLight: '#2F1E52',
+              gold: '#FAC443',
+              orange: '#FF4D1F',
+              purple: '#534CC3',
+              pink: '#F5A1FF',
+              mint: '#00C49F',
+              cream: '#F5E4DE',
+            }
+          },
+          boxShadow: {
+            'neo': '5px 5px 0px #1E1233',
+            'neo-lg': '8px 8px 0px #1E1233',
+            'neo-xl': '12px 12px 0px #1E1233',
+            'neo-gold': '6px 6px 0px #FAC443',
+            'neo-purple': '6px 6px 0px #534CC3',
+            'neo-pink': '6px 6px 0px #F5A1FF',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- GSAP & ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <style>
+    body {
+      background-color: #F5E4DE;
+      color: #1E1233;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Abank Irenk signature brutalist borders */
+    .border-thick {
+      border: 3px solid #1E1233;
+    }
+    .border-thick-4 {
+      border: 4px solid #1E1233;
+    }
+
+    /* Neo brutalist button hover */
+    .btn-neo {
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .btn-neo:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 7px 7px 0px #1E1233;
+    }
+    .btn-neo:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px #1E1233;
+    }
+
+    /* Rotating Stamp */
+    .rotating-stamp {
+      animation: spin-slow 20s linear infinite;
+    }
+    @keyframes spin-slow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Marquee */
+    .marquee-wrapper {
+      display: flex;
+      width: max-content;
+      animation: marquee-scroll 22s linear infinite;
+    }
+    @keyframes marquee-scroll {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-50%); }
+    }
+  </style>
+</head>
+<body class="selection:bg-brand-gold selection:text-brand-plum">
+
+  <!-- ================= TOP TICKER BANNER ================= -->
+  <div class="bg-brand-plum text-brand-gold border-b-thick py-2.5 px-4 overflow-hidden select-none">
+    <div class="marquee-wrapper flex items-center gap-8 font-display font-black text-sm uppercase tracking-widest">
+      <span>⚡ ABANK IRENK INFLUENCED FOURJECTIVE EDITION</span>
+      <span>★ 100% NO AI SLOP - REAL HIGH-SCHOOL EMOTIONS</span>
+      <span>★ 4K CINEMATIC DRONE REWIND</span>
+      <span>★ AUGMENTED REALITY SMART SCAN</span>
+      <span>★ RIGID BOX CUSTOM EMBOSSING</span>
+      <span>⚡ ABANK IRENK INFLUENCED FOURJECTIVE EDITION</span>
+      <span>★ 100% NO AI SLOP - REAL HIGH-SCHOOL EMOTIONS</span>
+      <span>★ 4K CINEMATIC DRONE REWIND</span>
+      <span>★ AUGMENTED REALITY SMART SCAN</span>
+    </div>
+  </div>
+
+  <!-- ================= RETRO NAV HEADER ================= -->
+  <header class="sticky top-4 z-50 px-4 md:px-8 max-w-7xl mx-auto">
+    <nav class="bg-brand-cream border-thick-4 rounded-3xl shadow-neo-lg px-6 py-4 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <a href="#" class="flex items-center gap-3 group">
+        <div class="w-12 h-12 rounded-2xl bg-brand-gold border-thick flex items-center justify-center font-display font-black text-2xl text-brand-plum group-hover:bg-brand-pink transition-colors">
+          4J
+        </div>
+        <div>
+          <span class="font-display font-black text-2xl md:text-3xl tracking-tighter leading-none block text-brand-plum">
+            FOURJECTIVE
+          </span>
+          <span class="text-[11px] font-bold uppercase tracking-widest text-brand-purple block">
+            YEARBOOK CREATIVE LAB
+          </span>
+        </div>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <div class="hidden lg:flex items-center gap-8 font-display font-bold text-base uppercase tracking-wider text-brand-plum">
+        <a href="#workflow" class="hover:text-brand-purple hover:underline decoration-brand-gold decoration-4 transition-all">Workflow</a>
+        <a href="#gallery" class="hover:text-brand-purple hover:underline decoration-brand-gold decoration-4 transition-all">Galeri Angkatan</a>
+        <a href="#packages" class="hover:text-brand-purple hover:underline decoration-brand-gold decoration-4 transition-all">Paket Pilihan</a>
+        <a href="#faq" class="hover:text-brand-purple hover:underline decoration-brand-gold decoration-4 transition-all">FAQ</a>
+      </div>
+
+      <!-- Action Button -->
+      <div class="flex items-center gap-3">
+        <a href="#packages" class="btn-neo inline-flex items-center gap-2 bg-brand-gold text-brand-plum font-display font-black text-base uppercase px-5 py-2.5 rounded-2xl border-thick shadow-neo">
+          <i data-lucide="zap" class="w-4 h-4 fill-current"></i>
+          Pesan Paket
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ================= HERO SECTION (ABANK IRENK Y2K BRUTALIST) ================= -->
+  <section class="relative pt-12 pb-20 md:pt-24 md:pb-32 px-4 md:px-8 max-w-7xl mx-auto overflow-hidden">
+    
+    <!-- Rotating Stamp (Top Right) -->
+    <div class="absolute top-12 right-6 md:right-12 z-20 hidden md:block">
+      <div class="relative w-32 h-32 flex items-center justify-center">
+        <div class="w-32 h-32 rounded-full border-thick border-dashed border-brand-plum bg-brand-pink flex items-center justify-center rotating-stamp shadow-neo-sm">
+          <svg viewBox="0 0 100 100" class="w-28 h-28 fill-brand-plum font-display font-bold text-[8.5px] uppercase tracking-widest">
+            <path id="stamp-path" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="transparent" />
+            <text><textPath href="#stamp-path">★ FOURJECTIVE YEARBOOK ★ EST. 2024 ★</textPath></text>
+          </svg>
+        </div>
+        <div class="absolute w-12 h-12 rounded-full bg-brand-gold border-thick flex items-center justify-center font-display font-black text-xs">
+          4J
+        </div>
+      </div>
+    </div>
+
+    <!-- Tilted Badges -->
+    <div class="flex flex-wrap items-center gap-3 mb-6">
+      <span class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border-thick bg-brand-purple text-white font-display font-bold text-xs uppercase tracking-wider -rotate-2 shadow-neo-sm">
+        <i data-lucide="award" class="w-4 h-4 text-brand-gold"></i>
+        YEARBOOK SPECIALIST #1
+      </span>
+      <span class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border-thick bg-brand-gold text-brand-plum font-display font-bold text-xs uppercase tracking-wider rotate-3 shadow-neo-sm">
+        <i data-lucide="sparkles" class="w-4 h-4"></i>
+        150+ SEKOLAH TELAH BERGABUNG
+      </span>
+      <span class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border-thick bg-brand-orange text-white font-display font-bold text-xs uppercase tracking-wider -rotate-1 shadow-neo-sm">
+        <i data-lucide="camera" class="w-4 h-4"></i>
+        STUDIO DELIVERY GRATIS
+      </span>
+    </div>
+
+    <!-- Massive Typography Headline -->
+    <div class="space-y-4">
+      <h1 class="hero-headline font-display font-black text-5xl sm:text-7xl md:text-9xl uppercase tracking-tighter leading-[0.9] text-brand-plum">
+        BUAT BUKU <br/>
+        <span class="text-white px-3 py-1 bg-brand-plum inline-block rounded-2xl border-thick shadow-neo-lg -rotate-1">
+          TAHUNAN
+        </span>
+        <span class="text-brand-orange">PALING IKONIK</span>
+      </h1>
+
+      <p class="hero-sub font-sans text-lg md:text-2xl text-brand-plum font-medium max-w-2xl leading-relaxed pt-2">
+        Saat masa putih abu-abu usai, yang tertinggal adalah bagaimana caramu mengenangnya. Bersama Fourjective, buku tahunan bukan sekadar deretan pasfoto kaku, melainkan mahakarya visual penuh energi angkatanmu.
+      </p>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="hero-cta-bar pt-8 flex flex-wrap items-center gap-4">
+      <a href="#workflow" class="btn-neo inline-flex items-center gap-3 bg-brand-plum text-brand-gold font-display font-black text-lg md:text-xl uppercase px-8 py-4 rounded-2xl border-thick shadow-neo-lg">
+        <i data-lucide="flame" class="w-6 h-6 text-brand-orange fill-current"></i>
+        Lihat Alur Kerja Produksi
+      </a>
+      <a href="#packages" class="btn-neo inline-flex items-center gap-3 bg-white text-brand-plum font-display font-black text-lg md:text-xl uppercase px-8 py-4 rounded-2xl border-thick shadow-neo-lg">
+        <i data-lucide="folder-check" class="w-6 h-6 text-brand-purple"></i>
+        Pilihan Paket Sekolah
+      </a>
+    </div>
+
+    <!-- Bento Showcase Cards (Abank Irenk Style Color Blocking) -->
+    <div class="mt-16 grid grid-cols-1 md:grid-cols-12 gap-6 hero-bento">
+      
+      <!-- Big Bento Card: Photography & Moodboard -->
+      <div class="md:col-span-7 bg-brand-gold border-thick-4 rounded-3xl p-8 shadow-neo-lg flex flex-col justify-between relative overflow-hidden group">
+        <div class="relative z-10 mb-6">
+          <div class="flex items-center justify-between mb-4">
+            <span class="px-3 py-1 bg-brand-plum text-white font-display font-bold text-xs uppercase rounded-full border-2 border-brand-plum">
+              01 / CONCEPT DIRECTING
+            </span>
+            <span class="font-display font-black text-3xl text-brand-plum">★ CONCEPT</span>
+          </div>
+          <h2 class="font-display font-black text-3xl md:text-5xl uppercase tracking-tight text-brand-plum">
+            BEBAS TENTUKAN TEMA & MOODBOARD KELAS
+          </h2>
+          <p class="font-sans font-medium text-brand-plum/90 mt-2 text-base md:text-lg">
+            Retro 90-an, Y2K Cyberpunk, Wes Anderson Pastel, hingga Mafia Noir. Tim sutradara visual kami bantu mewujudkan konsep paling gila angkatanmu.
+          </p>
+        </div>
+
+        <div class="h-64 rounded-2xl border-thick bg-brand-plum overflow-hidden relative shadow-neo">
+          <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=80" alt="Concept Photo" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          <div class="absolute top-3 left-3 bg-white/90 backdrop-blur border-2 border-brand-plum px-3 py-1 rounded-xl text-xs font-bold uppercase">
+            📍 SMAN 3 BANDUNG — THEME: OLD MONEY 1980
+          </div>
+        </div>
+      </div>
+
+      <!-- Small Bento Card: Augmented Reality Scanner -->
+      <div class="md:col-span-5 bg-brand-purple border-thick-4 rounded-3xl p-8 shadow-neo-lg text-white flex flex-col justify-between group">
+        <div class="mb-6">
+          <div class="flex items-center justify-between mb-4">
+            <span class="px-3 py-1 bg-brand-pink text-brand-plum font-display font-bold text-xs uppercase rounded-full border-2 border-brand-plum">
+              02 / TECH
+            </span>
+            <i data-lucide="smartphone" class="w-6 h-6 text-brand-gold"></i>
+          </div>
+          <h2 class="font-display font-black text-3xl md:text-4xl uppercase tracking-tight">
+            SMART AR SCANNER
+          </h2>
+          <p class="font-sans text-white/90 mt-2 text-sm md:text-base">
+            Cover dan halaman buku bisa langsung memunculkan video bergerak atau aftermovie saat disorot kamera HP.
+          </p>
+        </div>
+
+        <div class="h-44 rounded-2xl border-thick bg-brand-plumLight overflow-hidden relative p-4 flex flex-col justify-end shadow-neo">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-brand-gold border-2 border-brand-plum flex items-center justify-center text-brand-plum">
+              <i data-lucide="scan" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <p class="font-display font-bold text-sm uppercase text-brand-gold">Teknologi Terintegrasi</p>
+              <p class="text-xs text-white/80">Tanpa download app ribet, scan via web browser.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bento Card 3: Cinematic Film & Drone -->
+      <div class="md:col-span-5 bg-brand-pink border-thick-4 rounded-3xl p-8 shadow-neo-lg flex flex-col justify-between group">
+        <div class="mb-4">
+          <span class="px-3 py-1 bg-brand-plum text-white font-display font-bold text-xs uppercase rounded-full border-2 border-brand-plum">
+            03 / CINEMA
+          </span>
+          <h2 class="font-display font-black text-3xl uppercase tracking-tight text-brand-plum mt-3">
+            4K FILM ANGKATAN & DRONE
+          </h2>
+          <p class="font-sans text-brand-plum font-medium text-sm mt-1">
+            Produksi aftermovie sinematik dengan pilot drone bersertifikat dan sound design menggugah nostalgia.
+          </p>
+        </div>
+        <div class="bg-white border-thick rounded-xl p-3 flex items-center justify-between shadow-neo-sm">
+          <span class="font-display font-bold text-xs uppercase text-brand-plum">Format: 4K UHD + TikTok Reels Cut</span>
+          <i data-lucide="video" class="w-4 h-4 text-brand-orange"></i>
+        </div>
+      </div>
+
+      <!-- Bento Card 4: Rigid Box Packaging & Custom Merch -->
+      <div class="md:col-span-7 bg-white border-thick-4 rounded-3xl p-8 shadow-neo-lg flex flex-col justify-between group">
+        <div class="mb-4">
+          <div class="flex items-center justify-between">
+            <span class="px-3 py-1 bg-brand-orange text-white font-display font-bold text-xs uppercase rounded-full border-2 border-brand-plum">
+              04 / PACKAGING
+            </span>
+            <span class="font-display font-black text-2xl text-brand-purple">★ DELUXE FINISH</span>
+          </div>
+          <h2 class="font-display font-black text-3xl md:text-4xl uppercase tracking-tight text-brand-plum mt-3">
+            RIGID BOX & MERCHANDISE EXCLUSIVE
+          </h2>
+          <p class="font-sans text-stone-700 text-sm md:text-base mt-1">
+            Setiap siswa menerima boks hardcover magnetik kustom, lanyard angkatan, totebag kanvas tebal, dan kartu alumni ber-barcode.
+          </p>
+        </div>
+        <div class="grid grid-cols-3 gap-3 pt-2">
+          <div class="bg-brand-cream border-2 border-brand-plum rounded-xl p-2.5 text-center">
+            <span class="font-display font-black text-base text-brand-plum block">FOIL GOLD</span>
+            <span class="text-[10px] uppercase font-bold text-stone-600">Cover Stamp</span>
+          </div>
+          <div class="bg-brand-cream border-2 border-brand-plum rounded-xl p-2.5 text-center">
+            <span class="font-display font-black text-base text-brand-plum block">VELVET DOFF</span>
+            <span class="text-[10px] uppercase font-bold text-stone-600">Anti-Scratch</span>
+          </div>
+          <div class="bg-brand-cream border-2 border-brand-plum rounded-xl p-2.5 text-center">
+            <span class="font-display font-black text-base text-brand-plum block">RIGID BOX</span>
+            <span class="text-[10px] uppercase font-bold text-stone-600">Magnet Kustom</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= GSAP PINNED HORIZONTAL WORKFLOW SECTION ================= -->
+  <section id="workflow" class="py-20 bg-brand-plum text-white border-y-thick relative overflow-hidden">
+    
+    <div class="px-4 md:px-8 max-w-7xl mx-auto mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div>
+        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-brand-gold text-brand-plum font-display font-black text-xs uppercase mb-3">
+          STANDAR PRODUKSI PROFESIONAL
+        </span>
+        <h2 class="font-display font-black text-4xl sm:text-6xl md:text-7xl uppercase tracking-tighter text-white">
+          ALUR KERJA <span class="text-brand-gold">PRODUKSI KREATIF</span>
+        </h2>
+      </div>
+      <p class="text-white/80 max-w-md font-sans text-sm md:text-base">
+        4 tahap terstruktur tanpa ribet untuk panitia sekolah. Kamu cukup tentukan konsep, kami tangani seluruh teknisnya hingga buku sampai di tanganmu.
+      </p>
+    </div>
+
+    <!-- Horizontal Track for GSAP Scrub -->
+    <div class="workflow-container px-4 md:px-8 max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        
+        <!-- Step 1 -->
+        <div class="workflow-card bg-brand-cream text-brand-plum border-thick-4 rounded-3xl p-6 shadow-neo-gold flex flex-col justify-between h-[380px]">
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <span class="w-10 h-10 rounded-xl bg-brand-plum text-brand-gold flex items-center justify-center font-display font-black text-xl">
+                01
+              </span>
+              <span class="font-display font-bold text-xs uppercase bg-brand-pink px-2.5 py-1 rounded-lg border-2 border-brand-plum">
+                Minggu 1-2
+              </span>
+            </div>
+            <h3 class="font-display font-black text-2xl uppercase tracking-tight">
+              BRAINSTORMING & MOODBOARD KELAS
+            </h3>
+            <p class="text-stone-700 text-sm mt-3 leading-relaxed">
+              Tim kreatif Fourjective bertatap muka dengan perwakilan kelas untuk menentukan palette warna, referensi busana, dan jadwal photoshoot.
+            </p>
+          </div>
+          <div class="border-t-2 border-brand-plum/20 pt-3 text-xs font-bold text-brand-purple flex items-center gap-2">
+            <i data-lucide="check-circle" class="w-4 h-4"></i> Moodboard Disetujui
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="workflow-card bg-brand-gold text-brand-plum border-thick-4 rounded-3xl p-6 shadow-neo flex flex-col justify-between h-[380px]">
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <span class="w-10 h-10 rounded-xl bg-brand-plum text-white flex items-center justify-center font-display font-black text-xl">
+                02
+              </span>
+              <span class="font-display font-bold text-xs uppercase bg-white px-2.5 py-1 rounded-lg border-2 border-brand-plum">
+                Minggu 3-5
+              </span>
+            </div>
+            <h3 class="font-display font-black text-2xl uppercase tracking-tight">
+              PHOTOSHOOT & SHOOTING CINEMATIC
+            </h3>
+            <p class="text-brand-plum/90 text-sm mt-3 leading-relaxed">
+              Peralatan lighting studio dibawa langsung ke sekolah. Sesi foto formal kelas, sesi fun outdoor, wawancara guru, serta drone recording.
+            </p>
+          </div>
+          <div class="border-t-2 border-brand-plum/20 pt-3 text-xs font-bold text-brand-plum flex items-center gap-2">
+            <i data-lucide="check-circle" class="w-4 h-4"></i> Footage 4K & RAW Tersimpan
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="workflow-card bg-brand-pink text-brand-plum border-thick-4 rounded-3xl p-6 shadow-neo flex flex-col justify-between h-[380px]">
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <span class="w-10 h-10 rounded-xl bg-brand-plum text-brand-pink flex items-center justify-center font-display font-black text-xl">
+                03
+              </span>
+              <span class="font-display font-bold text-xs uppercase bg-white px-2.5 py-1 rounded-lg border-2 border-brand-plum">
+                Minggu 6-8
+              </span>
+            </div>
+            <h3 class="font-display font-black text-2xl uppercase tracking-tight">
+              LAYOUT DESIGN & AR COMPILATION
+            </h3>
+            <p class="text-stone-800 text-sm mt-3 leading-relaxed">
+              Desainer menyusun grid majalah, retouching foto siswa, integrasi marker AR, dan dummy proofing digital sebelum cetak massal.
+            </p>
+          </div>
+          <div class="border-t-2 border-brand-plum/20 pt-3 text-xs font-bold text-brand-purple flex items-center gap-2">
+            <i data-lucide="check-circle" class="w-4 h-4"></i> Revisi Proofing Disetujui
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="workflow-card bg-brand-purple text-white border-thick-4 rounded-3xl p-6 shadow-neo-gold flex flex-col justify-between h-[380px]">
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <span class="w-10 h-10 rounded-xl bg-brand-gold text-brand-plum flex items-center justify-center font-display font-black text-xl">
+                04
+              </span>
+              <span class="font-display font-bold text-xs uppercase bg-brand-plum px-2.5 py-1 rounded-lg border-2 border-brand-gold text-brand-gold">
+                Minggu 9-12
+              </span>
+            </div>
+            <h3 class="font-display font-black text-2xl uppercase tracking-tight">
+              CETAK PRESISI & DISTRIBUSI BOX
+            </h3>
+            <p class="text-white/90 text-sm mt-3 leading-relaxed">
+              Mesin offset high-end mencetak seluruh exemplar, finishing laminasi velvet doff, binding jahit, packaging rigid box, dan serah terima resmi.
+            </p>
+          </div>
+          <div class="border-t-2 border-white/20 pt-3 text-xs font-bold text-brand-gold flex items-center gap-2">
+            <i data-lucide="check-circle" class="w-4 h-4"></i> Buku Selesai Tepat Waktu
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PORTFOLIO SPREAD GALLERY WITH FILTERS ================= -->
+  <section id="gallery" class="py-20 px-4 md:px-8 max-w-7xl mx-auto">
+    <div class="text-center max-w-3xl mx-auto mb-12">
+      <span class="inline-block px-4 py-1 rounded-full border-thick bg-brand-gold font-display font-bold text-xs uppercase tracking-wider mb-3 shadow-neo-sm">
+        REAL CLIENT SHOWCASE
+      </span>
+      <h2 class="font-display font-black text-4xl sm:text-6xl md:text-7xl uppercase tracking-tighter">
+        GALERI SPREAD ANGKATAN
+      </h2>
+      <p class="text-stone-700 mt-3 text-base md:text-lg">
+        Beragam gaya visual autentik yang dirancang khusus untuk masing-masing karakter sekolah.
+      </p>
+
+      <!-- Category Filter Pills -->
+      <div class="flex flex-wrap items-center justify-center gap-3 mt-8">
+        <button class="filter-btn active px-4 py-2 rounded-2xl border-thick bg-brand-plum text-brand-gold font-display font-bold text-xs md:text-sm uppercase shadow-neo-sm" data-filter="all">
+          Semua Konsep
+        </button>
+        <button class="filter-btn px-4 py-2 rounded-2xl border-thick bg-white text-brand-plum hover:bg-brand-gold font-display font-bold text-xs md:text-sm uppercase shadow-neo-sm transition-colors" data-filter="vintage">
+          Vintage & Retro
+        </button>
+        <button class="filter-btn px-4 py-2 rounded-2xl border-thick bg-white text-brand-plum hover:bg-brand-gold font-display font-bold text-xs md:text-sm uppercase shadow-neo-sm transition-colors" data-filter="editorial">
+          Editorial Modern
+        </button>
+        <button class="filter-btn px-4 py-2 rounded-2xl border-thick bg-white text-brand-plum hover:bg-brand-gold font-display font-bold text-xs md:text-sm uppercase shadow-neo-sm transition-colors" data-filter="cyber">
+          Y2K & Cyber
+        </button>
+      </div>
+    </div>
+
+    <!-- Gallery Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="gallery-grid">
+      
+      <!-- Item 1: Vintage -->
+      <div class="gallery-item vintage bg-white border-thick-4 rounded-3xl p-5 shadow-neo-lg group">
+        <div class="h-64 rounded-2xl border-thick overflow-hidden relative mb-4">
+          <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80" alt="Vintage Spread" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          <span class="absolute top-2 left-2 bg-brand-gold border-2 border-brand-plum px-2.5 py-0.5 rounded-lg text-[10px] font-display font-bold uppercase">Vintage Retro</span>
+        </div>
+        <h4 class="font-display font-black text-2xl uppercase tracking-tight">SMAN 8 JAKARTA "OCTALION"</h4>
+        <p class="text-xs text-stone-600 mt-1 font-medium">Buku Hardcover 168 Halaman • Warm 1990 Grain Tone • Foil Gold</p>
+      </div>
+
+      <!-- Item 2: Editorial -->
+      <div class="gallery-item editorial bg-white border-thick-4 rounded-3xl p-5 shadow-neo-lg group">
+        <div class="h-64 rounded-2xl border-thick overflow-hidden relative mb-4">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80" alt="Editorial Spread" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          <span class="absolute top-2 left-2 bg-brand-pink border-2 border-brand-plum px-2.5 py-0.5 rounded-lg text-[10px] font-display font-bold uppercase">Editorial Clean</span>
+        </div>
+        <h4 class="font-display font-black text-2xl uppercase tracking-tight">SMA LABSCHOOL KEBAYORAN</h4>
+        <p class="text-xs text-stone-600 mt-1 font-medium">Magazine Format • High Fashion Retouch • AR Integrated</p>
+      </div>
+
+      <!-- Item 3: Y2K Cyber -->
+      <div class="gallery-item cyber bg-white border-thick-4 rounded-3xl p-5 shadow-neo-lg group">
+        <div class="h-64 rounded-2xl border-thick overflow-hidden relative mb-4">
+          <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80" alt="Cyber Spread" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          <span class="absolute top-2 left-2 bg-brand-purple text-white border-2 border-brand-plum px-2.5 py-0.5 rounded-lg text-[10px] font-display font-bold uppercase">Y2K Matrix</span>
+        </div>
+        <h4 class="font-display font-black text-2xl uppercase tracking-tight">SMAN 70 JAKARTA "SEVENTEEN"</h4>
+        <p class="text-xs text-stone-600 mt-1 font-medium">Electric Neon Color Blocking • Short Movie 4K • Rigid Box</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= PACKAGES MATRIX (ABANK IRENK PRICING TIER) ================= -->
+  <section id="packages" class="py-20 bg-brand-gold border-y-thick">
+    <div class="px-4 md:px-8 max-w-7xl mx-auto">
+      
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <span class="inline-block px-4 py-1.5 rounded-full border-thick bg-white text-brand-plum font-display font-black text-xs uppercase mb-3 shadow-neo-sm">
+          PENAWARAN RESMI SEKOLAH
+        </span>
+        <h2 class="font-display font-black text-4xl sm:text-6xl md:text-7xl uppercase tracking-tighter text-brand-plum">
+          PAKET BUKU TAHUNAN
+        </h2>
+        <p class="text-brand-plum font-medium mt-2 text-base md:text-lg">
+          Transparan, tanpa biaya tersembunyi, dan dapat disesuaikan dengan anggaran kas angkatanmu.
+        </p>
+      </div>
+
+      <!-- 3 Tier Matrix -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+        
+        <!-- Package 1: Starter -->
+        <div class="bg-white border-thick-4 rounded-3xl p-8 shadow-neo-lg flex flex-col justify-between">
+          <div>
+            <span class="font-display font-bold text-xs uppercase bg-stone-100 border-2 border-brand-plum px-3 py-1 rounded-lg inline-block mb-4">
+              PILIHAN ESSENTIAL
+            </span>
+            <h3 class="font-display font-black text-3xl uppercase">PAKET SILVER</h3>
+            <p class="text-stone-600 text-sm mt-1">Solusi esensial berkualitas tinggi untuk kenangan fisik abadi.</p>
+            
+            <div class="my-6 py-4 border-y-2 border-brand-plum/10">
+              <span class="text-xs uppercase font-bold text-stone-500 block">Investasi Mulai</span>
+              <span class="font-display font-black text-4xl text-brand-plum">Rp 265.000</span>
+              <span class="text-xs text-stone-500">/ siswa (min. 150 siswa)</span>
+            </div>
+
+            <ul class="space-y-3 text-sm font-medium text-stone-800">
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-5 h-5 text-emerald-600 shrink-0"></i> Hardcover Tebal Art Carton 150-180 GSM</li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-5 h-5 text-emerald-600 shrink-0"></i> Photoshoot Indoor & Outdoor Sekolah</li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-5 h-5 text-emerald-600 shrink-0"></i> Studio Delivery Lighting Pro</li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-5 h-5 text-emerald-600 shrink-0"></i> E-Book Flipbook Cloud 1 Tahun</li>
+            </ul>
+          </div>
+
+          <a href="https://wa.me/628123456789?text=Halo%20Fourjective,%20saya%20tertarik%20dengan%20Paket%20Silver" target="_blank" class="btn-neo mt-8 w-full inline-flex items-center justify-center gap-2 bg-stone-100 text-brand-plum font-display font-black text-base uppercase py-3.5 rounded-2xl border-thick shadow-neo">
+            Pilih Paket Silver
+          </a>
+        </div>
+
+        <!-- Package 2: Most Popular (Gold AR) -->
+        <div class="bg-brand-purple text-white border-thick-4 rounded-3xl p-8 shadow-neo-xl flex flex-col justify-between relative transform md:-translate-y-4">
+          <div class="absolute -top-4 right-6 bg-brand-orange text-white font-display font-black text-xs uppercase px-4 py-1.5 rounded-full border-2 border-brand-plum shadow-neo-sm">
+            ★ PALING BANYAK DIPILIH
+          </div>
+
+          <div>
+            <span class="font-display font-bold text-xs uppercase bg-brand-gold text-brand-plum border-2 border-brand-plum px-3 py-1 rounded-lg inline-block mb-4">
+              REKOMENDASI ANGKATAN
+            </span>
+            <h3 class="font-display font-black text-3xl md:text-4xl uppercase text-brand-gold">PAKET GOLD AR</h3>
+            <p class="text-white/80 text-sm mt-1">Kombinasi cetak premium + teknologi video Augmented Reality.</p>
+            
+            <div class="my-6 py-4 border-y-2 border-white/20">
+              <span class="text-xs uppercase font-bold text-brand-gold block">Investasi Mulai</span>
+              <span class="font-display font-black text-4xl md:text-5xl text-white">Rp 350.000</span>
+              <span class="text-xs text-white/70">/ siswa (min. 150 siswa)</span>
+            </div>
+
+            <ul class="space-y-3 text-sm font-medium text-white/95">
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-5 h-5 text-brand-gold shrink-0"></i> Semua Fitur Paket Silver Termasuk</li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-5 h-5 text-brand-gold shrink-0"></i> <strong>Augmented Reality (AR) Video Scanner</strong></li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-5 h-5 text-brand-gold shrink-0"></i> Teaser Instagram Reels & TikTok Trend</li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-5 h-5 text-brand-gold shrink-0"></i> Short Movie / Aftermovie Sinematik 4K</li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-5 h-5 text-brand-gold shrink-0"></i> Pilot Drone Berlisensi untuk Sesi Angkatan</li>
+            </ul>
+          </div>
+
+          <a href="https://wa.me/628123456789?text=Halo%20Fourjective,%20saya%20tertarik%20dengan%20Paket%20Gold%20AR" target="_blank" class="btn-neo mt-8 w-full inline-flex items-center justify-center gap-2 bg-brand-gold text-brand-plum font-display font-black text-base uppercase py-4 rounded-2xl border-thick shadow-neo">
+            Kunci Tanggal Sesi
+          </a>
+        </div>
+
+        <!-- Package 3: Ultimate Rigid Box -->
+        <div class="bg-brand-cream border-thick-4 rounded-3xl p-8 shadow-neo-lg flex flex-col justify-between">
+          <div>
+            <span class="font-display font-bold text-xs uppercase bg-brand-pink border-2 border-brand-plum px-3 py-1 rounded-lg inline-block mb-4">
+              MAHAKARYA LENGKAP
+            </span>
+            <h3 class="font-display font-black text-3xl uppercase">PAKET ULTIMATE</h3>
+            <p class="text-stone-700 text-sm mt-1">Paket kolektor termegah dengan boks magnetik & merchandise.</p>
+            
+            <div class="my-6 py-4 border-y-2 border-brand-plum/10">
+              <span class="text-xs uppercase font-bold text-stone-500 block">Investasi Mulai</span>
+              <span class="font-display font-black text-4xl text-brand-plum">Rp 450.000</span>
+              <span class="text-xs text-stone-500">/ siswa (min. 150 siswa)</span>
+            </div>
+
+            <ul class="space-y-3 text-sm font-medium text-stone-800">
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-5 h-5 text-emerald-600 shrink-0"></i> Semua Fitur Paket Gold AR Termasuk</li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-5 h-5 text-emerald-600 shrink-0"></i> <strong>Rigid Box Hardcover Kustom dengan Magnet</strong></li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-5 h-5 text-emerald-600 shrink-0"></i> Finishing Foil Emboss & Velvet Doff Cover</li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check" class="w-5 h-5 text-emerald-600 shrink-0"></i> Paket Merchandise: Totebag, Kaos, & Lanyard</li>
+            </ul>
+          </div>
+
+          <a href="https://wa.me/628123456789?text=Halo%20Fourjective,%20saya%20tertarik%20dengan%20Paket%20Ultimate" target="_blank" class="btn-neo mt-8 w-full inline-flex items-center justify-center gap-2 bg-brand-pink text-brand-plum font-display font-black text-base uppercase py-3.5 rounded-2xl border-thick shadow-neo">
+            Pilih Paket Ultimate
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= RETRO FAQ SECTION ================= -->
+  <section id="faq" class="py-20 px-4 md:px-8 max-w-4xl mx-auto">
+    <div class="text-center mb-12">
+      <h2 class="font-display font-black text-4xl sm:text-6xl uppercase tracking-tight">
+        PERTANYAAN SERING DIAJUKAN
+      </h2>
+      <p class="text-stone-700 mt-2">Segala hal yang perlu diketahui panitia buku tahunan sekolah.</p>
+    </div>
+
+    <div class="space-y-4">
+      
+      <div class="bg-white border-thick-4 rounded-2xl p-6 shadow-neo cursor-pointer faq-item">
+        <div class="flex items-center justify-between">
+          <h4 class="font-display font-bold text-xl uppercase">Kapan waktu ideal memulai pembuatan buku tahunan?</h4>
+          <i data-lucide="plus" class="w-5 h-5 text-brand-plum faq-icon transition-transform"></i>
+        </div>
+        <p class="font-sans text-stone-600 text-sm mt-3 hidden faq-answer leading-relaxed">
+          Waktu paling ideal adalah 4 hingga 6 bulan sebelum tanggal kelulusan / perpisahan sekolah. Ini memberi ruang cukup untuk sesi foto santai, proofing revisi desain tanpa terburu-buru, dan proses cetak presisi.
+        </p>
+      </div>
+
+      <div class="bg-white border-thick-4 rounded-2xl p-6 shadow-neo cursor-pointer faq-item">
+        <div class="flex items-center justify-between">
+          <h4 class="font-display font-bold text-xl uppercase">Apakah bisa request lokasi photoshoot di luar sekolah?</h4>
+          <i data-lucide="plus" class="w-5 h-5 text-brand-plum faq-icon transition-transform"></i>
+        </div>
+        <p class="font-sans text-stone-600 text-sm mt-3 hidden faq-answer leading-relaxed">
+          Bisa banget! Tim kami siap melayani photoshoot outdoor di cafe, alam terbuka, villa, gedung tua, maupun studio sewa sesuai moodboard yang disepakati bersama.
+        </p>
+      </div>
+
+      <div class="bg-white border-thick-4 rounded-2xl p-6 shadow-neo cursor-pointer faq-item">
+        <div class="flex items-center justify-between">
+          <h4 class="font-display font-bold text-xl uppercase">Bagaimana cara kerja Augmented Reality (AR) di bukunya?</h4>
+          <i data-lucide="plus" class="w-5 h-5 text-brand-plum faq-icon transition-transform"></i>
+        </div>
+        <p class="font-sans text-stone-600 text-sm mt-3 hidden faq-answer leading-relaxed">
+          Siswa cukup membuka browser di smartphone, mengarahkan kamera ke halaman buku foto yang bertanda AR. Seketika foto akan bertransformasi menjadi video playback aftermovie atau behind-the-scene dengan suara jernih.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= RETRO BRUTALIST FOOTER ================= -->
+  <footer class="bg-brand-plum text-brand-cream border-t-thick py-16 px-4 md:px-8">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
+      <div>
+        <div class="flex items-center justify-center md:justify-start gap-3 mb-2">
+          <div class="w-10 h-10 rounded-xl bg-brand-gold text-brand-plum flex items-center justify-center font-display font-black text-xl border-2 border-brand-cream">
+            4J
+          </div>
+          <span class="font-display font-black text-3xl tracking-tight text-white">FOURJECTIVE</span>
+        </div>
+        <p class="text-white/70 text-sm max-w-sm">
+          Laboratorium buku tahunan kreatif berestetika tinggi. Do the best for the best moment.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-center gap-4">
+        <a href="https://instagram.com" target="_blank" class="px-4 py-2 rounded-xl border-2 border-brand-cream bg-brand-plumLight hover:bg-brand-gold hover:text-brand-plum transition-colors font-display font-bold text-xs uppercase tracking-wider">
+          Instagram: @fourjective
+        </a>
+        <a href="https://tiktok.com" target="_blank" class="px-4 py-2 rounded-xl border-2 border-brand-cream bg-brand-plumLight hover:bg-brand-gold hover:text-brand-plum transition-colors font-display font-bold text-xs uppercase tracking-wider">
+          TikTok: @fourjective.id
+        </a>
+        <a href="https://wa.me/628123456789" target="_blank" class="px-4 py-2 rounded-xl border-2 border-brand-cream bg-brand-gold text-brand-plum hover:bg-brand-pink transition-colors font-display font-black text-xs uppercase tracking-wider">
+          WhatsApp: +62 812-3456-7890
+        </a>
+      </div>
+    </div>
+    
+    <div class="max-w-7xl mx-auto mt-12 pt-6 border-t border-white/20 flex flex-col sm:flex-row items-center justify-between text-xs text-white/60 gap-4">
+      <p>&copy; 2026 Fourjective Creative Lab. All rights reserved.</p>
+      <div class="flex gap-4">
+        <span>Abank Irenk Aesthetic Influence</span>
+        <span>•</span>
+        <span>Neo-Brutalist Y2K Editorial</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- GSAP & ScrollTrigger Script -->
+  <script>
+    lucide.createIcons();
+    gsap.registerPlugin(ScrollTrigger);
+
+    // 1. Hero Entrance Animations
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    tl.from('.hero-headline', { y: 80, opacity: 0, duration: 1 })
+      .from('.hero-sub', { y: 30, opacity: 0, duration: 0.8 }, '-=0.6')
+      .from('.hero-cta-bar', { y: 20, opacity: 0, duration: 0.6 }, '-=0.4')
+      .from('.hero-bento > div', { scale: 0.95, opacity: 0, y: 40, stagger: 0.15, duration: 0.8 }, '-=0.4');
+
+    // 2. Workflow Cards Stagger
+    gsap.from('.workflow-card', {
+      scrollTrigger: {
+        trigger: '#workflow',
+        start: 'top 75%',
+      },
+      y: 60,
+      opacity: 0,
+      stagger: 0.2,
+      duration: 0.8,
+      ease: 'back.out(1.4)'
+    });
+
+    // 3. Gallery Filtering Logic
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const galleryItems = document.querySelectorAll('.gallery-item');
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => {
+          b.classList.remove('bg-brand-plum', 'text-brand-gold');
+          b.classList.add('bg-white', 'text-brand-plum');
+        });
+        btn.classList.add('bg-brand-plum', 'text-brand-gold');
+        btn.classList.remove('bg-white');
+
+        const filter = btn.getAttribute('data-filter');
+        galleryItems.forEach(item => {
+          if (filter === 'all' || item.classList.contains(filter)) {
+            gsap.to(item, { scale: 1, opacity: 1, duration: 0.3, display: 'block' });
+          } else {
+            gsap.to(item, { scale: 0.8, opacity: 0, duration: 0.2, display: 'none' });
+          }
+        });
+      });
+    });
+
+    // 4. Interactive Accordion FAQ
+    const faqItems = document.querySelectorAll('.faq-item');
+    faqItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const answer = item.querySelector('.faq-answer');
+        const icon = item.querySelector('.faq-icon');
+        const isHidden = answer.classList.contains('hidden');
+        
+        // Close others
+        document.querySelectorAll('.faq-answer').forEach(a => a.classList.add('hidden'));
+        document.querySelectorAll('.faq-icon').forEach(i => i.style.transform = 'rotate(0deg)');
+
+        if (isHidden) {
+          answer.classList.remove('hidden');
+          icon.style.transform = 'rotate(45deg)';
+          gsap.from(answer, { opacity: 0, y: -10, duration: 0.25 });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
