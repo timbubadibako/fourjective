@@ -9,6 +9,7 @@ import { QuotationEstimator } from "../components/dashboard/QuotationEstimator";
 import { CmsSandbox } from "../components/dashboard/CmsSandbox";
 import { SchoolFolderCard } from "../components/dashboard/SchoolFolderCard";
 import { MOUProjectManager } from "../components/dashboard/MOUProjectManager";
+import { ProspectOrdersManager } from "../components/dashboard/ProspectOrdersManager";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import {
@@ -23,6 +24,7 @@ import {
   Sparkles,
   Layers,
   Filter,
+  Inbox,
 } from "lucide-react";
 import { getAllData, Portfolio } from "@/services/api";
 import { useRouter } from "next/navigation";
@@ -107,7 +109,7 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredData, setFilteredData] = useState<Portfolio[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"mou" | "portfolios" | "pipeline" | "quotation" | "cms">("mou");
+  const [activeTab, setActiveTab] = useState<"mou" | "portfolios" | "prospects" | "quotation">("mou");
   const [viewMode, setViewMode] = useState<"split" | "folders" | "table">("split");
 
   useEffect(() => {
@@ -179,110 +181,96 @@ export default function DashboardPage() {
       <div className="flex items-center space-x-2 border-b border-dark/10 pb-3 overflow-x-auto select-none">
         <button
           onClick={() => setActiveTab("mou")}
-          className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-mono font-bold transition-colors cursor-pointer ${
             activeTab === "mou"
-              ? "bg-orange text-white shadow-md shadow-orange/20"
-              : "bg-white text-dark/70 border border-dark/10 hover:bg-slate-100"
+              ? "bg-dark text-white"
+              : "bg-white text-dark/70 border border-dark/10 hover:bg-[#FAF6F0]"
           }`}
         >
-          <Sparkles className="h-3.5 w-3.5 text-white" />
-          <span>Angkatan MOU &amp; Token (Supabase Live)</span>
+          <Sparkles className="h-3.5 w-3.5 text-orange" />
+          <span>Proyek MOU &amp; Token</span>
         </button>
 
         <button
           onClick={() => setActiveTab("portfolios")}
-          className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-mono font-bold transition-colors cursor-pointer ${
             activeTab === "portfolios"
-              ? "bg-orange text-white shadow-md shadow-orange/20"
-              : "bg-white text-dark/70 border border-dark/10 hover:bg-slate-100"
+              ? "bg-dark text-white"
+              : "bg-white text-dark/70 border border-dark/10 hover:bg-[#FAF6F0]"
           }`}
         >
           <BookOpen className="h-3.5 w-3.5" />
-          Katalog &amp; Folder Sekolah ({data.length > 0 ? data.length : displayFolders.length})
+          <span>Katalog Portofolio ({data.length > 0 ? data.length : displayFolders.length})</span>
         </button>
 
         <button
-          onClick={() => setActiveTab("pipeline")}
-          className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
-            activeTab === "pipeline"
-              ? "bg-orange text-white shadow-md shadow-orange/20"
-              : "bg-white text-dark/70 border border-dark/10 hover:bg-slate-100"
+          onClick={() => setActiveTab("prospects")}
+          className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-mono font-bold transition-colors cursor-pointer ${
+            activeTab === "prospects"
+              ? "bg-dark text-white"
+              : "bg-white text-dark/70 border border-dark/10 hover:bg-[#FAF6F0]"
           }`}
         >
-          <Clock className="h-3.5 w-3.5" />
-          Alur Produksi
+          <Inbox className="h-3.5 w-3.5" />
+          <span>Permohonan Masuk</span>
         </button>
 
         <button
           onClick={() => setActiveTab("quotation")}
-          className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-mono font-bold transition-colors cursor-pointer ${
             activeTab === "quotation"
-              ? "bg-orange text-white shadow-md shadow-orange/20"
-              : "bg-white text-dark/70 border border-dark/10 hover:bg-slate-100"
+              ? "bg-dark text-white"
+              : "bg-white text-dark/70 border border-dark/10 hover:bg-[#FAF6F0]"
           }`}
         >
           <Calculator className="h-3.5 w-3.5" />
-          Kalkulator Penawaran
-        </button>
-
-        <button
-          onClick={() => setActiveTab("cms")}
-          className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
-            activeTab === "cms"
-              ? "bg-orange text-white shadow-md shadow-orange/20"
-              : "bg-white text-dark/70 border border-dark/10 hover:bg-slate-100"
-          }`}
-        >
-          <Layout className="h-3.5 w-3.5" />
-          CMS Sandbox
+          <span>Kalkulator Kas HPP</span>
         </button>
       </div>
 
-      {/* Tab 0: Angkatan MOU & Tracker (Supabase Live) */}
+      {/* Tab 1: Angkatan MOU & Tracker (Supabase Live) */}
       {activeTab === "mou" && <MOUProjectManager />}
 
-      {/* Tab 1: Portfolios Management & Tactile Folder Dock */}
+      {/* Tab 2: Portfolios Management & Tactile Folder Dock */}
       {activeTab === "portfolios" && (
         <div className="space-y-6">
           {/* Top Control Bar: Search, View Mode & Add Button */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white border border-dark/10 p-4 sm:p-5 rounded-2xl shadow-sm">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white border border-dark/10 p-4 rounded-xl shadow-sm">
             {/* Search Input */}
             <div className="relative w-full sm:max-w-md">
               <Search className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-dark/40" />
               <Input
                 type="text"
-                placeholder="Cari nama sekolah, angkatan, atau berkas..."
+                placeholder="Cari nama sekolah atau tahun..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 text-xs rounded-xl border-dark/15 focus:border-orange focus:ring-orange/20 h-10"
+                className="pl-10 text-xs rounded-lg border-dark/15 focus:border-orange h-9 bg-[#FAF6F0]"
               />
             </div>
 
             {/* Controls: View Switcher & Create Button */}
             <div className="flex items-center gap-2.5 w-full sm:w-auto justify-between sm:justify-end">
-              {/* View Mode Switcher (Folders vs Table vs Split) */}
-              <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-dark/10 text-xs font-mono font-bold">
+              {/* View Mode Switcher */}
+              <div className="flex items-center bg-[#FAF6F0] p-1 rounded-lg border border-dark/10 text-xs font-mono font-bold">
                 <button
                   type="button"
                   onClick={() => setViewMode("split")}
-                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                  className={`px-2.5 py-1 rounded transition-colors cursor-pointer ${
                     viewMode === "split"
-                      ? "bg-white text-orange shadow-sm font-black"
-                      : "text-dark/60 hover:text-dark"
+                      ? "bg-white text-dark shadow-sm"
+                      : "text-dark/50 hover:text-dark"
                   }`}
-                  title="Tampilan Gabungan"
                 >
                   Semua
                 </button>
                 <button
                   type="button"
                   onClick={() => setViewMode("folders")}
-                  className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
+                  className={`px-2.5 py-1 rounded flex items-center gap-1 transition-colors cursor-pointer ${
                     viewMode === "folders"
-                      ? "bg-white text-orange shadow-sm font-black"
-                      : "text-dark/60 hover:text-dark"
+                      ? "bg-white text-dark shadow-sm"
+                      : "text-dark/50 hover:text-dark"
                   }`}
-                  title="Hanya Grid Folder"
                 >
                   <Folder className="w-3 h-3" />
                   <span>Folder</span>
@@ -290,12 +278,11 @@ export default function DashboardPage() {
                 <button
                   type="button"
                   onClick={() => setViewMode("table")}
-                  className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
+                  className={`px-2.5 py-1 rounded flex items-center gap-1 transition-colors cursor-pointer ${
                     viewMode === "table"
-                      ? "bg-white text-orange shadow-sm font-black"
-                      : "text-dark/60 hover:text-dark"
+                      ? "bg-white text-dark shadow-sm"
+                      : "text-dark/50 hover:text-dark"
                   }`}
-                  title="Hanya Tabel Data"
                 >
                   <TableIcon className="w-3 h-3" />
                   <span>Tabel</span>
@@ -305,31 +292,28 @@ export default function DashboardPage() {
               {/* Add New Button */}
               <Button
                 onClick={handleCreatePortfolio}
-                className="bg-orange hover:bg-orange/90 text-white font-bold text-xs h-10 px-4 rounded-xl shadow-md shadow-orange/25 cursor-pointer flex items-center gap-1.5 shrink-0"
+                className="bg-orange hover:bg-orange/90 text-white font-mono font-bold text-xs h-9 px-3.5 rounded-lg cursor-pointer flex items-center gap-1.5 shrink-0"
               >
-                <Plus size={16} />
-                <span>Tambah Portofolio</span>
+                <Plus size={14} />
+                <span>Tambah Buku</span>
               </Button>
             </div>
           </div>
 
-          {/* ================= FOLDER VIEW (TACTILE CLOUD DOCK FOLDERS) ================= */}
+          {/* FOLDER VIEW */}
           {(viewMode === "split" || viewMode === "folders") && (
-            <div className="space-y-3.5">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-headline font-black text-lg text-dark tracking-tight uppercase flex items-center gap-2">
+                  <h3 className="font-headline font-bold text-base text-dark tracking-tight uppercase flex items-center gap-2">
                     <Folder className="w-4 h-4 text-orange" />
-                    <span>Direktori Folder Sekolah ({filteredFolders.length})</span>
+                    <span>Direktori Folder ({filteredFolders.length})</span>
                   </h3>
-                  <p className="font-mono text-xs text-dark/60">
-                    Bentuk folder taktil untuk akses cepat arsip flipbook 3D, password kunci, dan alur cetak.
-                  </p>
                 </div>
               </div>
 
               {/* Grid of Tactile Folder Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredFolders.map((folder, idx) => (
                   <SchoolFolderCard
                     key={folder.folderName + idx}
@@ -347,48 +331,26 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* ================= TABLE VIEW (FILE & DOCUMENT LIST) ================= */}
+          {/* TABLE VIEW */}
           {(viewMode === "split" || viewMode === "table") && (
-            <Card className="flex-grow shadow-sm border-dark/10 rounded-2xl bg-white overflow-hidden">
-              <CardHeader className="p-5 border-b border-dark/10 bg-[#FAF6F0]/60">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-base font-headline font-black text-dark tracking-tight uppercase flex items-center gap-2">
-                      <TableIcon className="w-4 h-4 text-orange" />
-                      <span>Daftar Berkas &amp; Halaman Flipbook 3D</span>
-                    </CardTitle>
-                    <p className="font-mono text-xs text-dark/60 mt-0.5">
-                      Tabel manajemen status enkripsi password, jumlah gambar halaman, dan aksi detail.
-                    </p>
-                  </div>
-                </div>
-              </CardHeader>
-
-              <CardContent className="w-full p-5">
-                {isLoading ? (
-                  <div className="flex flex-col items-center justify-center py-12">
-                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-orange border-t-transparent"></div>
-                    <p className="mt-3 font-mono text-xs font-bold text-dark/60">
-                      Memuat data portofolio...
-                    </p>
-                  </div>
-                ) : (
-                  <DashboardTable columns={columns} data={filteredData} />
-                )}
-              </CardContent>
-            </Card>
+            <div className="space-y-3 pt-2">
+              <h3 className="font-headline font-bold text-base text-dark tracking-tight uppercase flex items-center gap-2">
+                <TableIcon className="w-4 h-4 text-dark/70" />
+                <span>Tabel Data Lengkap</span>
+              </h3>
+              <div className="rounded-xl border border-dark/10 bg-white p-4 shadow-sm">
+                <DashboardTable columns={columns} data={filteredData} />
+              </div>
+            </div>
           )}
         </div>
       )}
 
-      {/* Tab 2: Production Pipeline Tracker */}
-      {activeTab === "pipeline" && <ProductionTracker />}
+      {/* Tab 3: Permohonan Penawaran Masuk (Live Supabase) */}
+      {activeTab === "prospects" && <ProspectOrdersManager />}
 
-      {/* Tab 3: Quotation Price Estimator */}
+      {/* Tab 4: Quotation Price Estimator HPP */}
       {activeTab === "quotation" && <QuotationEstimator />}
-
-      {/* Tab 4: CMS Landing Page & Sandbox Manager */}
-      {activeTab === "cms" && <CmsSandbox />}
     </div>
   );
 }

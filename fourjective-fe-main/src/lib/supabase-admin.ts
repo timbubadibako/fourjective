@@ -226,3 +226,27 @@ export async function getAllProjectsAdmin() {
 
   return await res.json();
 }
+
+/**
+ * Ambil daftar permohonan pesanan masuk dari tamu/prospek
+ */
+export async function getAllProspectOrdersAdmin() {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/prospect_orders?select=*&order=created_at.desc`,
+    {
+      method: "GET",
+      headers: {
+        apikey: SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    }
+  );
+
+  if (!res.ok) {
+    return [];
+  }
+
+  return await res.json();
+}
