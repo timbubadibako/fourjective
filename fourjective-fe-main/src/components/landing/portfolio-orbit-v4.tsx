@@ -78,7 +78,7 @@ export default function PortfolioOrbitV4() {
           >
             Arsip Karya,
             <br />
-            <span className="text-orange">2017 — 2026.</span>
+            <span className="text-orange">Sejak 2020.</span>
           </h2>
         </div>
       </div>

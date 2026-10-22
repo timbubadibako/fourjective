@@ -279,17 +279,15 @@ export default function PortfolioV4() {
       </div>
 
       {/* Header */}
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 sm:mb-14 relative z-10">
-        <div className="max-w-2xl">
-          <h2 className="font-playtimes text-4xl sm:text-6xl md:text-7xl text-white leading-[1.0] drop-shadow-sm">
-            Karya Pilihan,
-            <br />
-            <span className="text-dark">Cerita Nyata.</span>
-          </h2>
-          <p className="font-mono text-xs sm:text-sm text-white/85 mt-3 font-semibold">
-            Buku & film bergantian. Konsep visual orisinal tiap angkatan.
-          </p>
-        </div>
+      <div className="max-w-4xl mx-auto text-center mb-12 sm:mb-16 relative z-10">
+        <h2 className="font-playtimes text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-white leading-[1.0] drop-shadow-sm">
+          Karya Pilihan,
+          <br />
+          <span className="text-dark">Cerita Nyata.</span>
+        </h2>
+        <p className="font-mono text-xs sm:text-sm text-white/85 mt-4 font-semibold max-w-xl mx-auto">
+          Buku &amp; film bergantian. Konsep visual orisinal tiap angkatan.
+        </p>
       </div>
 
       {/* 3 KOLOM × 3 KOTAK (papan catur buku/video) — kolom bergeser vertikal saat scroll */}

@@ -14,7 +14,6 @@ import MediaBanner from "@/components/landing/media-banner-v4";
 import GalleryMasonry from "@/components/landing/gallery-masonry";
 import Portfolio from "@/components/landing/portfolio-v4";
 import PortfolioOrbit from "@/components/landing/portfolio-orbit-v4";
-import Testimonials from "@/components/landing/testimonials-v4";
 import Faq from "@/components/landing/faq-v4";
 import Footer from "@/components/landing/footer-v4";
 
@@ -883,7 +882,6 @@ export default function HomePage() {
         <GalleryMasonry />
         <Portfolio />
         <PortfolioOrbit />
-        <Testimonials />
         <Faq />
         <Footer />
       </main>

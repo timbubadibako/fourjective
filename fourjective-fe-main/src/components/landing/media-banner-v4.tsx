@@ -40,16 +40,7 @@ export default function MediaBannerV4() {
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 shrink-0">
-          <div className="bg-[#FFFDF9] text-dark border-2 border-dark rounded-xl px-5 py-3.5 shadow-[4px_4px_0px_#18181B]">
-            <span className="font-mono text-[10px] uppercase tracking-widest text-dark/60 font-black block">
-              SAMPEL FISIK
-            </span>
-            <span className="font-display font-black text-2xl text-dark leading-none mt-1">
-              READY STOK
-            </span>
-          </div>
-
+        <div className="shrink-0">
           <a
             href="https://wa.me/6289657008080?text=Halo%20Fourjective!%20Sekolah%20kami%20ingin%20request%20sampel%20buku%20fisik"
             target="_blank"

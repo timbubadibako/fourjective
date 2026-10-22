@@ -161,7 +161,7 @@ export default function FooterV4() {
       {/* Bottom Sub-bar */}
       <div className="border-t border-white/10 py-5 px-4 md:px-8 text-center md:text-left">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-[11px] font-mono text-white/50">
-          <span>&copy; 2017 &mdash; 2026 PT Fourjective Studio Indonesia. Hak Cipta Dilindungi.</span>
+          <span>&copy; Sejak 2020 &mdash; 2026 PT Fourjective Studio Indonesia. Hak Cipta Dilindungi.</span>
           <span className="text-white/40">Made for #ForeverYoung Memories</span>
         </div>
       </div>

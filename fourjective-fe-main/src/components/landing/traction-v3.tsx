@@ -55,7 +55,7 @@ export default function TractionV3({ fontMode: initialFontMode = "playtimes" }: 
         aria-hidden="true"
       >
         <span>
-          {isArcade ? "[ 8-BIT ARCADE ]" : isPlaytimes ? "✦ CLASS OF MEMORIES ✦" : "✦ EST. 2017 ✦ FOURJECTIVE"}
+          {isArcade ? "[ 8-BIT ARCADE ]" : isPlaytimes ? "✦ CLASS OF MEMORIES ✦" : "✦ SEJAK 2020 ✦ FOURJECTIVE"}
         </span>
       </div>
 
@@ -133,7 +133,7 @@ export default function TractionV3({ fontMode: initialFontMode = "playtimes" }: 
           )}
 
           <p className="font-mono text-xs sm:text-sm text-white/95 max-w-sm pt-2 font-bold leading-relaxed">
-            Mendedikasikan energi kreatif untuk buku tahunan sekolah sejak 2017 tanpa kompromi kualitas.
+            Mendedikasikan energi kreatif untuk buku tahunan sekolah sejak 2020 tanpa kompromi kualitas.
           </p>
 
           {/* Graphic Element */}
