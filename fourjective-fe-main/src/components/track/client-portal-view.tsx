@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ProductionTimeline } from "./ProductionTimeline";
 import {
   Search,
   BookOpen,
@@ -799,13 +800,14 @@ Mohon dibuatkan surat MOU resmi & kunci jadwal photoshoot. Terima kasih!`;
           {/* ================= 4. TAB 2: ALUR & PIPELINE PRODUKSI ================= */}
           {activeTab === "pipeline" && (
             <div className="space-y-6">
+              {/* Standar 6 Tahap Ringkas */}
               <div className="rounded-xl border border-dark/10 bg-white p-6 shadow-sm">
                 <div className="flex items-center justify-between border-b border-dark/10 pb-4 mb-6">
                   <div>
                     <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-orange">
                       {isGuest
                         ? "Standar Alur Produksi"
-                        : "Timeline Pengerjaan"}
+                        : "Timeline Pengerjaan Resmi"}
                     </span>
                     <h3 className="font-headline font-bold text-lg text-dark mt-0.5">
                       {isGuest
@@ -874,6 +876,13 @@ Mohon dibuatkan surat MOU resmi & kunci jadwal photoshoot. Terima kasih!`;
                   ))}
                 </div>
               </div>
+
+              {/* Kalender & Checklist Detail 22 Task dari Master Timeline */}
+              <ProductionTimeline
+                schoolName={schoolName}
+                targetGraduation={targetGraduation}
+                isGuest={isGuest}
+              />
             </div>
           )}
 

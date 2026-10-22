@@ -10,6 +10,7 @@ import { CmsSandbox } from "../components/dashboard/CmsSandbox";
 import { SchoolFolderCard } from "../components/dashboard/SchoolFolderCard";
 import { MOUProjectManager } from "../components/dashboard/MOUProjectManager";
 import { ProspectOrdersManager } from "../components/dashboard/ProspectOrdersManager";
+import { AdminTimelineScheduler } from "../components/dashboard/AdminTimelineScheduler";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import {
@@ -114,16 +115,16 @@ export default function DashboardPage() {
 function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tabParam = searchParams.get("tab") as "mou" | "portfolios" | "prospects" | "quotation" | null;
+  const tabParam = searchParams.get("tab") as "mou" | "timeline" | "portfolios" | "prospects" | "quotation" | null;
   const [data, setData] = useState<Portfolio[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredData, setFilteredData] = useState<Portfolio[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"mou" | "portfolios" | "prospects" | "quotation">("mou");
+  const [activeTab, setActiveTab] = useState<"mou" | "timeline" | "portfolios" | "prospects" | "quotation">("mou");
   const [viewMode, setViewMode] = useState<"split" | "folders" | "table">("split");
 
   useEffect(() => {
-    if (tabParam && ["mou", "portfolios", "prospects", "quotation"].includes(tabParam)) {
+    if (tabParam && ["mou", "timeline", "portfolios", "prospects", "quotation"].includes(tabParam)) {
       setActiveTab(tabParam);
     }
   }, [tabParam]);
@@ -196,7 +197,10 @@ function DashboardContent() {
       {/* Tab 1: Angkatan MOU & Tracker (Supabase Live) */}
       {activeTab === "mou" && <MOUProjectManager />}
 
-      {/* Tab 2: Portfolios Management & Tactile Folder Dock */}
+      {/* Tab 2: Master Jadwal Timeline 2026 (Live Gantt/Checklist) */}
+      {activeTab === "timeline" && <AdminTimelineScheduler />}
+
+      {/* Tab 3: Portfolios Management & Tactile Folder Dock */}
       {activeTab === "portfolios" && (
         <div className="space-y-6">
           {/* Top Control Bar: Search, View Mode & Add Button */}

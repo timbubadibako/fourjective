@@ -10,6 +10,7 @@ import {
   ExternalLink,
   LogOut,
   FolderGit2,
+  CalendarDays,
 } from "lucide-react";
 
 export function DashboardSidebar() {
@@ -27,7 +28,7 @@ export function DashboardSidebar() {
   };
 
   const navItems: Array<{
-    key: "mou" | "portfolios" | "prospects" | "quotation";
+    key: "mou" | "timeline" | "portfolios" | "prospects" | "quotation";
     title: string;
     icon: any;
   }> = [
@@ -35,6 +36,11 @@ export function DashboardSidebar() {
       key: "mou",
       title: "Proyek MOU & Token",
       icon: Sparkles,
+    },
+    {
+      key: "timeline",
+      title: "Jadwal Timeline 2026",
+      icon: CalendarDays,
     },
     {
       key: "portfolios",
