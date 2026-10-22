@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Sparkles,
   BookOpen,
@@ -12,14 +12,11 @@ import {
   FolderGit2,
 } from "lucide-react";
 
-interface AdminSidebarProps {
-  activeTab?: string;
-  onTabChange?: (tab: "mou" | "portfolios" | "prospects" | "quotation") => void;
-}
-
-export function DashboardSidebar({ activeTab = "mou", onTabChange }: AdminSidebarProps) {
+export function DashboardSidebar() {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentTab = searchParams.get("tab") || "mou";
 
   const handleLogout = async () => {
     try {
@@ -84,20 +81,16 @@ export function DashboardSidebar({ activeTab = "mou", onTabChange }: AdminSideba
           <nav className="space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = activeTab === item.key;
+              const isActive = pathname === "/dashboard" && currentTab === item.key;
               return (
                 <button
                   key={item.key}
                   type="button"
                   onClick={() => {
-                    if (pathname !== "/dashboard") {
-                      router.push("/dashboard");
-                    } else if (onTabChange) {
-                      onTabChange(item.key);
-                    }
+                    router.push(`/dashboard?tab=${item.key}`);
                   }}
                   className={`w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-bold transition-all cursor-pointer ${
-                    isActive && pathname === "/dashboard"
+                    isActive
                       ? "bg-orange text-white shadow-md shadow-orange/20"
                       : "text-white/70 hover:bg-white/5 hover:text-white"
                   }`}

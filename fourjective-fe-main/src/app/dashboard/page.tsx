@@ -27,8 +27,8 @@ import {
   Inbox,
 } from "lucide-react";
 import { getAllData, Portfolio } from "@/services/api";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
 
 const PRESET_FOLDERS: Array<{
   id: number;
@@ -104,13 +104,29 @@ const PRESET_FOLDERS: Array<{
 ];
 
 export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-xs font-mono text-dark/40">Memuat dashboard...</div>}>
+      <DashboardContent />
+    </Suspense>
+  );
+}
+
+function DashboardContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab") as "mou" | "portfolios" | "prospects" | "quotation" | null;
   const [data, setData] = useState<Portfolio[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredData, setFilteredData] = useState<Portfolio[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"mou" | "portfolios" | "prospects" | "quotation">("mou");
   const [viewMode, setViewMode] = useState<"split" | "folders" | "table">("split");
+
+  useEffect(() => {
+    if (tabParam && ["mou", "portfolios", "prospects", "quotation"].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -180,7 +196,10 @@ export default function DashboardPage() {
       {/* Main Tabs Navigation */}
       <div className="flex items-center space-x-2 border-b border-dark/10 pb-3 overflow-x-auto select-none">
         <button
-          onClick={() => setActiveTab("mou")}
+          onClick={() => {
+            setActiveTab("mou");
+            router.push("/dashboard?tab=mou");
+          }}
           className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-mono font-bold transition-colors cursor-pointer ${
             activeTab === "mou"
               ? "bg-dark text-white"
@@ -192,7 +211,10 @@ export default function DashboardPage() {
         </button>
 
         <button
-          onClick={() => setActiveTab("portfolios")}
+          onClick={() => {
+            setActiveTab("portfolios");
+            router.push("/dashboard?tab=portfolios");
+          }}
           className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-mono font-bold transition-colors cursor-pointer ${
             activeTab === "portfolios"
               ? "bg-dark text-white"
@@ -204,7 +226,10 @@ export default function DashboardPage() {
         </button>
 
         <button
-          onClick={() => setActiveTab("prospects")}
+          onClick={() => {
+            setActiveTab("prospects");
+            router.push("/dashboard?tab=prospects");
+          }}
           className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-mono font-bold transition-colors cursor-pointer ${
             activeTab === "prospects"
               ? "bg-dark text-white"
@@ -216,7 +241,10 @@ export default function DashboardPage() {
         </button>
 
         <button
-          onClick={() => setActiveTab("quotation")}
+          onClick={() => {
+            setActiveTab("quotation");
+            router.push("/dashboard?tab=quotation");
+          }}
           className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-mono font-bold transition-colors cursor-pointer ${
             activeTab === "quotation"
               ? "bg-dark text-white"
