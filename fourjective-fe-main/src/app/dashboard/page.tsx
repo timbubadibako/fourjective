@@ -193,69 +193,6 @@ function DashboardContent() {
       {/* Overview Metric Cards with Fourjective Aesthetic */}
       <OverviewCards portfolios={data} />
 
-      {/* Main Tabs Navigation */}
-      <div className="flex items-center space-x-2 border-b border-dark/10 pb-3 overflow-x-auto select-none">
-        <button
-          onClick={() => {
-            setActiveTab("mou");
-            router.push("/dashboard?tab=mou");
-          }}
-          className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-mono font-bold transition-colors cursor-pointer ${
-            activeTab === "mou"
-              ? "bg-dark text-white"
-              : "bg-white text-dark/70 border border-dark/10 hover:bg-[#FAF6F0]"
-          }`}
-        >
-          <Sparkles className="h-3.5 w-3.5 text-orange" />
-          <span>Proyek MOU &amp; Token</span>
-        </button>
-
-        <button
-          onClick={() => {
-            setActiveTab("portfolios");
-            router.push("/dashboard?tab=portfolios");
-          }}
-          className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-mono font-bold transition-colors cursor-pointer ${
-            activeTab === "portfolios"
-              ? "bg-dark text-white"
-              : "bg-white text-dark/70 border border-dark/10 hover:bg-[#FAF6F0]"
-          }`}
-        >
-          <BookOpen className="h-3.5 w-3.5" />
-          <span>Katalog Portofolio ({data.length > 0 ? data.length : displayFolders.length})</span>
-        </button>
-
-        <button
-          onClick={() => {
-            setActiveTab("prospects");
-            router.push("/dashboard?tab=prospects");
-          }}
-          className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-mono font-bold transition-colors cursor-pointer ${
-            activeTab === "prospects"
-              ? "bg-dark text-white"
-              : "bg-white text-dark/70 border border-dark/10 hover:bg-[#FAF6F0]"
-          }`}
-        >
-          <Inbox className="h-3.5 w-3.5" />
-          <span>Permohonan Masuk</span>
-        </button>
-
-        <button
-          onClick={() => {
-            setActiveTab("quotation");
-            router.push("/dashboard?tab=quotation");
-          }}
-          className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-mono font-bold transition-colors cursor-pointer ${
-            activeTab === "quotation"
-              ? "bg-dark text-white"
-              : "bg-white text-dark/70 border border-dark/10 hover:bg-[#FAF6F0]"
-          }`}
-        >
-          <Calculator className="h-3.5 w-3.5" />
-          <span>Kalkulator Kas HPP</span>
-        </button>
-      </div>
-
       {/* Tab 1: Angkatan MOU & Tracker (Supabase Live) */}
       {activeTab === "mou" && <MOUProjectManager />}
 
