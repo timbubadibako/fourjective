@@ -39,8 +39,10 @@ import {
   Activity,
   FolderGit2,
   ArrowLeft,
+  Receipt,
+  Info,
+  CalendarCheck2,
 } from "lucide-react";
-import { SchoolFolderCard } from "@/app/components/dashboard/SchoolFolderCard";
 import { WA_MESSAGES, waLink } from "@/lib/site";
 import { ProjectData, submitProspectOrder } from "@/lib/supabase";
 
@@ -49,104 +51,30 @@ interface ClientPortalViewProps {
   initialProject?: ProjectData | null;
 }
 
-type TabType = "catalog" | "pipeline" | "quotation" | "flipbook" | "contact";
-type ViewMode = "split" | "folders" | "table";
-
-interface ClassFolderData {
-  id: string;
-  folderName: string;
-  year: number;
-  studentCount: number;
-  pageCount: number;
-  fileSize: string;
-  isLocked: boolean;
-  theme: "orange-liquid" | "amber-fire" | "dark-marble" | "frosted-glass";
-  category: string;
-  lastUpdated: string;
-}
-
-const CLASS_FOLDERS: ClassFolderData[] = [
-  {
-    id: "mipa-1",
-    folderName: "XII MIPA 1 — Photoshoot Outdoor",
-    year: 2026,
-    studentCount: 32,
-    pageCount: 8,
-    fileSize: "420 MB",
-    isLocked: false,
-    theme: "orange-liquid",
-    category: "Kelas",
-    lastUpdated: "Kemarin, 14:20",
-  },
-  {
-    id: "mipa-2",
-    folderName: "XII MIPA 2 — Studio Session",
-    year: 2026,
-    studentCount: 30,
-    pageCount: 8,
-    fileSize: "380 MB",
-    isLocked: false,
-    theme: "amber-fire",
-    category: "Kelas",
-    lastUpdated: "19 Okt 2026",
-  },
-  {
-    id: "ips-1",
-    folderName: "XII IPS 1 — Urban Vintage Theme",
-    year: 2026,
-    studentCount: 34,
-    pageCount: 8,
-    fileSize: "510 MB",
-    isLocked: false,
-    theme: "dark-marble",
-    category: "Kelas",
-    lastUpdated: "18 Okt 2026",
-  },
-  {
-    id: "ips-2",
-    folderName: "XII IPS 2 — Casual Monokrom",
-    year: 2026,
-    studentCount: 32,
-    pageCount: 8,
-    fileSize: "460 MB",
-    isLocked: false,
-    theme: "frosted-glass",
-    category: "Kelas",
-    lastUpdated: "17 Okt 2026",
-  },
-  {
-    id: "guru",
-    folderName: "Dokumentasi Guru & Karyawan",
-    year: 2026,
-    studentCount: 45,
-    pageCount: 12,
-    fileSize: "640 MB",
-    isLocked: true,
-    theme: "orange-liquid",
-    category: "Fakultas",
-    lastUpdated: "15 Okt 2026",
-  },
-  {
-    id: "ekskul",
-    folderName: "Ekskul & Kegiatan Angkatan",
-    year: 2026,
-    studentCount: 180,
-    pageCount: 16,
-    fileSize: "890 MB",
-    isLocked: false,
-    theme: "amber-fire",
-    category: "Dokumentasi",
-    lastUpdated: "14 Okt 2026",
-  },
-];
+type TabType =
+  | "catalog"
+  | "pipeline"
+  | "quotation"
+  | "flipbook"
+  | "contact"
+  | "payments";
 
 export function ClientPortalView({ kode, initialProject }: ClientPortalViewProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<TabType>("catalog");
-  const [viewMode, setViewMode] = useState<ViewMode>("split");
+
+  // === DETEKSI STATUS KONDISI: GUEST vs TELAH MOU ===
+  const isGuest =
+    initialProject?.status === "prospect" || kode.startsWith("GUEST");
+
+  const [activeTab, setActiveTab] = useState<TabType>(
+    isGuest ? "quotation" : "catalog"
+  );
   const [searchQuery, setSearchQuery] = useState("");
-  const [sidebarSearch, setSidebarSearch] = useState("");
-  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
+  const [unlockedYearbook, setUnlockedYearbook] = useState<boolean>(false);
+  const [unlockPassword, setUnlockPassword] = useState<string>("");
+  const [unlockError, setUnlockError] = useState<string>("");
+  const [showUnlockModal, setShowUnlockModal] = useState<boolean>(false);
+  const [claimUsed, setClaimUsed] = useState<boolean>(false);
 
   // === State Estimator Kas ===
   const [siswa, setSiswa] = useState<number>(initialProject?.student_count || 180);
@@ -169,147 +97,171 @@ export function ClientPortalView({ kode, initialProject }: ClientPortalViewProps
   // === Perhitungan Harga Estimator ===
   const basePerPage = 1200;
   const coverPrices = { hardcover: 40000, leather: 75000, acrylic: 110000 };
-  const addOns = (includeVideo ? 25000 : 0) + (includeAR ? 35000 : 0) + (includeMerch ? 45000 : 0);
-  const pricePerStudent = Math.round(halaman * basePerPage + coverPrices[coverType] + addOns);
+  const addOns =
+    (includeVideo ? 25000 : 0) +
+    (includeAR ? 35000 : 0) +
+    (includeMerch ? 45000 : 0);
+  const pricePerStudent = Math.round(
+    halaman * basePerPage + coverPrices[coverType] + addOns
+  );
   const totalProjectPrice = pricePerStudent * siswa;
 
   const schoolName = initialProject?.school_name || "SMA Negeri 1 Jakarta";
   const gradYear = initialProject?.graduation_year || 2026;
-  const currentStage = initialProject?.current_stage || 3;
+  const currentStage = initialProject?.current_stage || (isGuest ? 1 : 2);
   const pmName = initialProject?.pm_assigned || "Venny Meilinda";
 
-  // Data dinamis dari Supabase (dengan fallback anggun jika belum ada)
-  const milestones = initialProject?.project_milestones && initialProject.project_milestones.length > 0
-    ? initialProject.project_milestones
-    : [
-        {
-          id: "m1",
-          project_id: "p1",
-          step_number: 1,
-          title: "Penandatanganan Kontrak & DP 30%",
-          description: "MOU resmi angkatan telah disepakati dan jadwal photoshoot terkunci.",
-          status: "done" as const,
-          target_date: "10 Sep 2026",
-        },
-        {
-          id: "m2",
-          project_id: "p1",
-          step_number: 2,
-          title: "Sesi Foto Angkatan & Kelas",
-          description: "Pemotretan outdoor tema kelas, sesi studio guru, dan video shoot selesai.",
-          status: "done" as const,
-          target_date: "04 Okt 2026",
-        },
-        {
-          id: "m3",
-          project_id: "p1",
-          step_number: 3,
-          title: "Desain Layout & Kurasi 80 Halaman",
-          description: "Tim desainer grafis Fourjective sedang menata susunan foto & bio siswa.",
-          status: "active" as const,
-          target_date: "Sedang Berlangsung",
-        },
-        {
-          id: "m4",
-          project_id: "p1",
-          step_number: 4,
-          title: "Proofing Dummy & Revisi Panitia",
-          description: "Pengecekan dummy digital sebelum dokumen naik ke mesin cetak Heidelberg.",
-          status: "pending" as const,
-          target_date: "Est. 15 Nov 2026",
-        },
-        {
-          id: "m5",
-          project_id: "p1",
-          step_number: 5,
-          title: "Proses Cetak, Jilid Hardcover & QC",
-          description: "Pencetakan fisik, laminasi doff/glossy, jilid jahit benang hardcover kokoh.",
-          status: "pending" as const,
-          target_date: "Est. 10 Des 2026",
-        },
-        {
-          id: "m6",
-          project_id: "p1",
-          step_number: 6,
-          title: "Pengemasan Rapi & Pengiriman ke Sekolah",
-          description: "Eksemplar buku dibungkus box rapi dan dikirim tepat waktu sebelum hari wisuda.",
-          status: "pending" as const,
-          target_date: "Est. 20 Des 2026",
-        },
-      ];
+  // Data dinamis dari Supabase
+  const milestones =
+    initialProject?.project_milestones &&
+    initialProject.project_milestones.length > 0
+      ? initialProject.project_milestones
+      : [
+          {
+            id: "m1",
+            project_id: "p1",
+            step_number: 1,
+            title: "Penandatanganan Kontrak MOU & DP 30%",
+            description: isGuest
+              ? "Menunggu persetujuan panitia dan pembayaran kas DP 30% untuk mengunci tanggal sesi foto."
+              : "MOU resmi angkatan telah disepakati dan jadwal photoshoot terkunci.",
+            status: isGuest ? ("active" as const) : ("done" as const),
+            target_date: isGuest ? "Menunggu MOU" : "10 Sep 2026",
+          },
+          {
+            id: "m2",
+            project_id: "p1",
+            step_number: 2,
+            title: "Sesi Foto Angkatan & Kelas",
+            description:
+              "Pemotretan outdoor tema kelas, sesi studio guru, dan video shoot.",
+            status: isGuest ? ("pending" as const) : ("active" as const),
+            target_date: "04 Okt 2026",
+          },
+          {
+            id: "m3",
+            project_id: "p1",
+            step_number: 3,
+            title: "Desain Layout & Kurasi 80 Halaman",
+            description:
+              "Tim desainer grafis Fourjective menata susunan foto & bio siswa.",
+            status: "pending" as const,
+            target_date: "Sedang Berlangsung",
+          },
+          {
+            id: "m4",
+            project_id: "p1",
+            step_number: 4,
+            title: "Proofing Dummy & Revisi Panitia",
+            description:
+              "Pengecekan dummy digital sebelum dokumen naik ke mesin cetak Heidelberg.",
+            status: "pending" as const,
+            target_date: "Est. 15 Nov 2026",
+          },
+          {
+            id: "m5",
+            project_id: "p1",
+            step_number: 5,
+            title: "Proses Cetak, Jilid Hardcover & QC",
+            description:
+              "Pencetakan fisik, laminasi doff/glossy, jilid jahit benang hardcover kokoh.",
+            status: "pending" as const,
+            target_date: "Est. 10 Des 2026",
+          },
+          {
+            id: "m6",
+            project_id: "p1",
+            step_number: 6,
+            title: "Pengemasan Rapi & Pengiriman ke Sekolah",
+            description:
+              "Eksemplar buku dibungkus box rapi dan dikirim tepat waktu sebelum hari wisuda.",
+            status: "pending" as const,
+            target_date: "Est. 20 Des 2026",
+          },
+        ];
 
-  const installments = initialProject?.payment_installments && initialProject.payment_installments.length > 0
-    ? initialProject.payment_installments
-    : [
-        {
-          id: "i1",
-          project_id: "p1",
-          installment_number: 1,
-          title: "Termin 1 (DP 30%)",
-          amount: 8910000,
-          status: "paid" as const,
-          due_date: "Lunas saat MOU",
-          receipt_number: "INV-2026-001-LUNAS",
-          notes: "Pembayaran kas DP 30% terverifikasi",
-        },
-        {
-          id: "i2",
-          project_id: "p1",
-          installment_number: 2,
-          title: "Termin 2 (40%)",
-          amount: 11880000,
-          status: "pending" as const,
-          due_date: "Saat ACC Dummy Cetak",
-          receipt_number: "INV-2026-002-PENDING",
-          notes: "Jatuh tempo saat dummy disetujui",
-        },
-        {
-          id: "i3",
-          project_id: "p1",
-          installment_number: 3,
-          title: "Termin 3 (Pelunasan 30%)",
-          amount: 8910000,
-          status: "pending" as const,
-          due_date: "Sebelum Buku Dikirim",
-          receipt_number: "INV-2026-003-PENDING",
-          notes: "Pelunasan sebelum pengiriman ekspedisi",
-        },
-      ];
+  const installments =
+    initialProject?.payment_installments &&
+    initialProject.payment_installments.length > 0
+      ? initialProject.payment_installments
+      : [
+          {
+            id: "i1",
+            project_id: "p1",
+            installment_number: 1,
+            title: "Termin 1 (DP 30%)",
+            amount: Math.round(totalProjectPrice * 0.3),
+            status: isGuest ? ("pending" as const) : ("paid" as const),
+            due_date: isGuest ? "Saat Tanda Tangan MOU" : "Lunas saat MOU",
+            receipt_number: isGuest ? "INV-ESTIMASI" : "INV-2026-001-LUNAS",
+            notes: isGuest
+              ? "Pembayaran DP 30% untuk mengunci jadwal photoshoot"
+              : "Pembayaran kas DP 30% terverifikasi kontrak",
+          },
+          {
+            id: "i2",
+            project_id: "p1",
+            installment_number: 2,
+            title: "Termin 2 (40%)",
+            amount: Math.round(totalProjectPrice * 0.4),
+            status: "pending" as const,
+            due_date: "Saat ACC Dummy Cetak",
+            receipt_number: "INV-2026-002-PENDING",
+            notes: "Jatuh tempo saat dummy disetujui",
+          },
+          {
+            id: "i3",
+            project_id: "p1",
+            installment_number: 3,
+            title: "Termin 3 (Pelunasan 30%)",
+            amount: totalProjectPrice - Math.round(totalProjectPrice * 0.7),
+            status: "pending" as const,
+            due_date: "Sebelum Buku Dikirim",
+            receipt_number: "INV-2026-003-PENDING",
+            notes: "Pelunasan sebelum pengiriman ekspedisi",
+          },
+        ];
 
-  const deliverables = initialProject?.project_deliverables && initialProject.project_deliverables.length > 0
-    ? initialProject.project_deliverables
-    : [
-        {
-          id: "d1",
-          project_id: "p1",
-          file_type: "zip_photos" as const,
-          file_name: "Galeri Foto Kelas Lengkap (Hi-Res).zip",
-          file_size: "3.8 GB",
-          r2_key: "schools/SMAN1-2026/photos-hires.zip",
-          is_ready: true,
-          download_count: 14,
-        },
-        {
-          id: "d2",
-          project_id: "p1",
-          file_type: "master_pdf" as const,
-          file_name: "Draf Dummy Layout 80 Halaman (Revisi 1).pdf",
-          file_size: "184 MB",
-          r2_key: "schools/SMAN1-2026/dummy-rev1.pdf",
-          is_ready: true,
-          download_count: 6,
-        },
-        {
-          id: "d3",
-          project_id: "p1",
-          file_type: "video_4k" as const,
-          file_name: "Trailer Aftermovie 4K (Rough Cut).mp4",
-          file_size: "1.2 GB",
-          r2_key: "schools/SMAN1-2026/aftermovie-rough.mp4",
-          is_ready: false,
-          download_count: 0,
-        },
-      ];
+  const deliverables =
+    initialProject?.project_deliverables &&
+    initialProject.project_deliverables.length > 0
+      ? initialProject.project_deliverables
+      : [
+          {
+            id: "d1",
+            project_id: "p1",
+            file_type: "zip_photos" as const,
+            file_name: isGuest
+              ? "Contoh Galeri Foto Outdoor (Sample Demo).zip"
+              : "Galeri Foto Kelas Lengkap (Hi-Res).zip",
+            file_size: isGuest ? "1.4 GB" : "3.8 GB",
+            r2_key: "schools/SMAN1-2026/photos-hires.zip",
+            is_ready: true,
+            download_count: 14,
+          },
+          {
+            id: "d2",
+            project_id: "p1",
+            file_type: "master_pdf" as const,
+            file_name: isGuest
+              ? "Sample Dummy Layout 64 Halaman (Pratinjau).pdf"
+              : "Draf Dummy Layout 80 Halaman (Revisi 1).pdf",
+            file_size: isGuest ? "68 MB" : "184 MB",
+            r2_key: "schools/SMAN1-2026/dummy-rev1.pdf",
+            is_ready: true,
+            download_count: 6,
+          },
+          {
+            id: "d3",
+            project_id: "p1",
+            file_type: "video_4k" as const,
+            file_name: "Trailer Aftermovie 4K (Rough Cut).mp4",
+            file_size: "1.2 GB",
+            r2_key: "schools/SMAN1-2026/aftermovie-rough.mp4",
+            is_ready: false,
+            download_count: 0,
+          },
+        ];
 
   const handleLogout = () => {
     router.push("/portal");
@@ -324,7 +276,15 @@ Sekolah: ${schoolName} (${gradYear})
 - Jumlah Siswa: ${siswa} Siswa
 - Jumlah Halaman: ${halaman} Halaman
 - Spesifikasi Cover: ${coverType.toUpperCase()}
-- Add-on: ${[includeVideo && "Video Aftermovie 4K", includeAR && "AR Scan Video", includeMerch && "Merchandise Angkatan"].filter(Boolean).join(", ") || "Tidak ada"}
+- Add-on: ${
+      [
+        includeVideo && "Video Aftermovie 4K",
+        includeAR && "AR Scan Video",
+        includeMerch && "Merchandise Angkatan",
+      ]
+        .filter(Boolean)
+        .join(", ") || "Tidak ada"
+    }
 
 Estimasi per Siswa: Rp ${pricePerStudent.toLocaleString("id-ID")}
 Total Estimasi Proyek: Rp ${totalProjectPrice.toLocaleString("id-ID")}
@@ -337,10 +297,30 @@ Kirim rincian ini ke tim Fourjective untuk dibuatkan draf kontrak MOU resmi.
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleUnlockYearbook = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!unlockPassword.trim()) {
+      setUnlockError("Masukkan kata sandi angkatan atau kode akses.");
+      return;
+    }
+    // Verifikasi password angkatan / token kode guest
+    if (
+      unlockPassword.trim().toUpperCase() === kode.toUpperCase() ||
+      unlockPassword.trim().toLowerCase() === "fourjective" ||
+      unlockPassword.trim().toLowerCase() === "2026"
+    ) {
+      setUnlockedYearbook(true);
+      setShowUnlockModal(false);
+      setClaimUsed(true);
+      setUnlockError("");
+    } else {
+      setUnlockError("Kata sandi salah. Hubungi panitia atau PM Fourjective.");
+    }
+  };
+
   const handleSendOrder = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Async record order ke Supabase
     submitProspectOrder({
       projectId: initialProject?.id,
       picName: picName || "Panitia",
@@ -358,106 +338,97 @@ Kirim rincian ini ke tim Fourjective untuk dibuatkan draf kontrak MOU resmi.
       targetGraduation,
     }).catch((err) => console.error("Error saving prospect order:", err));
 
-    const msg = `Halo Tim Fourjective! Saya ${picName || "Panitia"} dari angkatan dengan kode *${kode}* (${schoolName} ${gradYear}) ingin mengajukan pemesanan & kontrak MOU:
-- Jumlah Siswa: ${siswa}
-- Halaman: ${halaman}
+    const msg = `Halo Tim Fourjective! Saya ${picName || "Panitia"} dari ${schoolName} (${gradYear}) dengan kode akses *${kode}* ingin mengajukan penandatanganan KONTRAK MOU & kunci jadwal:
+- Jumlah Siswa: ${siswa} siswa
+- Halaman: ${halaman} hal
 - Cover: ${coverType}
 - Target Wisuda: ${targetGraduation}
-- Estimasi per Siswa: Rp ${pricePerStudent.toLocaleString("id-ID")}
-- No. WhatsApp PIC: ${picPhone || "-"}
+- Estimasi Iuran: Rp ${pricePerStudent.toLocaleString("id-ID")}/siswa
+- Total Anggaran: Rp ${totalProjectPrice.toLocaleString("id-ID")}
 
-Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
+Mohon dibuatkan surat MOU resmi & kunci jadwal photoshoot. Terima kasih!`;
+
     window.open(waLink(msg), "_blank");
   };
 
-  // Filter folder berdasarkan search bar
-  const filteredFolders = CLASS_FOLDERS.filter((f) => {
-    const query = (searchQuery || sidebarSearch).toLowerCase();
-    if (!query) return true;
-    return (
-      f.folderName.toLowerCase().includes(query) ||
-      f.category.toLowerCase().includes(query)
-    );
-  });
-
-  const navMenuItems = [
-    {
-      key: "catalog" as TabType,
-      title: "Katalog & Berkas Angkatan",
-      icon: BookOpen,
-      badge: `${CLASS_FOLDERS.length} Folder`,
-    },
-    {
-      key: "pipeline" as TabType,
-      title: "Alur & Pipeline Produksi",
-      icon: Clock,
-      badge: `Tahap ${currentStage}/6`,
-      badgeColor: "bg-orange/20 text-orange border border-orange/30",
-    },
+  // ================= MENU KHUSUS GUEST VS TELAH MOU =================
+  const guestNavItems = [
     {
       key: "quotation" as TabType,
-      title: "Kalkulator & Estimator Kas",
+      title: "Kalkulator Kas & Paket",
       icon: Calculator,
-      badge: "Simulasi",
+      badge: "Prioritas",
+      badgeColor: "bg-orange text-white",
     },
     {
       key: "flipbook" as TabType,
-      title: "Virtual Flipbook 3D",
+      title: "Klaim Pratinjau Yearbook",
       icon: Layers,
-      badge: "Preview",
+      badge: claimUsed || unlockedYearbook ? "Terbuka" : "1 Kuota Klaim",
+      badgeColor: claimUsed || unlockedYearbook ? "bg-emerald-500 text-white" : "bg-amber-400 text-dark font-black",
+    },
+    {
+      key: "pipeline" as TabType,
+      title: "Alur & Standar 6 Tahap",
+      icon: Clock,
+      badge: "Pra-MOU",
+      badgeColor: "bg-amber-100 text-amber-900 border border-amber-300",
     },
     {
       key: "contact" as TabType,
-      title: "Kontak PIC & Panduan",
+      title: "Ajukan MOU & Jadwal",
       icon: PhoneCall,
       badge: "Online",
       badgeColor: "bg-emerald-950/60 text-emerald-400 border border-emerald-800",
     },
   ];
 
-  // === RENDER JIKA KODE TIDAK DITEMUKAN / BELUM TERDAFTAR ===
-  if (initialProject === null && kode !== "SMAN1-2026") {
-    return (
-      <div className="min-h-screen bg-[#F5F3EF] flex flex-col items-center justify-center p-6 text-dark selection:bg-orange selection:text-white">
-        <div className="max-w-md w-full bg-white border-3 border-dark rounded-2xl p-7 sm:p-8 shadow-[6px_8px_0px_#14161C] text-center space-y-5">
-          <div className="w-14 h-14 rounded-2xl bg-orange/15 text-orange flex items-center justify-center mx-auto border-2 border-orange">
-            <AlertCircle className="w-7 h-7" />
-          </div>
-          <div>
-            <span className="font-mono text-[10px] font-black uppercase tracking-wider text-orange">
-              KODE AKSES BELUM AKTIF
-            </span>
-            <h1 className="font-playtimes text-3xl font-bold text-dark mt-1">
-              Kode Tidak Terdaftar
-            </h1>
-            <p className="font-sans text-xs text-dark/70 mt-2 leading-relaxed">
-              Kode angkatan <strong className="font-mono text-dark bg-slate-100 px-1.5 py-0.5 rounded border border-dark/15">{kode}</strong> belum terdaftar di database Supabase Fourjective.
-            </p>
-          </div>
+  const mouNavItems = [
+    {
+      key: "catalog" as TabType,
+      title: "Berkas & Unduh Hasil",
+      icon: BookOpen,
+      badge: `${deliverables.filter((d) => d.is_ready).length} File Siap`,
+      badgeColor: "bg-emerald-950/60 text-emerald-400 border border-emerald-800",
+    },
+    {
+      key: "pipeline" as TabType,
+      title: "Alur Produksi Real-Time",
+      icon: Clock,
+      badge: `Tahap ${currentStage}/6`,
+      badgeColor: "bg-orange/20 text-orange border border-orange/30",
+    },
+    {
+      key: "payments" as TabType,
+      title: "Termin Kas & Kuitansi",
+      icon: Receipt,
+      badge: `${installments.filter((i) => i.status === "paid").length}/${
+        installments.length
+      } Lunas`,
+      badgeColor: "bg-emerald-100 text-emerald-800 border border-emerald-300",
+    },
+    {
+      key: "flipbook" as TabType,
+      title: "E-Book Flipbook 3D Angkatan",
+      icon: Layers,
+      badge: "E-Book",
+    },
+    {
+      key: "quotation" as TabType,
+      title: "Simulasi Kas Tambahan",
+      icon: Calculator,
+      badge: "Kalkulator",
+    },
+    {
+      key: "contact" as TabType,
+      title: "Dedicated PM & Panduan",
+      icon: PhoneCall,
+      badge: "Online",
+      badgeColor: "bg-emerald-950/60 text-emerald-400 border border-emerald-800",
+    },
+  ];
 
-          <div className="space-y-2.5 pt-2">
-            <Link
-              href="/portal"
-              className="w-full inline-flex items-center justify-center gap-2 bg-dark hover:bg-orange text-white font-headline font-black text-xs uppercase tracking-widest py-3 px-4 rounded-xl transition-all cursor-pointer shadow-sm"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Coba Kode Lain</span>
-            </Link>
-
-            <a
-              href={waLink(`Halo Kak Venny (PM Fourjective), saya ingin meminta aktivasi kode akses angkatan untuk sekolah saya.`)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-100 text-dark border-2 border-dark font-headline font-black text-xs uppercase tracking-widest py-3 px-4 rounded-xl transition-all cursor-pointer"
-            >
-              <MessageCircle className="w-4 h-4 text-orange" />
-              <span>Minta Kode ke PM Fourjective</span>
-            </a>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const activeNavItems = isGuest ? guestNavItems : mouNavItems;
 
   return (
     <div className="flex min-h-screen w-full bg-[#F5F3EF]">
@@ -474,21 +445,9 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                 FOURJECTIVE
               </h1>
               <p className="text-[10px] text-orange font-mono font-bold tracking-tight">
-                Portal Sekolah &amp; Panitia
+                {isGuest ? "Guest Portal (Pra-MOU)" : "Portal Klien Resmi"}
               </p>
             </div>
-          </div>
-
-          {/* Quick Filter inside Sidebar */}
-          <div className="mt-3.5 relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/40" />
-            <input
-              type="text"
-              placeholder="Filter materi angkatan..."
-              value={sidebarSearch}
-              onChange={(e) => setSidebarSearch(e.target.value)}
-              className="w-full bg-[#1A1C24] border border-white/10 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-white/40 outline-none focus:border-orange transition-colors font-mono"
-            />
           </div>
         </div>
 
@@ -496,18 +455,30 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
         <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6 scrollbar-thin scrollbar-thumb-white/10">
           {/* Main User Navigation */}
           <div>
-            <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-white/40 mb-2 px-2">
-              Menu Utama Sekolah
-            </p>
+            <div className="flex items-center justify-between px-2 mb-2">
+              <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-white/40">
+                {isGuest ? "Menu Tamu & Simulasi" : "Menu Angkatan Resmi"}
+              </p>
+              {isGuest ? (
+                <span className="text-[9px] font-mono font-bold bg-amber-400/20 text-amber-300 px-1.5 py-0.2 rounded border border-amber-400/30">
+                  DEMO
+                </span>
+              ) : (
+                <span className="text-[9px] font-mono font-bold bg-emerald-400/20 text-emerald-300 px-1.5 py-0.2 rounded border border-emerald-400/30">
+                  MOU AKTIF
+                </span>
+              )}
+            </div>
+
             <nav className="space-y-1">
-              {navMenuItems.map((item) => {
+              {activeNavItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.key;
                 return (
                   <button
                     key={item.key}
                     onClick={() => setActiveTab(item.key)}
-                    className={`w-full flex items-center justify-between rounded-xl px-3 py-2 text-xs font-bold transition-all cursor-pointer ${
+                    className={`w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-bold transition-all cursor-pointer ${
                       isActive
                         ? "bg-orange text-white shadow-md shadow-orange/20"
                         : "text-white/70 hover:bg-white/5 hover:text-white"
@@ -520,7 +491,10 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                     {item.badge && (
                       <span
                         className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded shrink-0 ${
-                          item.badgeColor || (isActive ? "bg-white/20 text-white" : "bg-white/10 text-white/70")
+                          item.badgeColor ||
+                          (isActive
+                            ? "bg-white/20 text-white"
+                            : "bg-white/10 text-white/70")
                         }`}
                       >
                         {item.badge}
@@ -530,43 +504,6 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                 );
               })}
             </nav>
-          </div>
-
-          {/* Class Folders Sub-list (Folder Materi Kelas) */}
-          <div>
-            <div className="flex items-center justify-between px-2 mb-2">
-              <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-white/40">
-                Folder Materi Kelas
-              </p>
-              <span className="text-[9px] font-mono font-bold bg-white/10 text-white/70 px-1.5 py-0.2 rounded">
-                {CLASS_FOLDERS.length} Folder
-              </span>
-            </div>
-
-            <div className="space-y-1">
-              {CLASS_FOLDERS.map((f) => (
-                <button
-                  key={f.id}
-                  onClick={() => {
-                    setActiveTab("catalog");
-                    setSelectedFolder(f.id);
-                  }}
-                  className={`w-full flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs transition-colors cursor-pointer group ${
-                    selectedFolder === f.id && activeTab === "catalog"
-                      ? "bg-white/10 text-white font-bold"
-                      : "text-white/60 hover:bg-white/5 hover:text-white"
-                  }`}
-                >
-                  <div className="flex items-center gap-2 truncate">
-                    <Folder className="h-3.5 w-3.5 text-orange shrink-0" />
-                    <span className="truncate font-sans text-xs">{f.folderName.split(" — ")[0]}</span>
-                  </div>
-                  <span className="text-[9px] font-mono text-white/40 group-hover:text-white/70">
-                    {f.pageCount}p
-                  </span>
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* Public Tautan Singkat */}
@@ -599,19 +536,24 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
           </div>
         </div>
 
-        {/* Sidebar Footer: Cloud R2 Egress + PIC PM Status + Logout */}
+        {/* Sidebar Footer */}
         <div className="border-t border-white/10 p-3 bg-[#0E0F13]">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[10px] font-mono text-white/60">Cloudflare R2 Egress</span>
+            <span className="text-[10px] font-mono text-white/60">
+              Cloudflare R2 Egress
+            </span>
             <span className="text-[10px] font-mono font-black text-emerald-400 bg-emerald-950/60 border border-emerald-800 px-1.5 py-0.2 rounded">
               $0 FREE
             </span>
           </div>
           <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full bg-orange rounded-full" style={{ width: "38%" }} />
+            <div
+              className="h-full bg-orange rounded-full"
+              style={{ width: isGuest ? "15%" : "38%" }}
+            />
           </div>
           <div className="flex justify-between items-center mt-1 text-[9px] font-mono text-white/40">
-            <span>3.8 GB Terpakai</span>
+            <span>{isGuest ? "1.4 GB Sample" : "3.8 GB Terpakai"}</span>
             <span>10 GB Kuota</span>
           </div>
 
@@ -642,70 +584,123 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
 
       {/* ================= MAIN CONTENT CANVAS ================= */}
       <main className="flex-1 min-w-0 flex flex-col min-h-screen overflow-x-hidden">
-        {/* Top Header Bar matching Dashboard layout */}
+        {/* Top Header Bar */}
         <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-dark/10 bg-[#FAF6F0]/90 px-6 backdrop-blur-md">
           {/* Left: Breadcrumb & Title */}
           <div className="flex items-center gap-3">
-            <span className="h-2.5 w-2.5 rounded-full bg-orange animate-pulse" />
+            <span
+              className={`h-2.5 w-2.5 rounded-full ${
+                isGuest ? "bg-amber-500 animate-bounce" : "bg-orange animate-pulse"
+              }`}
+            />
             <div>
               <div className="flex items-center gap-2 text-[11px] font-mono text-dark/50 font-bold uppercase tracking-wider">
                 <span>Portal</span>
                 <span>/</span>
-                <span className="text-dark font-black">{schoolName} ({kode})</span>
+                <span className="text-dark font-black">
+                  {schoolName} ({kode})
+                </span>
                 <span>/</span>
                 <span className="text-orange">
-                  {navMenuItems.find((m) => m.key === activeTab)?.title}
+                  {activeNavItems.find((m) => m.key === activeTab)?.title}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Right: Storage Quota Bar & Status Badges */}
+          {/* Right: Status Badges */}
           <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-3 bg-white border border-dark/10 rounded-full px-4 py-1.5 shadow-sm">
-              <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-dark/70">
-                <HardDrive className="w-3.5 h-3.5 text-orange" />
-                <span>Cloud Storage</span>
+            {isGuest ? (
+              <div className="hidden sm:flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-[11px] font-mono font-bold text-amber-900 border border-amber-300 shadow-sm">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+                <span>Mode Tamu (Pra-MOU)</span>
               </div>
-              <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
-                <div className="h-full bg-orange rounded-full" style={{ width: "38%" }} />
+            ) : (
+              <div className="hidden sm:flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[11px] font-mono font-bold text-emerald-700 border border-emerald-300 shadow-sm">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Kontrak MOU Terverifikasi</span>
               </div>
-              <span className="text-[10px] font-mono font-bold text-dark/60">
-                3.8 GB / 10 GB
-              </span>
-            </div>
+            )}
 
-            <div className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[11px] font-mono font-bold text-dark border border-dark/10 shadow-sm">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="text-emerald-700 font-bold">Tahap {currentStage}/6: Desain Layout</span>
-            </div>
-
-            <a
-              href={waLink(`Halo Kak ${pmName} (PM Fourjective), saya panitia kode ${kode} dari ${schoolName} ingin koordinasi materi.`)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 bg-orange text-white px-3.5 py-1.5 rounded-full text-xs font-mono font-black shadow-sm hover:translate-y-[-1px] transition-transform"
-            >
-              <MessageCircle className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Chat PIC WA</span>
-            </a>
+            {isGuest ? (
+              <button
+                onClick={() => setActiveTab("quotation")}
+                className="inline-flex items-center gap-1.5 bg-orange text-white px-4 py-1.5 rounded-full text-xs font-mono font-black shadow-md shadow-orange/20 hover:bg-orange/90 transition-all cursor-pointer"
+              >
+                <ArrowUpRight className="w-3.5 h-3.5" />
+                <span>Kunci Draf MOU &rarr;</span>
+              </button>
+            ) : (
+              <a
+                href={waLink(
+                  `Halo Kak ${pmName} (PM Fourjective), saya panitia kode ${kode} dari ${schoolName} ingin koordinasi materi.`
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 bg-orange text-white px-3.5 py-1.5 rounded-full text-xs font-mono font-black shadow-sm hover:translate-y-[-1px] transition-transform"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span className="hidden md:inline">Chat PIC WA</span>
+              </a>
+            )}
           </div>
         </header>
 
         {/* Dynamic Page Content Area */}
         <div className="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
-          {/* ================= 1. OVERVIEW METRIC CARDS (DYNAMIC FROM SUPABASE) ================= */}
+          {/* ================= SPECIAL BANNER: KONDISI GUEST (PRA-MOU) ================= */}
+          {isGuest && (
+            <div className="rounded-2xl border-2 border-orange/40 bg-gradient-to-r from-orange/15 via-[#FFFDF9] to-orange/10 p-5 sm:p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-start gap-3.5 max-w-2xl">
+                <div className="w-10 h-10 rounded-xl bg-orange text-white flex items-center justify-center shrink-0 shadow-sm">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-[10px] font-black uppercase tracking-wider text-orange">
+                      PRATINJAU SIMULASI ANGKATAN
+                    </span>
+                    <span className="text-[10px] font-mono font-bold text-dark/40">
+                      • Belum Terikat Kontrak
+                    </span>
+                  </div>
+                  <h3 className="font-headline font-black text-lg text-dark mt-0.5">
+                    Kunci Kontrak MOU &amp; Jadwal Photoshoot Sekolahmu
+                  </h3>
+                  <p className="font-sans text-xs text-dark/70 mt-1 leading-relaxed">
+                    Anda sedang melihat mode demo angkatan. Kunci draf kontrak MOU &amp; DP 30% untuk membuka slot studio foto, link upload berkas resolusi tinggi, dan antrean mesin cetak prioritas.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2.5 w-full md:w-auto shrink-0">
+                <button
+                  onClick={() => setActiveTab("quotation")}
+                  className="w-full md:w-auto inline-flex items-center justify-center gap-2 bg-orange hover:bg-orange/90 text-white font-headline font-black text-xs uppercase tracking-wider px-5 py-3 rounded-xl shadow-md shadow-orange/30 transition-all cursor-pointer"
+                >
+                  <Calculator className="w-4 h-4" />
+                  <span>Kalkulasi &amp; Ajukan MOU</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ================= 1. OVERVIEW METRIC CARDS (KONDISI GUEST VS TELAH MOU) ================= */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 select-none">
+            {/* Card 1 */}
             <div className="flex items-center justify-between rounded-2xl border border-dark/10 bg-white p-5 shadow-sm hover:shadow-md hover:border-orange/40 transition-all">
               <div>
                 <p className="font-mono text-[11px] font-bold text-dark/50 uppercase tracking-wider">
-                  Status Tahap Produksi
+                  {isGuest ? "Status Kontrak Angkatan" : "Status Tahap Produksi"}
                 </p>
                 <h3 className="mt-1 text-2xl sm:text-3xl font-headline font-black tracking-tight text-dark">
-                  Tahap {currentStage} / 6
+                  {isGuest ? "Pra-MOU" : `Tahap ${currentStage} / 6`}
                 </h3>
                 <p className="mt-1 font-mono text-[11px] text-orange font-semibold">
-                  {milestones.find((m) => m.step_number === currentStage)?.title || "Desain Layout"}
+                  {isGuest
+                    ? "Menunggu Tanda Tangan Kontrak"
+                    : milestones.find((m) => m.step_number === currentStage)?.title ||
+                      "Desain Layout"}
                 </p>
               </div>
               <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-dark/10 bg-orange/10 text-orange shadow-sm shrink-0">
@@ -713,10 +708,11 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
               </div>
             </div>
 
+            {/* Card 2 */}
             <div className="flex items-center justify-between rounded-2xl border border-dark/10 bg-white p-5 shadow-sm hover:shadow-md hover:border-orange/40 transition-all">
               <div>
                 <p className="font-mono text-[11px] font-bold text-dark/50 uppercase tracking-wider">
-                  Estimasi Patungan Kas
+                  {isGuest ? "Simulasi Patungan Siswa" : "Iuran Kas Terkunci"}
                 </p>
                 <h3 className="mt-1 text-2xl sm:text-3xl font-headline font-black tracking-tight text-dark">
                   Rp {pricePerStudent.toLocaleString("id-ID")}
@@ -730,16 +726,21 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
               </div>
             </div>
 
+            {/* Card 3 */}
             <div className="flex items-center justify-between rounded-2xl border border-dark/10 bg-white p-5 shadow-sm hover:shadow-md hover:border-orange/40 transition-all">
               <div>
                 <p className="font-mono text-[11px] font-bold text-dark/50 uppercase tracking-wider">
-                  Status Pembayaran Kas
+                  {isGuest ? "Skema Termin Kas" : "Status Pembayaran Kas"}
                 </p>
                 <h3 className="mt-1 text-2xl sm:text-3xl font-headline font-black tracking-tight text-emerald-600">
-                  {installments.filter((i) => i.status === "paid").length} dari {installments.length} Lunas
+                  {isGuest
+                    ? "3x Bertahap"
+                    : `${
+                        installments.filter((i) => i.status === "paid").length
+                      } dari ${installments.length} Lunas`}
                 </h3>
                 <p className="mt-1 font-mono text-[11px] text-dark/60 font-semibold">
-                  Terverifikasi Kontrak MOU
+                  {isGuest ? "DP 30% - 40% - 30%" : "Terverifikasi Kontrak MOU"}
                 </p>
               </div>
               <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-dark/10 bg-emerald-50 text-emerald-600 shadow-sm shrink-0">
@@ -747,200 +748,127 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
               </div>
             </div>
 
+            {/* Card 4 */}
             <div className="flex items-center justify-between rounded-2xl border border-dark/10 bg-white p-5 shadow-sm hover:shadow-md hover:border-orange/40 transition-all">
               <div>
                 <p className="font-mono text-[11px] font-bold text-dark/50 uppercase tracking-wider">
-                  Arsip Berkas di Cloud
+                  {isGuest ? "Klaim Yearbook Demo" : "Arsip Berkas di Cloud"}
                 </p>
                 <h3 className="mt-1 text-2xl sm:text-3xl font-headline font-black tracking-tight text-dark">
-                  {deliverables.filter((d) => d.is_ready).length} File Siap
+                  {isGuest
+                    ? unlockedYearbook
+                      ? "Terbuka"
+                      : "1 Kuota"
+                    : `${deliverables.filter((d) => d.is_ready).length} File Siap`}
                 </h3>
-                <p className="mt-1 font-mono text-[11px] text-dark/60 font-semibold">
-                  Cloudflare R2 $0 Egress
+                <p className="font-mono text-[11px] text-dark/60 font-semibold">
+                  {isGuest
+                    ? unlockedYearbook
+                      ? "Akses Lengkap Aktif"
+                      : "Gunakan Token Angkatan"
+                    : "Cloudflare R2 $0 Egress"}
                 </p>
               </div>
               <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-dark/10 bg-orange/10 text-orange shadow-sm shrink-0">
-                <FolderGit2 className="h-5 w-5" />
+                <Layers className="h-5 w-5" />
               </div>
             </div>
           </div>
 
-          {/* ================= 2. MAIN TABS NAVIGATION ================= */}
-          <div className="flex items-center space-x-2 border-b border-dark/10 pb-3 overflow-x-auto select-none">
-            {navMenuItems.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.key;
-              return (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                    isActive
-                      ? "bg-orange text-white shadow-md shadow-orange/20"
-                      : "bg-white text-dark/70 border border-dark/10 hover:bg-slate-100"
-                  }`}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  <span>{tab.title}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* ================= 3. TAB 1: KATALOG & BERKAS ANGKATAN ================= */}
+          {/* ================= 3. TAB 1: BERKAS & UNDUH HASIL (POST-MOU ONLY) ================= */}
           {activeTab === "catalog" && (
             <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white border border-dark/10 p-4 sm:p-5 rounded-2xl shadow-sm">
-                <div className="relative w-full sm:max-w-md">
-                  <Search className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-dark/40" />
-                  <input
-                    type="text"
-                    placeholder="Cari kelas, berkas, atau materi foto..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-[#FAF6F0] border border-dark/15 rounded-xl pl-9 pr-4 py-2 text-xs text-dark placeholder-dark/40 outline-none focus:border-orange transition-colors font-mono"
-                  />
+              <div className="rounded-2xl border border-dark/10 bg-white p-6 shadow-sm space-y-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-dark/10 pb-4">
+                  <div>
+                    <span className="font-mono text-[10px] font-black uppercase tracking-wider text-orange">
+                      ARSIP BERKAS RESMI
+                    </span>
+                    <h3 className="font-headline font-black text-xl text-dark mt-0.5">
+                      Galeri Unduh Hasil &amp; Master Dokumen
+                    </h3>
+                    <p className="font-mono text-xs text-dark/60 mt-0.5">
+                      Tersimpan di Cloudflare R2 dengan jalur unduh direct tanpa kuota ($0 egress)
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                      {deliverables.length} Berkas Angkatan
+                    </span>
+                    <a
+                      href={waLink(
+                        `Halo Kak ${pmName}, saya ingin submit link materi foto tambahan untuk ${schoolName} kode ${kode}.`
+                      )}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 rounded-xl bg-orange text-white px-4 py-2 text-xs font-bold shadow-md shadow-orange/20 hover:bg-orange/90 transition-all shrink-0 cursor-pointer"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      <span>Upload Tambahan</span>
+                    </a>
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-                  <div className="flex items-center rounded-xl border border-dark/10 bg-[#FAF6F0] p-1">
-                    <button
-                      onClick={() => setViewMode("split")}
-                      className={`px-3 py-1 text-xs font-mono font-bold rounded-lg transition-all ${
-                        viewMode === "split" ? "bg-white text-dark shadow-sm" : "text-dark/50"
-                      }`}
-                    >
-                      Split View
-                    </button>
-                    <button
-                      onClick={() => setViewMode("folders")}
-                      className={`px-3 py-1 text-xs font-mono font-bold rounded-lg transition-all ${
-                        viewMode === "folders" ? "bg-white text-dark shadow-sm" : "text-dark/50"
-                      }`}
-                    >
-                      Folder Grid
-                    </button>
-                    <button
-                      onClick={() => setViewMode("table")}
-                      className={`px-3 py-1 text-xs font-mono font-bold rounded-lg transition-all ${
-                        viewMode === "table" ? "bg-white text-dark shadow-sm" : "text-dark/50"
-                      }`}
-                    >
-                      Daftar Berkas
-                    </button>
-                  </div>
-
-                  <a
-                    href={waLink(`Halo Kak ${pmName}, saya ingin submit link materi foto tambahan untuk ${schoolName} kode ${kode}.`)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 rounded-xl bg-orange text-white px-4 py-2 text-xs font-bold shadow-md shadow-orange/20 hover:bg-orange/90 transition-all shrink-0 cursor-pointer"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    <span>Upload Materi</span>
-                  </a>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-dark/10 text-dark/40 font-mono text-[10px] uppercase">
+                        <th className="pb-3 font-bold">Nama Berkas</th>
+                        <th className="pb-3 font-bold">Kategori</th>
+                        <th className="pb-3 font-bold">Ukuran</th>
+                        <th className="pb-3 font-bold">Status Berkas</th>
+                        <th className="pb-3 font-bold text-right">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-dark/5 font-sans">
+                      {deliverables.map((row, idx) => (
+                        <tr key={idx} className="hover:bg-[#FAF6F0] transition-colors">
+                          <td className="py-3.5 pr-4 font-bold text-dark flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-orange shrink-0" />
+                            <span className="truncate max-w-sm">{row.file_name}</span>
+                          </td>
+                          <td className="py-3.5 font-mono text-dark/60 uppercase">
+                            {row.file_type.replace("_", " ")}
+                          </td>
+                          <td className="py-3.5 font-mono font-bold text-dark">
+                            {row.file_size || "Cloud R2"}
+                          </td>
+                          <td className="py-3.5">
+                            {row.is_ready ? (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                                <CheckCircle2 className="w-3 h-3" /> Siap Unduh
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
+                                <Clock className="w-3 h-3" /> Sedang Proses
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3.5 text-right">
+                            {row.is_ready ? (
+                              <button
+                                onClick={() =>
+                                  alert(
+                                    `Mengunduh berkas ${row.file_name} langsung dari Cloudflare R2...`
+                                  )
+                                }
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-dark hover:bg-orange text-white font-mono text-xs font-bold transition-all cursor-pointer"
+                              >
+                                <Download className="w-3.5 h-3.5" />
+                                <span>Unduh</span>
+                              </button>
+                            ) : (
+                              <span className="font-mono text-[10px] text-dark/40">
+                                Menunggu Desain
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
-
-              {(viewMode === "split" || viewMode === "folders") && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-headline font-black text-sm uppercase text-dark">
-                      Folder Materi Kelas ({filteredFolders.length})
-                    </h3>
-                    <span className="font-mono text-[10px] text-dark/50">
-                      Klik folder untuk rincian data foto &amp; siswa
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {filteredFolders.map((item) => (
-                      <SchoolFolderCard
-                        key={item.id}
-                        folderName={item.folderName}
-                        year={item.year}
-                        studentCount={item.studentCount}
-                        pageCount={item.pageCount}
-                        fileSize={item.fileSize}
-                        isLocked={item.isLocked}
-                        theme={item.theme}
-                        onOpen={() => {
-                          setSelectedFolder(item.id);
-                          alert(`Membuka berkas ${item.folderName} — Semua ${item.studentCount} foto terkonfirmasi hi-res.`);
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {(viewMode === "split" || viewMode === "table") && (
-                <div className="rounded-2xl border border-dark/10 bg-white p-6 shadow-sm space-y-4">
-                  <div className="flex items-center justify-between border-b border-dark/10 pb-4">
-                    <div>
-                      <h3 className="font-headline font-black text-base uppercase text-dark">
-                        Arsip Berkas Resmi Cloudflare R2
-                      </h3>
-                      <p className="font-mono text-xs text-dark/60 mt-0.5">
-                        Download langsung tanpa limit kuota egress ($0 egress)
-                      </p>
-                    </div>
-                    <span className="font-mono text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                      {deliverables.length} Berkas Tercatat
-                    </span>
-                  </div>
-
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead>
-                        <tr className="border-b border-dark/10 text-dark/40 font-mono text-[10px] uppercase">
-                          <th className="pb-3 font-bold">Nama Berkas</th>
-                          <th className="pb-3 font-bold">Kategori</th>
-                          <th className="pb-3 font-bold">Ukuran</th>
-                          <th className="pb-3 font-bold">Status</th>
-                          <th className="pb-3 font-bold text-right">Aksi</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-dark/5 font-sans">
-                        {deliverables.map((row, idx) => (
-                          <tr key={idx} className="hover:bg-[#FAF6F0] transition-colors">
-                            <td className="py-3.5 pr-4 font-bold text-dark flex items-center gap-2">
-                              <FileText className="w-4 h-4 text-orange shrink-0" />
-                              <span className="truncate max-w-xs">{row.file_name}</span>
-                            </td>
-                            <td className="py-3.5 font-mono text-dark/60 uppercase">{row.file_type.replace("_", " ")}</td>
-                            <td className="py-3.5 font-mono font-bold text-dark">{row.file_size || "Cloud R2"}</td>
-                            <td className="py-3.5">
-                              {row.is_ready ? (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                                  <CheckCircle2 className="w-3 h-3" /> Siap Unduh
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                                  <Clock className="w-3 h-3" /> Proses Studio
-                                </span>
-                              )}
-                            </td>
-                            <td className="py-3.5 text-right">
-                              {row.is_ready ? (
-                                <button
-                                  onClick={() => alert(`Mengunduh berkas ${row.file_name} dari Cloudflare R2...`)}
-                                  className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-dark hover:bg-orange text-white font-mono text-xs font-bold transition-colors cursor-pointer"
-                                >
-                                  <Download className="w-3 h-3" />
-                                  <span>Unduh</span>
-                                </button>
-                              ) : (
-                                <span className="font-mono text-[10px] text-dark/40">Menunggu</span>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
@@ -951,10 +879,14 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                 <div className="flex items-center justify-between border-b border-dark/10 pb-4 mb-6">
                   <div>
                     <span className="font-mono text-[10px] font-black uppercase tracking-wider text-orange">
-                      TIMELINE PENGERJAAN RESMI
+                      {isGuest
+                        ? "STANDAR ALUR PRODUKSI FOURJECTIVE"
+                        : "TIMELINE PENGERJAAN RESMI"}
                     </span>
                     <h3 className="font-headline font-black text-xl text-dark mt-0.5">
-                      Progress Produksi Buku Tahunan
+                      {isGuest
+                        ? "Tahapan Kerja dari MOU Hingga Kelulusan"
+                        : "Progress Produksi Buku Tahunan"}
                     </h3>
                   </div>
                   <span className="font-mono text-xs font-bold text-dark bg-[#FAF6F0] px-3 py-1 rounded-xl border border-dark/15">
@@ -1006,40 +938,108 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                                 : "bg-dark/10 text-dark/50"
                             }`}
                           >
-                            {s.status === "done" ? "Selesai" : s.status === "active" ? "Sedang Proses" : "Menunggu"}
+                            {s.status === "done"
+                              ? "Selesai Terkunci"
+                              : s.status === "active"
+                              ? isGuest
+                                ? "Menunggu Persetujuan"
+                                : "Sedang Proses"
+                              : "Menunggu"}
                           </span>
                         </div>
-                        <p className="font-sans text-xs text-dark/70 mt-1">{s.description}</p>
+                        <p className="font-sans text-xs text-dark/70 mt-1">
+                          {s.description}
+                        </p>
                         {s.target_date && (
-                          <div className="font-mono text-[10px] text-dark/50 mt-1">Jadwal: {s.target_date}</div>
+                          <div className="font-mono text-[10px] text-dark/50 mt-1">
+                            Jadwal: {s.target_date}
+                          </div>
                         )}
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
+            </div>
+          )}
 
-              {/* Termin Kas Dinamis Bebas dari Supabase */}
+          {/* ================= 5. TAB 3: TERMIN KAS & KUITANSI (DEDICATED PAYMENTS) ================= */}
+          {activeTab === "payments" && (
+            <div className="space-y-6">
               <div className="rounded-2xl border border-dark/10 bg-white p-6 sm:p-8 shadow-sm">
                 <div className="border-b border-dark/10 pb-4 mb-6">
-                  <span className="font-mono text-[10px] font-black uppercase tracking-wider text-orange">
-                    SISTEM TERMIN KAS FLEKSIBEL
-                  </span>
-                  <h3 className="font-headline font-black text-xl text-dark mt-0.5">
-                    Jadwal Termin Pembayaran Sekolah
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-[10px] font-black uppercase tracking-wider text-orange">
+                      SISTEM TERMIN KAS TRANSPARAN
+                    </span>
+                    <span className="inline-flex items-center gap-1 font-mono text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-300">
+                      ✓ Bebas Beban di Awal
+                    </span>
+                  </div>
+                  <h3 className="font-headline font-black text-2xl text-dark mt-1">
+                    Jadwal Termin Pembayaran Kas Angkatan
                   </h3>
-                  <p className="font-sans text-xs text-dark/60 mt-1">
-                    Dirancang agar panitia memiliki waktu mengumpulkan kas siswa secara bertahap tanpa beban di awal.
+                  <p className="font-sans text-xs text-dark/65 mt-1">
+                    Skema 3 kali termin kas dirancang agar bendahara OSIS memiliki waktu mengumpulkan iuran siswa secara bertahap tanpa perlu menalangi modal.
                   </p>
                 </div>
 
+                {/* Summary Box Kas */}
+                <div className="grid sm:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-[#FAF6F0] border border-dark/15 p-4 rounded-xl">
+                    <span className="font-mono text-[10px] font-bold text-dark/50 uppercase">
+                      Total Kontrak Angkatan
+                    </span>
+                    <div className="font-headline font-black text-2xl text-dark mt-1">
+                      Rp {totalProjectPrice.toLocaleString("id-ID")}
+                    </div>
+                    <div className="font-mono text-[10px] text-dark/60 mt-0.5">
+                      {siswa} Siswa • Rp {pricePerStudent.toLocaleString("id-ID")}/siswa
+                    </div>
+                  </div>
+
+                  <div className="bg-emerald-50 border border-emerald-300 p-4 rounded-xl text-emerald-950">
+                    <span className="font-mono text-[10px] font-bold text-emerald-800 uppercase">
+                      Kas Masuk Terverifikasi
+                    </span>
+                    <div className="font-headline font-black text-2xl text-emerald-700 mt-1">
+                      Rp{" "}
+                      {installments
+                        .filter((i) => i.status === "paid")
+                        .reduce((acc, curr) => acc + curr.amount, 0)
+                        .toLocaleString("id-ID")}
+                    </div>
+                    <div className="font-mono text-[10px] text-emerald-800 mt-0.5">
+                      {installments.filter((i) => i.status === "paid").length} dari{" "}
+                      {installments.length} Termin Lunas Sah
+                    </div>
+                  </div>
+
+                  <div className="bg-white border border-dark/15 p-4 rounded-xl">
+                    <span className="font-mono text-[10px] font-bold text-dark/50 uppercase">
+                      Sisa Kas Jatuh Tempo
+                    </span>
+                    <div className="font-headline font-black text-2xl text-orange mt-1">
+                      Rp{" "}
+                      {installments
+                        .filter((i) => i.status === "pending")
+                        .reduce((acc, curr) => acc + curr.amount, 0)
+                        .toLocaleString("id-ID")}
+                    </div>
+                    <div className="font-mono text-[10px] text-dark/60 mt-0.5">
+                      Dibayar bertahap saat ACC dummy &amp; sebelum kirim
+                    </div>
+                  </div>
+                </div>
+
+                {/* Grid 3 Termin Card */}
                 <div className="grid sm:grid-cols-3 gap-4">
                   {installments.map((item, idx) => (
                     <div
                       key={item.id || idx}
                       className={`p-5 rounded-xl border flex flex-col justify-between ${
                         item.status === "paid"
-                          ? "bg-emerald-50/60 border-emerald-300"
+                          ? "bg-emerald-50/70 border-emerald-300"
                           : "bg-[#FAF6F0] border-dark/15"
                       }`}
                     >
@@ -1055,7 +1055,7 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                                 : "bg-dark/10 text-dark/60"
                             }`}
                           >
-                            {item.status === "paid" ? "Terverifikasi" : "Menunggu"}
+                            {item.status === "paid" ? "Terverifikasi Lunas" : "Menunggu"}
                           </span>
                         </div>
                         <div className="font-headline font-black text-2xl text-dark mt-2">
@@ -1064,17 +1064,24 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                         <div className="font-mono text-[10px] text-dark/50 mt-1">
                           Jatuh Tempo: {item.due_date || "Sesuai MOU"}
                         </div>
+                        <p className="font-sans text-xs text-dark/70 mt-2">
+                          {item.notes}
+                        </p>
                       </div>
 
                       <div className="mt-4 pt-3 border-t border-dark/10 flex items-center justify-between">
-                        <span className="font-mono text-[9px] text-dark/40">{item.receipt_number || "INV-PENDING"}</span>
+                        <span className="font-mono text-[9px] text-dark/40">
+                          {item.receipt_number || "INV-PENDING"}
+                        </span>
                         {item.status === "paid" ? (
                           <span className="font-mono text-[10px] font-bold text-emerald-700 flex items-center gap-1">
                             <Check className="w-3 h-3" /> Kuitansi Sah
                           </span>
                         ) : (
                           <a
-                            href={waLink(`Halo Kak ${pmName}, saya ingin konfirmasi pembayaran untuk ${item.title} di ${schoolName} kode ${kode}.`)}
+                            href={waLink(
+                              `Halo Kak ${pmName}, saya ingin konfirmasi pembayaran untuk ${item.title} di ${schoolName} kode ${kode}.`
+                            )}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="font-mono text-[10px] font-bold text-orange hover:underline"
@@ -1090,7 +1097,7 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
             </div>
           )}
 
-          {/* ================= 5. TAB 3: KALKULATOR & ESTIMATOR KAS ================= */}
+          {/* ================= 6. TAB 4: KALKULATOR & ESTIMATOR KAS ================= */}
           {activeTab === "quotation" && (
             <div className="grid lg:grid-cols-12 gap-8 items-start">
               <div className="lg:col-span-7 rounded-2xl border border-dark/10 bg-white p-6 sm:p-8 shadow-sm space-y-6">
@@ -1193,8 +1200,12 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                           className="accent-orange w-4 h-4 cursor-pointer"
                         />
                         <div>
-                          <div className="font-headline font-bold text-xs uppercase">Aftermovie 4K</div>
-                          <div className="font-mono text-[9px] text-dark/60">+Rp 25rb /siswa</div>
+                          <div className="font-headline font-bold text-xs uppercase">
+                            Aftermovie 4K
+                          </div>
+                          <div className="font-mono text-[9px] text-dark/60">
+                            +Rp 25rb /siswa
+                          </div>
                         </div>
                       </label>
 
@@ -1206,8 +1217,12 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                           className="accent-orange w-4 h-4 cursor-pointer"
                         />
                         <div>
-                          <div className="font-headline font-bold text-xs uppercase">AR Scan Video</div>
-                          <div className="font-mono text-[9px] text-dark/60">+Rp 35rb /siswa</div>
+                          <div className="font-headline font-bold text-xs uppercase">
+                            AR Scan Video
+                          </div>
+                          <div className="font-mono text-[9px] text-dark/60">
+                            +Rp 35rb /siswa
+                          </div>
                         </div>
                       </label>
 
@@ -1219,8 +1234,12 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                           className="accent-orange w-4 h-4 cursor-pointer"
                         />
                         <div>
-                          <div className="font-headline font-bold text-xs uppercase">Merchandise Box</div>
-                          <div className="font-mono text-[9px] text-dark/60">+Rp 45rb /siswa</div>
+                          <div className="font-headline font-bold text-xs uppercase">
+                            Merchandise Box
+                          </div>
+                          <div className="font-mono text-[9px] text-dark/60">
+                            +Rp 45rb /siswa
+                          </div>
                         </div>
                       </label>
                     </div>
@@ -1234,10 +1253,16 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                     </span>
                     <div className="font-headline font-black text-3xl text-orange mt-0.5">
                       Rp {pricePerStudent.toLocaleString("id-ID")}
-                      <span className="font-mono text-xs text-dark/60 font-semibold ml-1">/ siswa</span>
+                      <span className="font-mono text-xs text-dark/60 font-semibold ml-1">
+                        / siswa
+                      </span>
                     </div>
                     <div className="font-mono text-xs text-dark/70 mt-1">
-                      Total Nilai Kontrak: <strong>Rp {totalProjectPrice.toLocaleString("id-ID")}</strong> ({siswa} eks)
+                      Total Nilai Kontrak:{" "}
+                      <strong>
+                        Rp {totalProjectPrice.toLocaleString("id-ID")}
+                      </strong>{" "}
+                      ({siswa} eks)
                     </div>
                   </div>
 
@@ -1246,7 +1271,11 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                     onClick={handleCopySummary}
                     className="inline-flex items-center gap-1.5 bg-white text-dark font-mono text-xs font-black uppercase px-4 py-2.5 border border-dark/20 rounded-xl shadow-sm hover:bg-orange hover:text-white hover:border-orange transition-all cursor-pointer"
                   >
-                    {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copied ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
                     {copied ? "Tersalin!" : "Salin Rincian"}
                   </button>
                 </div>
@@ -1256,13 +1285,13 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
               <div className="lg:col-span-5 rounded-2xl border border-[#222530] bg-[#121318] text-white p-6 sm:p-8 shadow-sm space-y-4">
                 <div className="border-b border-white/10 pb-4">
                   <span className="font-mono text-[10px] font-black uppercase tracking-wider text-orange">
-                    KUNCI ESTIMASI INI
+                    {isGuest ? "AJUKAN KONTRAK RESMI" : "SIMPAN REVISI ESTIMASI"}
                   </span>
                   <h3 className="font-headline font-black text-2xl text-white mt-0.5">
-                    Ajukan Draf Kontrak MOU
+                    {isGuest ? "Kunci Draf MOU Sekolah" : "Pengajuan Perubahan Kas"}
                   </h3>
                   <p className="font-sans text-xs text-white/60 mt-1">
-                    Kirim rincian ini langsung ke Project Manager Fourjective untuk diproses surat penawaran resmi sekolah.
+                    Kirim rincian ini langsung ke Project Manager Fourjective untuk diproses surat penawaran &amp; kontrak resmi.
                   </p>
                 </div>
 
@@ -1312,7 +1341,11 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                       type="submit"
                       className="w-full inline-flex items-center justify-center gap-2 bg-orange text-white font-headline font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-xl shadow-md shadow-orange/30 hover:bg-orange/90 transition-all cursor-pointer"
                     >
-                      <span>Kirim ke WhatsApp &amp; Ajukan MOU</span>
+                      <span>
+                        {isGuest
+                          ? "Kirim ke WA & Ajukan MOU"
+                          : "Simpan & Kirim ke PM"}
+                      </span>
                       <ArrowUpRight className="w-4 h-4" />
                     </button>
                   </div>
@@ -1320,101 +1353,161 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
 
                 <div className="mt-4 pt-3 border-t border-white/10 flex items-center gap-2 text-white/50 font-mono text-[10px]">
                   <ShieldCheck className="w-4 h-4 text-orange shrink-0" />
-                  <span>Kalkulasi estimasi tersimpan ke database &amp; terkunci aman 7 hari.</span>
+                  <span>
+                    Kalkulasi estimasi tersimpan ke database &amp; terkunci aman 7 hari.
+                  </span>
                 </div>
               </div>
             </div>
           )}
 
-          {/* ================= 6. TAB 4: VIRTUAL FLIPBOOK 3D ================= */}
+          {/* ================= 7. TAB 5: VIRTUAL FLIPBOOK 3D / KLAIM YEARBOOK ================= */}
           {activeTab === "flipbook" && (
             <div className="space-y-6">
-              <div className="rounded-2xl border border-[#222530] bg-[#121318] text-white p-6 sm:p-8 shadow-sm relative overflow-hidden">
-                <div className="relative z-10 max-w-2xl">
-                  <span className="font-mono text-[10px] font-black uppercase tracking-wider text-orange">
-                    EDISI DIGITAL INTERAKTIF
-                  </span>
-                  <h3 className="font-headline font-black text-3xl text-white mt-1">
-                    Virtual Flipbook 3D Angkatan
-                  </h3>
-                  <p className="font-sans text-xs sm:text-sm text-white/70 mt-2 leading-relaxed">
-                    E-book buku tahunan digital dengan simulasi bolak-balik halaman realistis, video aftermovie tersemat, dan navigasi daftar isi kilat untuk seluruh siswa angkatan.
-                  </p>
-
-                  <div className="mt-6 flex flex-wrap items-center gap-3">
-                    <button
-                      onClick={() => alert("Flipbook 3D siap diluncurkan begitu Dummy Cetak 80 Halaman selesai di-approve!")}
-                      className="inline-flex items-center gap-2 bg-orange text-white font-headline font-black text-xs uppercase tracking-widest px-5 py-3 rounded-xl shadow-md shadow-orange/30 hover:bg-orange/90 transition-all cursor-pointer"
-                    >
-                      <Layers className="w-4 h-4" />
-                      <span>Buka Flipbook Reader 3D</span>
-                      <ArrowUpRight className="w-4 h-4" />
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(window.location.href);
-                        alert("Link Flipbook angkatan berhasil disalin!");
-                      }}
-                      className="inline-flex items-center gap-2 bg-white/10 text-white font-mono text-xs font-bold px-4 py-3 rounded-xl hover:bg-white/20 transition-all cursor-pointer border border-white/10"
-                    >
-                      <Share2 className="w-4 h-4" />
-                      <span>Salin Link Berbagi</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-dark/10 bg-white p-6 sm:p-8 shadow-sm">
-                <div className="border-b border-dark/10 pb-4 mb-6 flex flex-wrap items-center justify-between gap-4">
-                  <div>
-                    <h3 className="font-headline font-black text-lg text-dark">
-                      Spesifikasi E-Book Digital Angkatan
-                    </h3>
-                    <p className="font-mono text-xs text-dark/60 mt-0.5">
-                      Aman &amp; terproteksi token kode unik per sekolah
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1">
-                      <Lock className="w-3 h-3" /> Dilindungi Token {kode}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid sm:grid-cols-3 gap-6">
-                  <div className="p-4 rounded-xl border border-dark/10 bg-[#FAF6F0]">
-                    <div className="font-headline font-black text-sm uppercase text-dark">
-                      Mobile &amp; Desktop Optimized
+              {/* JIKA GUEST DAN BELUM KLAIM DENGAN PASSWORD */}
+              {isGuest && !unlockedYearbook ? (
+                <div className="rounded-2xl border-2 border-dashed border-orange/40 bg-white p-8 sm:p-12 text-center shadow-sm relative overflow-hidden">
+                  <div className="max-w-md mx-auto space-y-4">
+                    <div className="w-16 h-16 rounded-2xl bg-orange/10 border-2 border-orange/30 text-orange flex items-center justify-center mx-auto shadow-sm">
+                      <Lock className="w-8 h-8" />
                     </div>
-                    <p className="font-sans text-xs text-dark/70 mt-1">
-                      Bisa dibuka lancar di iPhone, Android, tablet, hingga proyektor wisuda sekolah tanpa perlu unduh aplikasi berat.
-                    </p>
-                  </div>
 
-                  <div className="p-4 rounded-xl border border-dark/10 bg-[#FAF6F0]">
-                    <div className="font-headline font-black text-sm uppercase text-dark">
-                      Video &amp; AR Embed
+                    <div>
+                      <span className="font-mono text-[10px] font-black uppercase tracking-wider text-orange bg-orange/10 px-2.5 py-1 rounded-full border border-orange/20">
+                        1 KLAIM PRATINJAU TERSISA
+                      </span>
+                      <h3 className="font-headline font-black text-2xl text-dark mt-2">
+                        Yearbook Angkatan Terproteksi
+                      </h3>
+                      <p className="font-sans text-xs text-dark/70 mt-1 leading-relaxed">
+                        Detail portofolio &amp; tata letak edisi sekolah ini dikunci untuk menjaga privasi siswa. Buka pratinjau penuh menggunakan kode akses atau kata sandi panitia.
+                      </p>
                     </div>
-                    <p className="font-sans text-xs text-dark/70 mt-1">
-                      Halaman video aftermovie dapat diputar langsung di dalam halaman buku secara mulus beresolusi 4K.
-                    </p>
-                  </div>
 
-                  <div className="p-4 rounded-xl border border-dark/10 bg-[#FAF6F0]">
-                    <div className="font-headline font-black text-sm uppercase text-dark">
-                      Offline Mode &amp; PDF Master
+                    <div className="pt-2">
+                      <button
+                        onClick={() => setShowUnlockModal(true)}
+                        className="inline-flex items-center justify-center gap-2 bg-orange hover:bg-orange/90 text-white font-headline font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-xl shadow-md shadow-orange/30 transition-all cursor-pointer"
+                      >
+                        <ShieldCheck className="w-4 h-4" />
+                        <span>Klaim &amp; Buka Kunci dengan Sandi</span>
+                      </button>
                     </div>
-                    <p className="font-sans text-xs text-dark/70 mt-1">
-                      Siswa dapat mengunduh salinan offline beresolusi tinggi untuk arsip pribadi selamanya.
+
+                    <p className="font-mono text-[10px] text-dark/40">
+                      Token Anda: <strong className="text-dark">{kode}</strong> (Dapat digunakan sebagai kunci akses)
                     </p>
                   </div>
                 </div>
-              </div>
+              ) : (
+                /* TAMPILAN JIKA SUDAH TERBUKA (MOU ATAU GUEST YANG SUDAH KLAIM) */
+                <div className="space-y-6">
+                  {isGuest && (
+                    <div className="bg-emerald-50 border border-emerald-300 p-4 rounded-xl flex items-center justify-between text-emerald-900">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span className="font-mono text-xs font-bold">
+                          Klaim Berhasil: Mode Pratinjau Terbuka untuk Sesi Ini.
+                        </span>
+                      </div>
+                      <span className="font-mono text-[10px] font-black bg-emerald-600 text-white px-2 py-0.5 rounded">
+                        UNLOCKED
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="rounded-2xl border border-[#222530] bg-[#121318] text-white p-6 sm:p-8 shadow-sm relative overflow-hidden">
+                    <div className="relative z-10 max-w-2xl">
+                      <span className="font-mono text-[10px] font-black uppercase tracking-wider text-orange">
+                        EDISI DIGITAL INTERAKTIF
+                      </span>
+                      <h3 className="font-headline font-black text-3xl text-white mt-1">
+                        Virtual Flipbook 3D Angkatan
+                      </h3>
+                      <p className="font-sans text-xs sm:text-sm text-white/70 mt-2 leading-relaxed">
+                        E-book buku tahunan digital dengan simulasi bolak-balik halaman realistis, video aftermovie tersemat, dan navigasi daftar isi kilat untuk seluruh siswa angkatan.
+                      </p>
+
+                      <div className="mt-6 flex flex-wrap items-center gap-3">
+                        <button
+                          onClick={() =>
+                            alert(
+                              "Membuka 3D Flipbook Reader Interaktif Fullscreen..."
+                            )
+                          }
+                          className="inline-flex items-center gap-2 bg-orange text-white font-headline font-black text-xs uppercase tracking-widest px-5 py-3 rounded-xl shadow-md shadow-orange/30 hover:bg-orange/90 transition-all cursor-pointer"
+                        >
+                          <Layers className="w-4 h-4" />
+                          <span>Buka Flipbook Reader 3D</span>
+                          <ArrowUpRight className="w-4 h-4" />
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(window.location.href);
+                            alert("Link Flipbook angkatan berhasil disalin!");
+                          }}
+                          className="inline-flex items-center gap-2 bg-white/10 text-white font-mono text-xs font-bold px-4 py-3 rounded-xl hover:bg-white/20 transition-all cursor-pointer border border-white/10"
+                        >
+                          <Share2 className="w-4 h-4" />
+                          <span>Salin Link Berbagi</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-dark/10 bg-white p-6 sm:p-8 shadow-sm">
+                    <div className="border-b border-dark/10 pb-4 mb-6 flex flex-wrap items-center justify-between gap-4">
+                      <div>
+                        <h3 className="font-headline font-black text-lg text-dark">
+                          Spesifikasi E-Book Digital Angkatan
+                        </h3>
+                        <p className="font-mono text-xs text-dark/60 mt-0.5">
+                          Aman &amp; terproteksi token kode unik per sekolah
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1">
+                          <Lock className="w-3 h-3" /> Dilindungi Token {kode}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-3 gap-6">
+                      <div className="p-4 rounded-xl border border-dark/10 bg-[#FAF6F0]">
+                        <div className="font-headline font-black text-sm uppercase text-dark">
+                          Mobile &amp; Desktop Optimized
+                        </div>
+                        <p className="font-sans text-xs text-dark/70 mt-1">
+                          Bisa dibuka lancar di iPhone, Android, tablet, hingga proyektor wisuda sekolah tanpa perlu unduh aplikasi berat.
+                        </p>
+                      </div>
+
+                      <div className="p-4 rounded-xl border border-dark/10 bg-[#FAF6F0]">
+                        <div className="font-headline font-black text-sm uppercase text-dark">
+                          Video &amp; AR Embed
+                        </div>
+                        <p className="font-sans text-xs text-dark/70 mt-1">
+                          Halaman video aftermovie dapat diputar langsung di dalam halaman buku secara mulus beresolusi 4K.
+                        </p>
+                      </div>
+
+                      <div className="p-4 rounded-xl border border-dark/10 bg-[#FAF6F0]">
+                        <div className="font-headline font-black text-sm uppercase text-dark">
+                          Offline Mode &amp; PDF Master
+                        </div>
+                        <p className="font-sans text-xs text-dark/70 mt-1">
+                          Siswa dapat mengunduh salinan offline beresolusi tinggi untuk arsip pribadi selamanya.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
-          {/* ================= 7. TAB 5: KONTAK PIC & PANDUAN ================= */}
+          {/* ================= 8. TAB 6: KONTAK PIC & PANDUAN ================= */}
           {activeTab === "contact" && (
             <div className="grid lg:grid-cols-12 gap-8 items-start">
               <div className="lg:col-span-5 rounded-2xl border border-dark/10 bg-white p-6 sm:p-8 shadow-sm space-y-4">
@@ -1430,7 +1523,11 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
 
                 <div className="p-4 border border-dark/15 rounded-xl bg-[#FAF6F0] flex items-center gap-4">
                   <div className="w-14 h-14 rounded-full bg-dark text-orange flex items-center justify-center font-headline font-black text-xl shrink-0 border-2 border-orange">
-                    {pmName.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+                    {pmName
+                      .split(" ")
+                      .map((n) => n[0])
+                      .slice(0, 2)
+                      .join("")}
                   </div>
                   <div className="min-w-0">
                     <h4 className="font-headline font-black text-base uppercase text-dark truncate">
@@ -1448,13 +1545,21 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
 
                 <div className="space-y-2 pt-2">
                   <a
-                    href={waLink(`Halo Kak ${pmName} (PM Fourjective), saya panitia kode ${kode} dari ${schoolName} ingin koordinasi materi.`)}
+                    href={waLink(
+                      isGuest
+                        ? `Halo Kak ${pmName} (PM Fourjective), saya ingin booking jadwal photoshoot & ajukan kontrak MOU untuk ${schoolName}.`
+                        : `Halo Kak ${pmName} (PM Fourjective), saya panitia kode ${kode} dari ${schoolName} ingin koordinasi materi.`
+                    )}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full inline-flex items-center justify-center gap-2 bg-orange text-white font-headline font-black text-xs uppercase tracking-widest py-3 px-4 rounded-xl shadow-md shadow-orange/30 hover:bg-orange/90 transition-all cursor-pointer"
                   >
                     <MessageCircle className="w-4 h-4" />
-                    <span>Chat WhatsApp Kak {pmName.split(" ")[0]}</span>
+                    <span>
+                      {isGuest
+                        ? "Booking Jadwal via WhatsApp"
+                        : `Chat WhatsApp Kak ${pmName.split(" ")[0]}`}
+                    </span>
                     <ArrowUpRight className="w-4 h-4" />
                   </a>
 
@@ -1488,7 +1593,10 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                       a: "Fourjective menerapkan garansi 100% ganti cetak baru tanpa biaya tambahan jika ada cacat jilid atau halaman terbalik.",
                     },
                   ].map((faq, idx) => (
-                    <div key={idx} className="p-4 border border-dark/10 rounded-xl bg-[#FAF6F0]">
+                    <div
+                      key={idx}
+                      className="p-4 border border-dark/10 rounded-xl bg-[#FAF6F0]"
+                    >
                       <h4 className="font-headline font-bold text-xs uppercase text-dark">
                         {idx + 1}. {faq.q}
                       </h4>
@@ -1498,6 +1606,84 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                     </div>
                   ))}
                 </div>
+              </div>
+            </div>
+          )}
+          {/* ================= MODAL POPUP PASSWORD UNLOCK YEARBOOK ================= */}
+          {showUnlockModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-dark/70 backdrop-blur-sm animate-in fade-in duration-200">
+              <div className="w-full max-w-md bg-white border-2 border-dark rounded-2xl p-6 sm:p-7 shadow-[6px_6px_0px_#FF4D00] space-y-4 relative">
+                <div className="flex items-center justify-between border-b border-dark/10 pb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-orange text-white flex items-center justify-center">
+                      <Lock className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="font-headline font-black text-sm uppercase text-dark">
+                        Buka Akses Yearbook
+                      </h4>
+                      <p className="font-mono text-[10px] text-dark/50">
+                        1 Kuota Klaim Pratinjau Demo
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowUnlockModal(false);
+                      setUnlockError("");
+                    }}
+                    className="p-1 rounded-lg text-dark/40 hover:text-dark hover:bg-slate-100 transition-colors cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <p className="font-sans text-xs text-dark/70 leading-relaxed">
+                  Masukkan <strong>Kode Akses Guest</strong> ({kode}) atau <strong>Kata Sandi Panitia</strong> yang diberikan oleh Project Manager Fourjective untuk membuka edisi ini.
+                </p>
+
+                <form onSubmit={handleUnlockYearbook} className="space-y-3 pt-1">
+                  <div>
+                    <label className="block font-mono text-[10px] font-bold uppercase tracking-wider text-dark/60 mb-1">
+                      Kata Sandi / Kode Akses
+                    </label>
+                    <input
+                      type="text"
+                      autoFocus
+                      required
+                      placeholder={`Ketik ${kode} atau sandi angkatan`}
+                      value={unlockPassword}
+                      onChange={(e) => setUnlockPassword(e.target.value)}
+                      className="w-full bg-[#FAF6F0] border-2 border-dark/20 focus:border-orange rounded-xl px-3.5 py-2.5 text-xs text-dark placeholder-dark/40 outline-none font-mono font-bold transition-colors uppercase"
+                    />
+                    {unlockError && (
+                      <p className="font-mono text-[10px] font-bold text-rose-600 mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3 shrink-0" />
+                        <span>{unlockError}</span>
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowUnlockModal(false);
+                        setUnlockError("");
+                      }}
+                      className="px-4 py-2.5 rounded-xl border border-dark/20 text-xs font-mono font-bold text-dark hover:bg-slate-100 transition-colors cursor-pointer"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="submit"
+                      className="inline-flex items-center gap-1.5 bg-orange hover:bg-orange/90 text-white font-headline font-black text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-sm transition-all cursor-pointer"
+                    >
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>Buka Sekarang</span>
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           )}
