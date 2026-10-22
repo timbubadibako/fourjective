@@ -264,6 +264,19 @@ export function ClientPortalView({ kode, initialProject }: ClientPortalViewProps
           },
         ];
 
+  const handleDownload = async (fileKey: string, fileName: string) => {
+    try {
+      const res = await fetch(`/api/storage/presign?key=${encodeURIComponent(fileKey)}`);
+      if (!res.ok) throw new Error("Gagal mengambil link download");
+      const data = await res.json();
+      if (data.downloadUrl) {
+        window.open(data.downloadUrl, "_blank");
+      }
+    } catch (e) {
+      alert(`Mempersiapkan unduhan berkas ${fileName}...`);
+    }
+  };
+
   const handleLogout = () => {
     router.push("/portal");
   };
@@ -772,11 +785,7 @@ Mohon dibuatkan surat MOU resmi & kunci jadwal photoshoot. Terima kasih!`;
                           <td className="py-3.5 text-right">
                             {row.is_ready ? (
                               <button
-                                onClick={() =>
-                                  alert(
-                                    `Mengunduh berkas ${row.file_name} langsung dari Cloudflare R2...`
-                                  )
-                                }
+                                onClick={() => handleDownload(row.r2_key, row.file_name)}
                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-dark hover:bg-orange text-white font-mono text-xs font-bold transition-all cursor-pointer"
                               >
                                 <Download className="w-3.5 h-3.5" />
@@ -1325,28 +1334,26 @@ Mohon dibuatkan surat MOU resmi & kunci jadwal photoshoot. Terima kasih!`;
                     </p>
 
                     <div className="mt-5 flex flex-wrap items-center gap-3">
-                      <button
-                        onClick={() =>
-                          alert(
-                            "Membuka 3D Flipbook Reader Interaktif Fullscreen..."
-                          )
-                        }
+                      <Link
+                        href={`/portofolio`}
+                        target="_blank"
                         className="inline-flex items-center gap-2 bg-orange hover:bg-orange/90 text-white font-mono font-bold text-xs uppercase px-4 py-2.5 rounded-lg transition-colors cursor-pointer"
                       >
                         <Layers className="w-4 h-4" />
-                        <span>Buka Flipbook Reader</span>
+                        <span>Buka Flipbook Reader 3D</span>
                         <ArrowUpRight className="w-4 h-4" />
-                      </button>
+                      </Link>
 
                       <button
                         onClick={() => {
                           navigator.clipboard.writeText(window.location.href);
-                          alert("Link Flipbook angkatan berhasil disalin!");
+                          setCopied(true);
+                          setTimeout(() => setCopied(false), 2000);
                         }}
                         className="inline-flex items-center gap-2 bg-[#FAF6F0] text-dark font-mono text-xs font-bold px-4 py-2.5 rounded-lg hover:bg-dark hover:text-white transition-colors cursor-pointer border border-dark/15"
                       >
-                        <Share2 className="w-4 h-4" />
-                        <span>Salin Link</span>
+                        {copied ? <Check className="w-4 h-4 text-orange" /> : <Share2 className="w-4 h-4" />}
+                        <span>{copied ? "Link Tersalin!" : "Salin Link"}</span>
                       </button>
                     </div>
                   </div>
