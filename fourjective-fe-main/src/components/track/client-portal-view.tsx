@@ -38,12 +38,15 @@ import {
   FileText,
   Activity,
   FolderGit2,
+  ArrowLeft,
 } from "lucide-react";
 import { SchoolFolderCard } from "@/app/components/dashboard/SchoolFolderCard";
 import { WA_MESSAGES, waLink } from "@/lib/site";
+import { ProjectData, submitProspectOrder } from "@/lib/supabase";
 
 interface ClientPortalViewProps {
   kode: string;
+  initialProject?: ProjectData | null;
 }
 
 type TabType = "catalog" | "pipeline" | "quotation" | "flipbook" | "contact";
@@ -137,7 +140,7 @@ const CLASS_FOLDERS: ClassFolderData[] = [
   },
 ];
 
-export function ClientPortalView({ kode }: ClientPortalViewProps) {
+export function ClientPortalView({ kode, initialProject }: ClientPortalViewProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>("catalog");
   const [viewMode, setViewMode] = useState<ViewMode>("split");
@@ -146,18 +149,22 @@ export function ClientPortalView({ kode }: ClientPortalViewProps) {
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
 
   // === State Estimator Kas ===
-  const [siswa, setSiswa] = useState<number>(180);
-  const [halaman, setHalaman] = useState<number>(80);
-  const [coverType, setCoverType] = useState<"hardcover" | "leather" | "acrylic">("hardcover");
+  const [siswa, setSiswa] = useState<number>(initialProject?.student_count || 180);
+  const [halaman, setHalaman] = useState<number>(initialProject?.page_count || 80);
+  const [coverType, setCoverType] = useState<"hardcover" | "leather" | "acrylic">(
+    initialProject?.cover_type || "hardcover"
+  );
   const [includeVideo, setIncludeVideo] = useState(true);
   const [includeAR, setIncludeAR] = useState(false);
   const [includeMerch, setIncludeMerch] = useState(true);
   const [copied, setCopied] = useState(false);
 
   // === State Form Pemesanan ===
-  const [picName, setPicName] = useState("");
-  const [picPhone, setPicPhone] = useState("");
-  const [targetGraduation, setTargetGraduation] = useState("Mei 2026");
+  const [picName, setPicName] = useState(initialProject?.pic_name || "");
+  const [picPhone, setPicPhone] = useState(initialProject?.pic_whatsapp || "");
+  const [targetGraduation, setTargetGraduation] = useState(
+    initialProject?.target_graduation || "Mei 2026"
+  );
 
   // === Perhitungan Harga Estimator ===
   const basePerPage = 1200;
@@ -165,6 +172,144 @@ export function ClientPortalView({ kode }: ClientPortalViewProps) {
   const addOns = (includeVideo ? 25000 : 0) + (includeAR ? 35000 : 0) + (includeMerch ? 45000 : 0);
   const pricePerStudent = Math.round(halaman * basePerPage + coverPrices[coverType] + addOns);
   const totalProjectPrice = pricePerStudent * siswa;
+
+  const schoolName = initialProject?.school_name || "SMA Negeri 1 Jakarta";
+  const gradYear = initialProject?.graduation_year || 2026;
+  const currentStage = initialProject?.current_stage || 3;
+  const pmName = initialProject?.pm_assigned || "Venny Meilinda";
+
+  // Data dinamis dari Supabase (dengan fallback anggun jika belum ada)
+  const milestones = initialProject?.project_milestones && initialProject.project_milestones.length > 0
+    ? initialProject.project_milestones
+    : [
+        {
+          id: "m1",
+          project_id: "p1",
+          step_number: 1,
+          title: "Penandatanganan Kontrak & DP 30%",
+          description: "MOU resmi angkatan telah disepakati dan jadwal photoshoot terkunci.",
+          status: "done" as const,
+          target_date: "10 Sep 2026",
+        },
+        {
+          id: "m2",
+          project_id: "p1",
+          step_number: 2,
+          title: "Sesi Foto Angkatan & Kelas",
+          description: "Pemotretan outdoor tema kelas, sesi studio guru, dan video shoot selesai.",
+          status: "done" as const,
+          target_date: "04 Okt 2026",
+        },
+        {
+          id: "m3",
+          project_id: "p1",
+          step_number: 3,
+          title: "Desain Layout & Kurasi 80 Halaman",
+          description: "Tim desainer grafis Fourjective sedang menata susunan foto & bio siswa.",
+          status: "active" as const,
+          target_date: "Sedang Berlangsung",
+        },
+        {
+          id: "m4",
+          project_id: "p1",
+          step_number: 4,
+          title: "Proofing Dummy & Revisi Panitia",
+          description: "Pengecekan dummy digital sebelum dokumen naik ke mesin cetak Heidelberg.",
+          status: "pending" as const,
+          target_date: "Est. 15 Nov 2026",
+        },
+        {
+          id: "m5",
+          project_id: "p1",
+          step_number: 5,
+          title: "Proses Cetak, Jilid Hardcover & QC",
+          description: "Pencetakan fisik, laminasi doff/glossy, jilid jahit benang hardcover kokoh.",
+          status: "pending" as const,
+          target_date: "Est. 10 Des 2026",
+        },
+        {
+          id: "m6",
+          project_id: "p1",
+          step_number: 6,
+          title: "Pengemasan Rapi & Pengiriman ke Sekolah",
+          description: "Eksemplar buku dibungkus box rapi dan dikirim tepat waktu sebelum hari wisuda.",
+          status: "pending" as const,
+          target_date: "Est. 20 Des 2026",
+        },
+      ];
+
+  const installments = initialProject?.payment_installments && initialProject.payment_installments.length > 0
+    ? initialProject.payment_installments
+    : [
+        {
+          id: "i1",
+          project_id: "p1",
+          installment_number: 1,
+          title: "Termin 1 (DP 30%)",
+          amount: 8910000,
+          status: "paid" as const,
+          due_date: "Lunas saat MOU",
+          receipt_number: "INV-2026-001-LUNAS",
+          notes: "Pembayaran kas DP 30% terverifikasi",
+        },
+        {
+          id: "i2",
+          project_id: "p1",
+          installment_number: 2,
+          title: "Termin 2 (40%)",
+          amount: 11880000,
+          status: "pending" as const,
+          due_date: "Saat ACC Dummy Cetak",
+          receipt_number: "INV-2026-002-PENDING",
+          notes: "Jatuh tempo saat dummy disetujui",
+        },
+        {
+          id: "i3",
+          project_id: "p1",
+          installment_number: 3,
+          title: "Termin 3 (Pelunasan 30%)",
+          amount: 8910000,
+          status: "pending" as const,
+          due_date: "Sebelum Buku Dikirim",
+          receipt_number: "INV-2026-003-PENDING",
+          notes: "Pelunasan sebelum pengiriman ekspedisi",
+        },
+      ];
+
+  const deliverables = initialProject?.project_deliverables && initialProject.project_deliverables.length > 0
+    ? initialProject.project_deliverables
+    : [
+        {
+          id: "d1",
+          project_id: "p1",
+          file_type: "zip_photos" as const,
+          file_name: "Galeri Foto Kelas Lengkap (Hi-Res).zip",
+          file_size: "3.8 GB",
+          r2_key: "schools/SMAN1-2026/photos-hires.zip",
+          is_ready: true,
+          download_count: 14,
+        },
+        {
+          id: "d2",
+          project_id: "p1",
+          file_type: "master_pdf" as const,
+          file_name: "Draf Dummy Layout 80 Halaman (Revisi 1).pdf",
+          file_size: "184 MB",
+          r2_key: "schools/SMAN1-2026/dummy-rev1.pdf",
+          is_ready: true,
+          download_count: 6,
+        },
+        {
+          id: "d3",
+          project_id: "p1",
+          file_type: "video_4k" as const,
+          file_name: "Trailer Aftermovie 4K (Rough Cut).mp4",
+          file_size: "1.2 GB",
+          r2_key: "schools/SMAN1-2026/aftermovie-rough.mp4",
+          is_ready: false,
+          download_count: 0,
+        },
+      ];
 
   const handleLogout = () => {
     router.push("/portal");
@@ -174,7 +319,7 @@ export function ClientPortalView({ kode }: ClientPortalViewProps) {
     const summary = `
 *ESTIMASI PENAWARAN BUKU TAHUNAN — FOURJECTIVE*
 Kode Angkatan: ${kode}
-Sekolah: SMA Negeri 1 Jakarta (2026)
+Sekolah: ${schoolName} (${gradYear})
 ---------------------------------------------
 - Jumlah Siswa: ${siswa} Siswa
 - Jumlah Halaman: ${halaman} Halaman
@@ -194,7 +339,26 @@ Kirim rincian ini ke tim Fourjective untuk dibuatkan draf kontrak MOU resmi.
 
   const handleSendOrder = (e: React.FormEvent) => {
     e.preventDefault();
-    const msg = `Halo Tim Fourjective! Saya ${picName || "Panitia"} dari angkatan dengan kode *${kode}* (SMA Negeri 1 Jakarta 2026) ingin mengajukan pemesanan & kontrak MOU:
+
+    // Async record order ke Supabase
+    submitProspectOrder({
+      projectId: initialProject?.id,
+      picName: picName || "Panitia",
+      picWhatsapp: picPhone || "-",
+      studentCount: siswa,
+      pageCount: halaman,
+      coverType,
+      addons: [
+        includeVideo && "Video Aftermovie 4K",
+        includeAR && "AR Scan Video",
+        includeMerch && "Merchandise Angkatan",
+      ].filter(Boolean) as string[],
+      estimatedPricePerStudent: pricePerStudent,
+      totalEstimatedPrice: totalProjectPrice,
+      targetGraduation,
+    }).catch((err) => console.error("Error saving prospect order:", err));
+
+    const msg = `Halo Tim Fourjective! Saya ${picName || "Panitia"} dari angkatan dengan kode *${kode}* (${schoolName} ${gradYear}) ingin mengajukan pemesanan & kontrak MOU:
 - Jumlah Siswa: ${siswa}
 - Halaman: ${halaman}
 - Cover: ${coverType}
@@ -227,7 +391,7 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
       key: "pipeline" as TabType,
       title: "Alur & Pipeline Produksi",
       icon: Clock,
-      badge: "Tahap 3/6",
+      badge: `Tahap ${currentStage}/6`,
       badgeColor: "bg-orange/20 text-orange border border-orange/30",
     },
     {
@@ -250,6 +414,50 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
       badgeColor: "bg-emerald-950/60 text-emerald-400 border border-emerald-800",
     },
   ];
+
+  // === RENDER JIKA KODE TIDAK DITEMUKAN / BELUM TERDAFTAR ===
+  if (initialProject === null && kode !== "SMAN1-2026") {
+    return (
+      <div className="min-h-screen bg-[#F5F3EF] flex flex-col items-center justify-center p-6 text-dark selection:bg-orange selection:text-white">
+        <div className="max-w-md w-full bg-white border-3 border-dark rounded-2xl p-7 sm:p-8 shadow-[6px_8px_0px_#14161C] text-center space-y-5">
+          <div className="w-14 h-14 rounded-2xl bg-orange/15 text-orange flex items-center justify-center mx-auto border-2 border-orange">
+            <AlertCircle className="w-7 h-7" />
+          </div>
+          <div>
+            <span className="font-mono text-[10px] font-black uppercase tracking-wider text-orange">
+              KODE AKSES BELUM AKTIF
+            </span>
+            <h1 className="font-playtimes text-3xl font-bold text-dark mt-1">
+              Kode Tidak Terdaftar
+            </h1>
+            <p className="font-sans text-xs text-dark/70 mt-2 leading-relaxed">
+              Kode angkatan <strong className="font-mono text-dark bg-slate-100 px-1.5 py-0.5 rounded border border-dark/15">{kode}</strong> belum terdaftar di database Supabase Fourjective.
+            </p>
+          </div>
+
+          <div className="space-y-2.5 pt-2">
+            <Link
+              href="/portal"
+              className="w-full inline-flex items-center justify-center gap-2 bg-dark hover:bg-orange text-white font-headline font-black text-xs uppercase tracking-widest py-3 px-4 rounded-xl transition-all cursor-pointer shadow-sm"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Coba Kode Lain</span>
+            </Link>
+
+            <a
+              href={waLink(`Halo Kak Venny (PM Fourjective), saya ingin meminta aktivasi kode akses angkatan untuk sekolah saya.`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-100 text-dark border-2 border-dark font-headline font-black text-xs uppercase tracking-widest py-3 px-4 rounded-xl transition-all cursor-pointer"
+            >
+              <MessageCircle className="w-4 h-4 text-orange" />
+              <span>Minta Kode ke PM Fourjective</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen w-full bg-[#F5F3EF]">
@@ -414,7 +622,7 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
               </div>
               <div className="overflow-hidden">
                 <div className="text-[11px] font-bold text-white truncate font-headline">
-                  Venny Meilinda
+                  {pmName}
                 </div>
                 <div className="text-[9px] font-mono text-emerald-400">
                   ● PM Online
@@ -443,7 +651,7 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
               <div className="flex items-center gap-2 text-[11px] font-mono text-dark/50 font-bold uppercase tracking-wider">
                 <span>Portal</span>
                 <span>/</span>
-                <span className="text-dark font-black">SMA Negeri 1 Jakarta ({kode})</span>
+                <span className="text-dark font-black">{schoolName} ({kode})</span>
                 <span>/</span>
                 <span className="text-orange">
                   {navMenuItems.find((m) => m.key === activeTab)?.title}
@@ -469,11 +677,11 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
 
             <div className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[11px] font-mono font-bold text-dark border border-dark/10 shadow-sm">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="text-emerald-700 font-bold">Tahap 3/6: Desain Layout</span>
+              <span className="text-emerald-700 font-bold">Tahap {currentStage}/6: Desain Layout</span>
             </div>
 
             <a
-              href={waLink(`Halo Kak Venny (PM Fourjective), saya panitia kode ${kode} ingin koordinasi materi.`)}
+              href={waLink(`Halo Kak ${pmName} (PM Fourjective), saya panitia kode ${kode} dari ${schoolName} ingin koordinasi materi.`)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 bg-orange text-white px-3.5 py-1.5 rounded-full text-xs font-mono font-black shadow-sm hover:translate-y-[-1px] transition-transform"
@@ -486,7 +694,7 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
 
         {/* Dynamic Page Content Area */}
         <div className="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
-          {/* ================= 1. OVERVIEW METRIC CARDS (IDENTICAL TO OVERVIEWCARDS.TSX) ================= */}
+          {/* ================= 1. OVERVIEW METRIC CARDS (DYNAMIC FROM SUPABASE) ================= */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 select-none">
             <div className="flex items-center justify-between rounded-2xl border border-dark/10 bg-white p-5 shadow-sm hover:shadow-md hover:border-orange/40 transition-all">
               <div>
@@ -494,10 +702,10 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                   Status Tahap Produksi
                 </p>
                 <h3 className="mt-1 text-2xl sm:text-3xl font-headline font-black tracking-tight text-dark">
-                  Tahap 3 / 6
+                  Tahap {currentStage} / 6
                 </h3>
                 <p className="mt-1 font-mono text-[11px] text-orange font-semibold">
-                  Desain Layout 80 Halaman
+                  {milestones.find((m) => m.step_number === currentStage)?.title || "Desain Layout"}
                 </p>
               </div>
               <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-dark/10 bg-orange/10 text-orange shadow-sm shrink-0">
@@ -528,10 +736,10 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                   Status Pembayaran Kas
                 </p>
                 <h3 className="mt-1 text-2xl sm:text-3xl font-headline font-black tracking-tight text-emerald-600">
-                  Termin 1 Lunas
+                  {installments.filter((i) => i.status === "paid").length} dari {installments.length} Lunas
                 </h3>
                 <p className="mt-1 font-mono text-[11px] text-dark/60 font-semibold">
-                  DP 30% Terverifikasi MOU
+                  Terverifikasi Kontrak MOU
                 </p>
               </div>
               <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-dark/10 bg-emerald-50 text-emerald-600 shadow-sm shrink-0">
@@ -545,7 +753,7 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                   Arsip Berkas di Cloud
                 </p>
                 <h3 className="mt-1 text-2xl sm:text-3xl font-headline font-black tracking-tight text-dark">
-                  3.8 GB / 10 GB
+                  {deliverables.filter((d) => d.is_ready).length} File Siap
                 </h3>
                 <p className="mt-1 font-mono text-[11px] text-dark/60 font-semibold">
                   Cloudflare R2 $0 Egress
@@ -557,7 +765,7 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
             </div>
           </div>
 
-          {/* ================= 2. MAIN TABS NAVIGATION (MATCHING DASHBOARD 1:1) ================= */}
+          {/* ================= 2. MAIN TABS NAVIGATION ================= */}
           <div className="flex items-center space-x-2 border-b border-dark/10 pb-3 overflow-x-auto select-none">
             {navMenuItems.map((tab) => {
               const Icon = tab.icon;
@@ -582,7 +790,6 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
           {/* ================= 3. TAB 1: KATALOG & BERKAS ANGKATAN ================= */}
           {activeTab === "catalog" && (
             <div className="space-y-6">
-              {/* Top Control Bar matching Dashboard lines 232-260 */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white border border-dark/10 p-4 sm:p-5 rounded-2xl shadow-sm">
                 <div className="relative w-full sm:max-w-md">
                   <Search className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-dark/40" />
@@ -624,7 +831,7 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                   </div>
 
                   <a
-                    href={waLink(`Halo Kak Venny, saya ingin submit link materi foto tambahan untuk kode ${kode}.`)}
+                    href={waLink(`Halo Kak ${pmName}, saya ingin submit link materi foto tambahan untuk ${schoolName} kode ${kode}.`)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1.5 rounded-xl bg-orange text-white px-4 py-2 text-xs font-bold shadow-md shadow-orange/20 hover:bg-orange/90 transition-all shrink-0 cursor-pointer"
@@ -635,7 +842,6 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                 </div>
               </div>
 
-              {/* Folder Grid Presentation (Matching SchoolFolderCard in Dashboard) */}
               {(viewMode === "split" || viewMode === "folders") && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -668,7 +874,6 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                 </div>
               )}
 
-              {/* Deliverables Table (When Split View or Table List is Active) */}
               {(viewMode === "split" || viewMode === "table") && (
                 <div className="rounded-2xl border border-dark/10 bg-white p-6 shadow-sm space-y-4">
                   <div className="flex items-center justify-between border-b border-dark/10 pb-4">
@@ -681,7 +886,7 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                       </p>
                     </div>
                     <span className="font-mono text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                      3 File Tersedia
+                      {deliverables.length} Berkas Tercatat
                     </span>
                   </div>
 
@@ -697,38 +902,16 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-dark/5 font-sans">
-                        {[
-                          {
-                            name: "Galeri Foto Kelas Lengkap (Hi-Res).zip",
-                            cat: "Photoshoot",
-                            size: "3.8 GB",
-                            ready: true,
-                            note: "Siap unduh via R2 CDN",
-                          },
-                          {
-                            name: "Draf Dummy Layout 80 Halaman (Revisi 1).pdf",
-                            cat: "Layout & Desain",
-                            size: "184 MB",
-                            ready: true,
-                            note: "Untuk proofing panitia",
-                          },
-                          {
-                            name: "Trailer Aftermovie 4K (Rough Cut).mp4",
-                            cat: "Video 4K",
-                            size: "1.2 GB",
-                            ready: false,
-                            note: "Dalam tahap color grading",
-                          },
-                        ].map((row, idx) => (
+                        {deliverables.map((row, idx) => (
                           <tr key={idx} className="hover:bg-[#FAF6F0] transition-colors">
                             <td className="py-3.5 pr-4 font-bold text-dark flex items-center gap-2">
                               <FileText className="w-4 h-4 text-orange shrink-0" />
-                              <span className="truncate max-w-xs">{row.name}</span>
+                              <span className="truncate max-w-xs">{row.file_name}</span>
                             </td>
-                            <td className="py-3.5 font-mono text-dark/60">{row.cat}</td>
-                            <td className="py-3.5 font-mono font-bold text-dark">{row.size}</td>
+                            <td className="py-3.5 font-mono text-dark/60 uppercase">{row.file_type.replace("_", " ")}</td>
+                            <td className="py-3.5 font-mono font-bold text-dark">{row.file_size || "Cloud R2"}</td>
                             <td className="py-3.5">
-                              {row.ready ? (
+                              {row.is_ready ? (
                                 <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                                   <CheckCircle2 className="w-3 h-3" /> Siap Unduh
                                 </span>
@@ -739,9 +922,9 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                               )}
                             </td>
                             <td className="py-3.5 text-right">
-                              {row.ready ? (
+                              {row.is_ready ? (
                                 <button
-                                  onClick={() => alert(`Mengunduh berkas ${row.name} dari Cloudflare R2...`)}
+                                  onClick={() => alert(`Mengunduh berkas ${row.file_name} dari Cloudflare R2...`)}
                                   className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-dark hover:bg-orange text-white font-mono text-xs font-bold transition-colors cursor-pointer"
                                 >
                                   <Download className="w-3 h-3" />
@@ -764,7 +947,6 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
           {/* ================= 4. TAB 2: ALUR & PIPELINE PRODUKSI ================= */}
           {activeTab === "pipeline" && (
             <div className="space-y-6">
-              {/* Stepper Tahapan Buku */}
               <div className="rounded-2xl border border-dark/10 bg-white p-6 sm:p-8 shadow-sm">
                 <div className="flex items-center justify-between border-b border-dark/10 pb-4 mb-6">
                   <div>
@@ -781,52 +963,9 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                 </div>
 
                 <div className="space-y-4">
-                  {[
-                    {
-                      no: 1,
-                      title: "Penandatanganan Kontrak & DP 30%",
-                      desc: "MOU resmi angkatan telah disepakati dan jadwal photoshoot terkunci.",
-                      status: "done",
-                      date: "10 Sep 2026",
-                    },
-                    {
-                      no: 2,
-                      title: "Sesi Foto Angkatan & Kelas",
-                      desc: "Pemotretan outdoor tema kelas, sesi studio guru, dan video shoot selesai.",
-                      status: "done",
-                      date: "04 Okt 2026",
-                    },
-                    {
-                      no: 3,
-                      title: "Desain Layout & Kurasi 80 Halaman",
-                      desc: "Tim desainer grafis Fourjective sedang menata susunan foto & bio siswa.",
-                      status: "active",
-                      date: "Sedang Berlangsung",
-                    },
-                    {
-                      no: 4,
-                      title: "Proofing Dummy & Revisi Panitia",
-                      desc: "Pengecekan dummy digital sebelum dokumen naik ke mesin cetak Heidelberg.",
-                      status: "pending",
-                      date: "Est. 15 Nov 2026",
-                    },
-                    {
-                      no: 5,
-                      title: "Proses Cetak, Jilid Hardcover & QC",
-                      desc: "Pencetakan fisik, laminasi doff/glossy, jilid jahit benang hardcover kokoh.",
-                      status: "pending",
-                      date: "Est. 10 Des 2026",
-                    },
-                    {
-                      no: 6,
-                      title: "Pengemasan Rapi & Pengiriman ke Sekolah",
-                      desc: "Eksemplar buku dibungkus box rapi dan dikirim tepat waktu sebelum hari wisuda.",
-                      status: "pending",
-                      date: "Est. 20 Des 2026",
-                    },
-                  ].map((s) => (
+                  {milestones.map((s) => (
                     <div
-                      key={s.no}
+                      key={s.step_number}
                       className={`p-4 rounded-xl border flex items-start gap-4 transition-all ${
                         s.status === "active"
                           ? "bg-orange/5 border-orange/40 shadow-sm"
@@ -848,7 +987,7 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                         )}
                         {s.status === "pending" && (
                           <div className="w-7 h-7 rounded-full border border-dark/20 flex items-center justify-center text-xs font-mono font-bold text-dark/40">
-                            {s.no}
+                            {s.step_number}
                           </div>
                         )}
                       </div>
@@ -856,7 +995,7 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <h4 className="font-headline font-bold text-sm text-dark">
-                            {s.no}. {s.title}
+                            {s.step_number}. {s.title}
                           </h4>
                           <span
                             className={`font-mono text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${
@@ -870,19 +1009,21 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                             {s.status === "done" ? "Selesai" : s.status === "active" ? "Sedang Proses" : "Menunggu"}
                           </span>
                         </div>
-                        <p className="font-sans text-xs text-dark/70 mt-1">{s.desc}</p>
-                        <div className="font-mono text-[10px] text-dark/50 mt-1">Jadwal: {s.date}</div>
+                        <p className="font-sans text-xs text-dark/70 mt-1">{s.description}</p>
+                        {s.target_date && (
+                          <div className="font-mono text-[10px] text-dark/50 mt-1">Jadwal: {s.target_date}</div>
+                        )}
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Termin Kas Pembayaran Schedule */}
+              {/* Termin Kas Dinamis Bebas dari Supabase */}
               <div className="rounded-2xl border border-dark/10 bg-white p-6 sm:p-8 shadow-sm">
                 <div className="border-b border-dark/10 pb-4 mb-6">
                   <span className="font-mono text-[10px] font-black uppercase tracking-wider text-orange">
-                    SISTEM 3 TERMIN KAS
+                    SISTEM TERMIN KAS FLEKSIBEL
                   </span>
                   <h3 className="font-headline font-black text-xl text-dark mt-0.5">
                     Jadwal Termin Pembayaran Sekolah
@@ -893,31 +1034,9 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                 </div>
 
                 <div className="grid sm:grid-cols-3 gap-4">
-                  {[
-                    {
-                      term: "Termin 1 (DP 30%)",
-                      amount: "Rp 8.910.000",
-                      status: "paid",
-                      due: "Lunas saat MOU",
-                      receipt: "INV-2026-001-LUNAS",
-                    },
-                    {
-                      term: "Termin 2 (40%)",
-                      amount: "Rp 11.880.000",
-                      status: "pending",
-                      due: "Saat ACC Dummy Cetak",
-                      receipt: "INV-2026-002-PENDING",
-                    },
-                    {
-                      term: "Termin 3 (Pelunasan 30%)",
-                      amount: "Rp 8.910.000",
-                      status: "pending",
-                      due: "Sebelum Buku Dikirim",
-                      receipt: "INV-2026-003-PENDING",
-                    },
-                  ].map((item, idx) => (
+                  {installments.map((item, idx) => (
                     <div
-                      key={idx}
+                      key={item.id || idx}
                       className={`p-5 rounded-xl border flex flex-col justify-between ${
                         item.status === "paid"
                           ? "bg-emerald-50/60 border-emerald-300"
@@ -927,7 +1046,7 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                       <div>
                         <div className="flex items-center justify-between">
                           <span className="font-mono text-xs font-bold uppercase text-dark">
-                            {item.term}
+                            {item.title}
                           </span>
                           <span
                             className={`font-mono text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
@@ -940,22 +1059,22 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                           </span>
                         </div>
                         <div className="font-headline font-black text-2xl text-dark mt-2">
-                          {item.amount}
+                          Rp {item.amount.toLocaleString("id-ID")}
                         </div>
                         <div className="font-mono text-[10px] text-dark/50 mt-1">
-                          Jatuh Tempo: {item.due}
+                          Jatuh Tempo: {item.due_date || "Sesuai MOU"}
                         </div>
                       </div>
 
                       <div className="mt-4 pt-3 border-t border-dark/10 flex items-center justify-between">
-                        <span className="font-mono text-[9px] text-dark/40">{item.receipt}</span>
+                        <span className="font-mono text-[9px] text-dark/40">{item.receipt_number || "INV-PENDING"}</span>
                         {item.status === "paid" ? (
                           <span className="font-mono text-[10px] font-bold text-emerald-700 flex items-center gap-1">
                             <Check className="w-3 h-3" /> Kuitansi Sah
                           </span>
                         ) : (
                           <a
-                            href={waLink(`Halo Kak Venny, saya ingin konfirmasi pembayaran untuk termin ${idx + 1} kode ${kode}.`)}
+                            href={waLink(`Halo Kak ${pmName}, saya ingin konfirmasi pembayaran untuk ${item.title} di ${schoolName} kode ${kode}.`)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="font-mono text-[10px] font-bold text-orange hover:underline"
@@ -1201,7 +1320,7 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
 
                 <div className="mt-4 pt-3 border-t border-white/10 flex items-center gap-2 text-white/50 font-mono text-[10px]">
                   <ShieldCheck className="w-4 h-4 text-orange shrink-0" />
-                  <span>Kalkulasi estimasi terkunci aman selama 7 hari kalender.</span>
+                  <span>Kalkulasi estimasi tersimpan ke database &amp; terkunci aman 7 hari.</span>
                 </div>
               </div>
             </div>
@@ -1246,7 +1365,6 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                 </div>
               </div>
 
-              {/* Reader Mockup Card */}
               <div className="rounded-2xl border border-dark/10 bg-white p-6 sm:p-8 shadow-sm">
                 <div className="border-b border-dark/10 pb-4 mb-6 flex flex-wrap items-center justify-between gap-4">
                   <div>
@@ -1259,7 +1377,7 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1">
-                      <Lock className="w-3 h-3" /> Dilindungi Token Sekolah
+                      <Lock className="w-3 h-3" /> Dilindungi Token {kode}
                     </span>
                   </div>
                 </div>
@@ -1299,7 +1417,6 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
           {/* ================= 7. TAB 5: KONTAK PIC & PANDUAN ================= */}
           {activeTab === "contact" && (
             <div className="grid lg:grid-cols-12 gap-8 items-start">
-              {/* Project Manager Profile Card */}
               <div className="lg:col-span-5 rounded-2xl border border-dark/10 bg-white p-6 sm:p-8 shadow-sm space-y-4">
                 <span className="font-mono text-[10px] font-black uppercase tracking-wider text-orange">
                   DEDICATED PROJECT MANAGER
@@ -1313,11 +1430,11 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
 
                 <div className="p-4 border border-dark/15 rounded-xl bg-[#FAF6F0] flex items-center gap-4">
                   <div className="w-14 h-14 rounded-full bg-dark text-orange flex items-center justify-center font-headline font-black text-xl shrink-0 border-2 border-orange">
-                    VM
+                    {pmName.split(" ").map((n) => n[0]).slice(0, 2).join("")}
                   </div>
                   <div className="min-w-0">
                     <h4 className="font-headline font-black text-base uppercase text-dark truncate">
-                      Venny Meilinda
+                      {pmName}
                     </h4>
                     <p className="font-mono text-[10px] text-dark/60 uppercase truncate">
                       Lead Project Manager • Fourjective Studio
@@ -1331,13 +1448,13 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
 
                 <div className="space-y-2 pt-2">
                   <a
-                    href={waLink(`Halo Kak Venny (PM Fourjective), saya panitia kode ${kode} dari SMA Negeri 1 Jakarta ingin koordinasi materi.`)}
+                    href={waLink(`Halo Kak ${pmName} (PM Fourjective), saya panitia kode ${kode} dari ${schoolName} ingin koordinasi materi.`)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full inline-flex items-center justify-center gap-2 bg-orange text-white font-headline font-black text-xs uppercase tracking-widest py-3 px-4 rounded-xl shadow-md shadow-orange/30 hover:bg-orange/90 transition-all cursor-pointer"
                   >
                     <MessageCircle className="w-4 h-4" />
-                    <span>Chat WhatsApp Kak Venny</span>
+                    <span>Chat WhatsApp Kak {pmName.split(" ")[0]}</span>
                     <ArrowUpRight className="w-4 h-4" />
                   </a>
 
@@ -1347,7 +1464,6 @@ Mohon segera diproses proposal & kontrak resminya. Terima kasih!`;
                 </div>
               </div>
 
-              {/* Panduan & Aturan Panitia */}
               <div className="lg:col-span-7 rounded-2xl border border-dark/10 bg-white p-6 sm:p-8 shadow-sm space-y-4">
                 <h3 className="font-headline font-black text-xl text-dark border-b border-dark/10 pb-3">
                   Panduan Panitia Buku Tahunan

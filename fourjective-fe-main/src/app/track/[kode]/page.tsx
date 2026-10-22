@@ -1,4 +1,5 @@
 import React from "react";
+import { getProjectByAccessCode } from "@/lib/supabase";
 import { ClientPortalView } from "@/components/track/client-portal-view";
 
 export default async function TrackPage({
@@ -9,5 +10,8 @@ export default async function TrackPage({
   const { kode } = await params;
   const kodeUpper = decodeURIComponent(kode).toUpperCase();
 
-  return <ClientPortalView kode={kodeUpper} />;
+  // Fetch real data from Supabase
+  const project = await getProjectByAccessCode(kodeUpper);
+
+  return <ClientPortalView kode={kodeUpper} initialProject={project} />;
 }
