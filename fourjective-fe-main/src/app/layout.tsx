@@ -266,12 +266,21 @@ export default function RootLayout({
       <body
         className={`${poppins.variable} ${playtimes.variable} ${lexendZetta.variable} ${leagueSpartan.variable} ${kronaOne.variable} antialiased`}
       >
-        {pathname !== "/login" && !pathname.includes("/dashboard") && (
-          <>
-            <Navbar toggleNav={toggleNav} />
-            <PopUpNav isNavVisible={isNavVisible} toggleNav={toggleNav} />
-          </>
-        )}
+        {pathname !== "/" &&
+          !pathname.startsWith("/paket") &&
+          !pathname.startsWith("/services") &&
+          !pathname.startsWith("/portofolio") &&
+          !pathname.startsWith("/testimoni") &&
+          !pathname.startsWith("/about") &&
+          !pathname.startsWith("/gallery") &&
+          !pathname.startsWith("/portal") &&
+          !pathname.startsWith("/track") &&
+          !pathname.includes("/dashboard") && (
+            <>
+              <Navbar toggleNav={toggleNav} />
+              <PopUpNav isNavVisible={isNavVisible} toggleNav={toggleNav} />
+            </>
+          )}
         {children}
       </body>
     </html>

@@ -27,7 +27,15 @@ fourjective-be-main/uploads/*
 !fourjective-be-main/uploads/.gitkeep
 fourjective-be-main/uploads/temp/*
 
-# OS & Logs
+# Scratch & Temporary Reference Files
+/*.png
+/scratch_*
+/ss*.png
+/svgfollow.txt
+/.agents/
+/.codegraph/
+/mockups/
+/references/
 .DS_Store
 *.log
 npm-debug.log*
@@ -36,3 +44,5 @@ yarn-error.log*
 .agents/scratch/
 .codex/
 .tokensave/
+SECRETS*.md
+*.local.md

@@ -10,6 +10,42 @@ export default {
   theme: {
     extend: {
       colors: {
+        paper: "#FAF6F0",
+        dark: "#18181B",
+        orange: "#FF4D00",
+
+        /* ============ DESIGN TOKEN: BRAND BLUE SCALE ============ */
+        /* Satu-satunya sumber warna biru di seluruh aplikasi.
+           Cooler: #1D4ED8 (primary) · Navy: #0B2054 (dark surface) */
+        brand: {
+          50: "#EFF6FF",
+          100: "#DBEAFE",
+          200: "#BFDBFE",
+          300: "#93C5FD",
+          400: "#60A5FA",
+          500: "#3B82F6",
+          600: "#2563EB",
+          700: "#1D4ED8",
+          800: "#1E3A8A",
+          850: "#123A7A",
+          900: "#0F2A6B",
+          950: "#0B2054",
+          deep: "#0A1F4D",
+        },
+
+        /* ============ DESIGN TOKEN: INK / SURFACE ============ */
+        ink: {
+          soft: "#0B0C0F",
+          raised: "#14161C",
+          deep: "#111113",
+          navy: "#0A1F4D",
+        },
+        surface: {
+          paper: "#FAF6F0",
+          cream: "#FFF8F2",
+          bright: "#FFFDF9",
+          gray: "#F2F2F4",
+        },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {
@@ -35,6 +71,15 @@ export default {
         accent: {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
+          yellow: "#FDE047",
+          bright: "#FFE500",
+          orange: "#FF4D00",
+          red: "#E94504",
+          wa: "#25D366",
+          mint: "#A7F3D0",
+          lilac: "#DDD6FE",
+          pink: "#FECDD3",
+          purple: "#C084FC",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
@@ -62,11 +107,20 @@ export default {
         },
       },
       fontFamily: {
+        display: ["var(--font-display-var)", "sans-serif"],
+        headline: ["var(--font-headline-var)", "sans-serif"],
+        arcade: ['"Press Start 2P"', "monospace"],
+        sans: ['"Plus Jakarta Sans"', "sans-serif"],
         poppins: ["var(--font-poppins)"],
         playtimes: ["var(--font-playtimes)"],
         lexendZetta: ["var(--font-lexendZetta)"],
         kronaOne: ["var(--font-kronaOne)"],
         leagueSpartan: ["var(--font-leagueSpartan)"],
+      },
+      boxShadow: {
+        brutal: "4px 4px 0px 0px #18181B",
+        "brutal-lg": "8px 8px 0px 0px #18181B",
+        "brutal-xl": "12px 12px 0px 0px #18181B",
       },
       strokeWidth: {
         "16": "16",

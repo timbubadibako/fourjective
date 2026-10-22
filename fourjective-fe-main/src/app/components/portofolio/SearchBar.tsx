@@ -13,20 +13,22 @@ export default function SearchBar({
   searchQuery: string;
 }) {
   return (
-    <div className="flex min-h-8 w-[93%] items-center gap-2 rounded-xl border-[3px] border-black bg-white p-4 lg:w-1/2">
-      <Image src={SearchLogo} alt="Search" />
+    <div className="flex min-h-8 w-full items-center gap-2 rounded-xl border-3 border-dark bg-white p-4 shadow-[4px_5px_0px_#14161C]">
       <input
-        className="w-full focus:outline-none"
+        className="w-full bg-transparent focus:outline-none font-mono text-sm font-bold text-dark placeholder:text-dark/40"
         placeholder="Cari result sekolah kamu"
         value={searchQuery}
         onChange={(e) => onSearch(e.target.value)}
-      ></input>
-      <Image
-        src={CloseLogo}
-        alt="Close"
-        onClick={onReset}
-        className="hover:brightness-[0.95]"
       />
+      {searchQuery ? (
+        <button
+          type="button"
+          onClick={onReset}
+          className="shrink-0 font-mono text-[10px] font-black uppercase tracking-widest text-dark/50 hover:text-orange transition-colors"
+        >
+          Reset
+        </button>
+      ) : null}
     </div>
   );
 }

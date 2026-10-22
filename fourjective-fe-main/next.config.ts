@@ -10,9 +10,10 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: `
               default-src 'self';
-              script-src 'self' 'unsafe-inline' 'unsafe-eval';
-              style-src 'self' 'unsafe-inline';
-              img-src 'self' data: https://api.fourjectiv.com http://localhost:5000 http://127.0.0.1:5000;
+              script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com;
+              style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+              font-src 'self' data: https://fonts.gstatic.com;
+              img-src 'self' data: https: http:;
               frame-src https://api.fourjectiv.com http://localhost:5000 http://127.0.0.1:5000;
               connect-src 'self' https://api.fourjectiv.com http://localhost:5000 http://127.0.0.1:5000;
             `.replace(/\s{2,}/g, " "),
@@ -39,8 +40,26 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      /* FAQ tunggal sumber = landing #faq (v4) */
+      { source: "/faq", destination: "/#faq", permanent: true },
+      /* Redirect alias testimoni */
+      { source: "/testimonials", destination: "/testimoni", permanent: true },
+    ];
+  },
   images: {
     remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.prod.website-files.com",
+        pathname: "/**",
+      },
       {
         protocol: "https",
         hostname: "api.fourjectiv.com",

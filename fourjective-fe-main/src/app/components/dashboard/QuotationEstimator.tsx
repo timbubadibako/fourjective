@@ -101,12 +101,12 @@ export function QuotationEstimator() {
                   onClick={() => setCoverType(c.key)}
                   className={`rounded-lg border p-2.5 text-left transition-all ${
                     coverType === c.key
-                      ? "border-slate-900 bg-slate-900 text-white font-bold"
+                      ? "border-orange bg-orange/10 text-dark font-bold shadow-sm"
                       : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
                   }`}
                 >
                   <p className="text-xs font-semibold">{c.label}</p>
-                  <p className={`text-[10px] mt-0.5 ${coverType === c.key ? "text-slate-300" : "text-slate-400"}`}>{c.price}</p>
+                  <p className={`text-[10px] mt-0.5 ${coverType === c.key ? "text-orange font-bold" : "text-slate-400"}`}>{c.price}</p>
                 </button>
               ))}
             </div>
@@ -140,33 +140,37 @@ export function QuotationEstimator() {
         </div>
 
         {/* Calculation Result */}
-        <div className="flex flex-col justify-between rounded-xl border border-slate-200 bg-slate-900 p-6 text-white lg:col-span-5">
+        <div className="flex flex-col justify-between rounded-2xl border border-white/10 bg-[#14161C] p-6 text-white lg:col-span-5 shadow-lg">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Ringkasan Estimasi</p>
+            <div className="flex items-center justify-between">
+              <p className="font-mono text-xs font-bold uppercase tracking-wider text-orange">Ringkasan Estimasi</p>
+              <span className="text-[10px] font-mono text-white/50 bg-white/5 px-2 py-0.5 rounded border border-white/10">Live Quote</span>
+            </div>
 
             <div className="mt-4 space-y-4">
               <div>
-                <p className="text-xs text-slate-400">Biaya Paket per Siswa</p>
-                <h3 className="text-2xl font-bold text-white">
+                <p className="text-xs text-white/60 font-mono">Biaya Paket per Siswa</p>
+                <h3 className="text-3xl font-headline font-black text-orange mt-1">
                   Rp {pricePerStudent.toLocaleString("id-ID")}
+                  <span className="text-xs font-mono text-white/50 font-normal"> / siswa</span>
                 </h3>
               </div>
 
-              <div className="border-t border-slate-800 pt-3">
-                <p className="text-xs text-slate-400">Total Proyek ({siswa} Eksemplar)</p>
-                <h4 className="text-xl font-bold text-slate-200">
+              <div className="border-t border-white/10 pt-3">
+                <p className="text-xs text-white/60 font-mono">Total Proyek ({siswa} Eksemplar)</p>
+                <h4 className="text-xl font-headline font-bold text-white mt-0.5">
                   Rp {totalProjectPrice.toLocaleString("id-ID")}
                 </h4>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-slate-800">
+          <div className="mt-6 pt-4 border-t border-white/10">
             <Button
               onClick={handleCopyQuotation}
-              className="w-full bg-white text-slate-900 hover:bg-slate-100 font-bold text-xs flex items-center justify-center gap-2 py-2.5"
+              className="w-full bg-orange hover:bg-orange/90 text-white font-bold text-xs flex items-center justify-center gap-2 py-3 rounded-xl shadow-md cursor-pointer transition-all"
             >
-              {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
+              {copied ? <Check className="h-4 w-4 text-white" /> : <Copy className="h-4 w-4" />}
               {copied ? "Salinan Tersimpan!" : "Salin Ringkasan Penawaran"}
             </Button>
           </div>

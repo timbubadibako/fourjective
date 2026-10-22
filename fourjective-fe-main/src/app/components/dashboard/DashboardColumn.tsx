@@ -54,7 +54,7 @@ export const columns: ColumnDef<Portfolio>[] = [
         } catch (e) {}
       }
       return (
-        <span className="inline-flex items-center rounded-md bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+        <span className="inline-flex items-center rounded-md bg-orange/10 border border-orange/20 px-2.5 py-1 text-xs font-mono font-bold text-orange">
           {pageCount} Halaman 3D
         </span>
       );

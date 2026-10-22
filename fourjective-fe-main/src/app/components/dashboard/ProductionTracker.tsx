@@ -95,28 +95,28 @@ export function ProductionTracker() {
             <div key={stage.key} className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm">
               <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-2.5">
                 <div className="flex items-center gap-2">
-                  <StageIcon className="h-4 w-4 text-slate-600" />
+                  <StageIcon className="h-4 w-4 text-orange" />
                   <span className="text-xs font-bold text-slate-800">{stage.label}</span>
                 </div>
-                <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-600">
+                <span className="rounded-md bg-orange/10 px-2 py-0.5 text-[11px] font-mono font-bold text-orange">
                   {stageOrders.length}
                 </span>
               </div>
 
               <div className="space-y-2.5">
                 {stageOrders.map((order) => (
-                  <div key={order.id} className="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3">
+                  <div key={order.id} className="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3 hover:border-orange/30 transition-colors">
                     <h4 className="font-bold text-slate-900 text-xs">{order.namaSekolah}</h4>
                     <p className="text-[11px] text-slate-500 mt-0.5">{order.jumlahSiswa} Siswa • {order.tahun}</p>
 
                     <div className="mt-2.5">
                       <div className="flex items-center justify-between text-[10px] font-semibold text-slate-500 mb-1">
                         <span>Progres</span>
-                        <span>{order.progress}%</span>
+                        <span className="text-orange font-bold">{order.progress}%</span>
                       </div>
                       <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
                         <div
-                          className="h-full bg-slate-900 transition-all duration-300"
+                          className="h-full bg-orange transition-all duration-300"
                           style={{ width: `${order.progress}%` }}
                         />
                       </div>

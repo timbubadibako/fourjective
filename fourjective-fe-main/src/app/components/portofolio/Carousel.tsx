@@ -206,7 +206,7 @@ export default function Carousel({
   const theme = createTheme({
     palette: {
       primary: {
-        main: "#D3A1FD",
+        main: "#FF4D00",
       },
     },
   });
@@ -355,7 +355,7 @@ export default function Carousel({
         {currentData.map((item) => (
           <div
             key={item.id}
-            className="flex cursor-pointer flex-col rounded-lg border-4 border-black bg-white p-5 text-center shadow-lg transition-colors duration-500 hover:bg-[#D3A1FD] lg:border-[6px]"
+            className="flex cursor-pointer flex-col rounded-lg border-3 border-dark bg-white p-5 text-center shadow-[4px_5px_0px_#14161C] transition-all duration-300 hover:-translate-y-1 hover:shadow-[6px_7px_0px_#FF4D00] lg:border-3"
             onClick={() => openGallery(item.id)}
           >
             <Image
@@ -448,7 +448,7 @@ export default function Carousel({
               <button
                 onClick={handleVerifyPassword}
                 disabled={!passwordInput || isVerifying}
-                className="flex-1 rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:bg-gray-300"
+                className="flex-1 rounded-md bg-orange px-4 py-2 text-white hover:bg-orange/90 disabled:bg-dark/20"
               >
                 {isVerifying ? "Memverifikasi..." : "Kirim"}
               </button>
@@ -465,14 +465,14 @@ export default function Carousel({
         >
           <button
             onClick={closeGallery}
-            className="absolute right-4 top-4 z-[60] rounded-full bg-red-500 px-3 py-1 text-white hover:bg-red-700"
+            className="absolute right-4 top-4 z-[60] rounded-full bg-dark px-3 py-1 text-white hover:bg-dark/80"
           >
             Close
           </button>
 
           <button
             onClick={toggleFullscreen}
-            className="absolute right-24 top-4 z-[60] rounded-full bg-blue-500 px-3 py-1 text-white hover:bg-blue-700"
+            className="absolute right-24 top-4 z-[60] rounded-full bg-orange px-3 py-1 text-white hover:bg-orange/90"
             title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
           >
             {isFullscreen ? (
