@@ -3,18 +3,21 @@
 import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowUpRight, KeyRound, ShieldCheck, ArrowLeft, MessageCircle } from "lucide-react";
+import {
+  ArrowUpRight,
+  KeyRound,
+  ShieldCheck,
+  ArrowLeft,
+  MessageCircle,
+  AlertCircle,
+  Sparkles,
+} from "lucide-react";
 import { WA_MESSAGES, waLink } from "@/lib/site";
 
 /* ================= HALAMAN PORTAL (GATE) =================
    Halaman tunggal dua jalur:
    1. KLIEN — kode akses dari admin → /track/[kode]
-   2. ADMIN — password saja (tanpa email) → /dashboard
-      NOTE: submit admin masih POST ke endpoint lama
-      /api/auth/login (email diisi konstanta) — TEMP
-      sampai backend switch ke password-only. */
-
-const ADMIN_EMAIL_DEFAULT = "admin@fourjectiv.com";
+   2. ADMIN — master password saja (tanpa email) → /dashboard */
 
 function PortalGateInner() {
   const router = useRouter();
@@ -26,6 +29,7 @@ function PortalGateInner() {
   const [adminError, setAdminError] = useState<string | null>(null);
   const [adminLoading, setAdminLoading] = useState(false);
   const [detectedKode, setDetectedKode] = useState<string | null>(null);
+  const [hasErrorInvalid, setHasErrorInvalid] = useState(false);
 
   /* Permalink: ?kode=ABC123 → auto-fill, tandai "terdeteksi dari link" */
   useEffect(() => {
@@ -33,6 +37,16 @@ function PortalGateInner() {
     if (k) {
       setKode(k);
       setDetectedKode(k);
+    }
+
+    const err = searchParams.get("error");
+    if (err === "invalid") {
+      setHasErrorInvalid(true);
+    }
+
+    const m = searchParams.get("mode");
+    if (m === "admin") {
+      setMode("admin");
     }
   }, [searchParams]);
 
@@ -49,26 +63,26 @@ function PortalGateInner() {
     setAdminLoading(true);
     setAdminError(null);
     try {
-      const backendUrl =
-        process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
-      /* TEMP: backend masih email+password — email dipbundle konstanta
-         sampai /api/auth/login menerima password-only */
-      const res = await fetch(`${backendUrl}/api/auth/login`, {
+      const res = await fetch("/api/auth/admin-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: ADMIN_EMAIL_DEFAULT,
           password: adminPassword,
         }),
       });
-      if (!res.ok) {
-        setAdminError("Password salah. Coba lagi.");
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setAdminError(data.error || "Password admin salah. Coba lagi.");
         setAdminLoading(false);
         return;
       }
+
+      localStorage.setItem("fourjective_admin_session", "true");
       router.push("/dashboard");
     } catch {
-      setAdminError("Gagal terhubung ke server.");
+      setAdminError("Gagal terhubung ke endpoint autentikasi server.");
       setAdminLoading(false);
     }
   };
@@ -118,21 +132,21 @@ function PortalGateInner() {
       {/* ============ GATE ============ */}
       <div className="relative z-10 flex-1 flex items-center justify-center px-4 pb-16">
         <div className="w-full max-w-2xl">
-          {/* Headline — 2 BARIS TEGAS, box lega biar nowrap nggak overflow */}
-          <div className="text-center mb-8 sm:mb-10">
+          {/* Headline */}
+          <div className="text-center mb-6 sm:mb-8">
             <h1 className="font-playtimes text-[2.4rem] sm:text-5xl md:text-6xl leading-[1.02] whitespace-nowrap">
               Portal Akses,
               <br />
               <span className="text-orange">Satu Kode Saja.</span>
             </h1>
-            <p className="font-mono text-[11px] sm:text-xs text-white/55 mt-4 font-semibold tracking-wide">
-              Kode didapat dari PM Fourjective.
+            <p className="font-mono text-[11px] sm:text-xs text-white/55 mt-3 font-semibold tracking-wide">
+              Kode resmi didapat dari Project Manager Fourjective setelah MOU.
             </p>
             <a
               href={waLink(WA_MESSAGES.general)}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-4 inline-flex items-center gap-2 font-mono text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-white/70 border-2 border-white/15 hover:border-orange hover:text-orange px-4 py-2.5 rounded-full transition-colors"
+              className="mt-3 inline-flex items-center gap-2 font-mono text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-white/70 border-2 border-white/15 hover:border-orange hover:text-orange px-4 py-2 rounded-full transition-colors"
             >
               <MessageCircle className="w-3.5 h-3.5" />
               <span>Minta Kode via WA</span>
@@ -140,119 +154,163 @@ function PortalGateInner() {
             </a>
           </div>
 
-          {/* Card ramping di bawah headline besar */}
-          <div className="max-w-md mx-auto">
-          {mode === "kode" ? (
-            /* ---------- KARTU KODE AKSES (klien) ---------- */
-            <form
-              onSubmit={submitKode}
-              className="bg-white text-dark border-4 border-dark rounded-xl shadow-[8px_10px_0px_#FF4D00]"
-            >
-              <div className="p-5 sm:p-6">
-                <div className="flex items-center gap-2 mb-1">
-                  <KeyRound className="w-4 h-4 text-orange" />
-                  <span className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-dark/50">
-                    kode akses
-                  </span>
-                </div>
-
-                {detectedKode ? (
-                  <p className="text-[11px] font-mono text-orange font-bold mb-3">
-                    → kode terdeteksi dari link
+          {/* Banner Peringatan jika Kode Invalid (Redirect Guard) */}
+          {hasErrorInvalid && (
+            <div className="max-w-md mx-auto mb-5 p-4 rounded-xl bg-red-950/80 border-2 border-red-500/80 text-white shadow-lg animate-in fade-in duration-200">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+                <div className="text-xs">
+                  <div className="font-headline font-black uppercase tracking-wider text-red-200">
+                    Kode Akses Tidak Ditemukan
+                  </div>
+                  <p className="font-sans text-white/80 mt-1 leading-relaxed">
+                    Kode {detectedKode ? <strong className="font-mono text-orange bg-black/40 px-1 py-0.5 rounded border border-white/10">{detectedKode}</strong> : "yang Anda masukkan"} belum terdaftar di database Supabase kami. Silakan cek ulang ejaan atau minta aktivasi ke PM Fourjective.
                   </p>
-                ) : null}
-
-                <input
-                  autoFocus
-                  value={kode}
-                  onChange={(e) =>
-                    setKode(e.target.value.toUpperCase())
-                  }
-                  placeholder="XXXX-XXXX"
-                  className="w-full bg-paper border-3 border-dark/20 focus:border-orange outline-none px-4 py-3.5 font-mono font-black text-lg sm:text-xl tracking-[0.25em] text-center uppercase text-dark placeholder:text-dark/25 transition-colors rounded-lg"
-                  maxLength={12}
-                />
-
-                <button
-                  type="submit"
-                  disabled={!kode.trim()}
-                  className="mt-4 w-full inline-flex items-center justify-center gap-2 bg-orange text-white font-headline font-black text-sm uppercase tracking-widest px-5 py-3.5 border-3 border-dark rounded-lg shadow-[4px_4px_0px_#14161C] hover:shadow-[2px_2px_0px_#14161C] hover:translate-x-0.5 hover:translate-y-0.5 transition-all active:scale-95 disabled:opacity-40 disabled:pointer-events-none"
-                >
-                  <span>Masuk Tracker</span>
-                  <ArrowUpRight className="w-4 h-4" />
-                </button>
-              </div>
-            </form>
-          ) : (
-            /* ---------- KARTU ADMIN (password saja) ---------- */
-            <form
-              onSubmit={submitAdmin}
-              className="bg-[#18191F] border-4 border-dark rounded-xl shadow-[8px_10px_0px_#FF4D00]"
-            >
-              <div className="p-5 sm:p-6">
-                <div className="flex items-center gap-2 mb-1">
-                  <ShieldCheck className="w-4 h-4 text-orange" />
-                  <span className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-white/40">
-                    admin — password
-                  </span>
                 </div>
-
-                <input
-                  autoFocus
-                  type="password"
-                  value={adminPassword}
-                  onChange={(e) => setAdminPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-[#101116] border-3 border-white/10 focus:border-orange outline-none px-4 py-3.5 font-mono font-black text-lg tracking-[0.3em] text-white placeholder:text-white/20 transition-colors rounded-lg"
-                />
-
-                {adminError ? (
-                  <p className="mt-3 text-[11px] font-mono text-orange font-bold">
-                    ! {adminError}
-                  </p>
-                ) : null}
-
-                <button
-                  type="submit"
-                  disabled={adminLoading || !adminPassword.trim()}
-                  className="mt-4 w-full inline-flex items-center justify-center gap-2 bg-orange text-white font-headline font-black text-sm uppercase tracking-widest px-5 py-3.5 border-3 border-white/15 shadow-[4px_4px_0px_rgba(255,255,255,0.15)] hover:shadow-[2px_2px_0px_rgba(255,255,255,0.15)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all active:scale-95 disabled:opacity-40 disabled:pointer-events-none"
-                >
-                  <span>{adminLoading ? "Masuk..." : "Masuk Dashboard"}</span>
-                  <ArrowUpRight className="w-4 h-4" />
-                </button>
               </div>
-            </form>
+            </div>
           )}
 
-          {/* Toggle jalur */}
-          <div className="mt-6 text-center">
+          {/* Card ramping di bawah headline */}
+          <div className="max-w-md mx-auto">
             {mode === "kode" ? (
-              <button
-                type="button"
-                onClick={() => setMode("admin")}
-                className="font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-white/40 hover:text-orange transition-colors cursor-pointer"
+              /* ---------- KARTU KODE AKSES (klien & guest) ---------- */
+              <form
+                onSubmit={submitKode}
+                className="bg-white text-dark border-4 border-dark rounded-xl shadow-[8px_10px_0px_#FF4D00]"
               >
-                Masuk sebagai admin →
-              </button>
+                <div className="p-5 sm:p-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <KeyRound className="w-4 h-4 text-orange" />
+                      <span className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-dark/50">
+                        kode akses sekolah
+                      </span>
+                    </div>
+                    {detectedKode && !hasErrorInvalid ? (
+                      <span className="text-[10px] font-mono text-orange font-bold">
+                        ● dari tautan
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <input
+                    autoFocus
+                    value={kode}
+                    onChange={(e) => {
+                      setKode(e.target.value.toUpperCase());
+                      if (hasErrorInvalid) setHasErrorInvalid(false);
+                    }}
+                    placeholder="SMAN1-2026"
+                    className="w-full bg-paper border-3 border-dark/20 focus:border-orange outline-none px-4 py-3.5 font-mono font-black text-lg sm:text-xl tracking-[0.2em] text-center uppercase text-dark placeholder:text-dark/25 transition-colors rounded-lg"
+                    maxLength={16}
+                  />
+
+                  {/* Preset Quick Links: Tamu Guest & Demo Sekolah */}
+                  <div className="mt-3 flex items-center justify-center gap-2">
+                    <span className="text-[10px] font-mono text-dark/40 font-semibold">Coba demo:</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setKode("GUEST-2026");
+                        setHasErrorInvalid(false);
+                      }}
+                      className="px-2 py-0.5 rounded bg-orange/10 hover:bg-orange text-orange hover:text-white border border-orange/30 font-mono text-[10px] font-bold transition-colors cursor-pointer"
+                    >
+                      GUEST-2026
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setKode("SMAN1-2026");
+                        setHasErrorInvalid(false);
+                      }}
+                      className="px-2 py-0.5 rounded bg-dark/10 hover:bg-dark text-dark hover:text-white border border-dark/20 font-mono text-[10px] font-bold transition-colors cursor-pointer"
+                    >
+                      SMAN1-2026
+                    </button>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={!kode.trim()}
+                    className="mt-4 w-full inline-flex items-center justify-center gap-2 bg-orange text-white font-headline font-black text-sm uppercase tracking-widest px-5 py-3.5 border-3 border-dark rounded-lg shadow-[4px_4px_0px_#14161C] hover:shadow-[2px_2px_0px_#14161C] hover:translate-x-0.5 hover:translate-y-0.5 transition-all active:scale-95 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                  >
+                    <span>Masuk Tracker Angkatan</span>
+                    <ArrowUpRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </form>
             ) : (
-              <button
-                type="button"
-                onClick={() => setMode("kode")}
-                className="font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-white/40 hover:text-orange transition-colors cursor-pointer"
+              /* ---------- KARTU ADMIN (password saja) ---------- */
+              <form
+                onSubmit={submitAdmin}
+                className="bg-[#18191F] border-4 border-dark rounded-xl shadow-[8px_10px_0px_#FF4D00]"
               >
-                ← Punya kode akses? Masuk sini
-              </button>
+                <div className="p-5 sm:p-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <ShieldCheck className="w-4 h-4 text-orange" />
+                    <span className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-white/40">
+                      admin fourjective — master key
+                    </span>
+                  </div>
+
+                  <input
+                    autoFocus
+                    type="password"
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    className="w-full bg-[#101116] border-3 border-white/10 focus:border-orange outline-none px-4 py-3.5 font-mono font-black text-lg tracking-[0.3em] text-white placeholder:text-white/20 transition-colors rounded-lg"
+                  />
+
+                  {adminError ? (
+                    <div className="mt-3 p-2.5 rounded-lg bg-red-950/70 border border-red-500/50 text-red-200 text-[11px] font-mono font-bold flex items-center gap-2">
+                      <AlertCircle className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                      <span>{adminError}</span>
+                    </div>
+                  ) : null}
+
+                  <button
+                    type="submit"
+                    disabled={adminLoading || !adminPassword.trim()}
+                    className="mt-4 w-full inline-flex items-center justify-center gap-2 bg-orange text-white font-headline font-black text-sm uppercase tracking-widest px-5 py-3.5 border-3 border-white/15 shadow-[4px_4px_0px_rgba(255,255,255,0.15)] hover:shadow-[2px_2px_0px_rgba(255,255,255,0.15)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all active:scale-95 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                  >
+                    <span>{adminLoading ? "Memverifikasi..." : "Buka Cloud Dock Admin"}</span>
+                    <ArrowUpRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </form>
             )}
-          </div>
+
+            {/* Toggle jalur */}
+            <div className="mt-6 text-center">
+              {mode === "kode" ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode("admin");
+                    setHasErrorInvalid(false);
+                  }}
+                  className="font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-white/40 hover:text-orange transition-colors cursor-pointer"
+                >
+                  Masuk sebagai admin internal →
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode("kode");
+                    setAdminError(null);
+                  }}
+                  className="font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-white/40 hover:text-orange transition-colors cursor-pointer"
+                >
+                  ← Kembali ke kode akses sekolah
+                </button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Footer mini */}
-      <div className="relative z-10 pb-6 text-center">
-        <p className="font-mono text-[10px] text-white/25 font-bold tracking-widest uppercase">
-          © Fourjective 2025
-        </p>
       </div>
     </main>
   );
@@ -262,11 +320,9 @@ export default function PortalPage() {
   return (
     <Suspense
       fallback={
-        <main className="min-h-screen bg-[#101116] flex items-center justify-center">
-          <span className="font-mono text-white/40 text-xs font-bold uppercase tracking-widest">
-            memuat portal...
-          </span>
-        </main>
+        <div className="min-h-screen bg-[#101116] flex items-center justify-center text-white/60 font-mono text-xs">
+          Memuat portal...
+        </div>
       }
     >
       <PortalGateInner />

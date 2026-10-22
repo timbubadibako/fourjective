@@ -8,6 +8,7 @@ import { ProductionTracker } from "../components/dashboard/ProductionTracker";
 import { QuotationEstimator } from "../components/dashboard/QuotationEstimator";
 import { CmsSandbox } from "../components/dashboard/CmsSandbox";
 import { SchoolFolderCard } from "../components/dashboard/SchoolFolderCard";
+import { MOUProjectManager } from "../components/dashboard/MOUProjectManager";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import {
@@ -106,7 +107,7 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredData, setFilteredData] = useState<Portfolio[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"portfolios" | "pipeline" | "quotation" | "cms">("portfolios");
+  const [activeTab, setActiveTab] = useState<"mou" | "portfolios" | "pipeline" | "quotation" | "cms">("mou");
   const [viewMode, setViewMode] = useState<"split" | "folders" | "table">("split");
 
   useEffect(() => {
@@ -177,6 +178,18 @@ export default function DashboardPage() {
       {/* Main Tabs Navigation */}
       <div className="flex items-center space-x-2 border-b border-dark/10 pb-3 overflow-x-auto select-none">
         <button
+          onClick={() => setActiveTab("mou")}
+          className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
+            activeTab === "mou"
+              ? "bg-orange text-white shadow-md shadow-orange/20"
+              : "bg-white text-dark/70 border border-dark/10 hover:bg-slate-100"
+          }`}
+        >
+          <Sparkles className="h-3.5 w-3.5 text-white" />
+          <span>Angkatan MOU &amp; Token (Supabase Live)</span>
+        </button>
+
+        <button
           onClick={() => setActiveTab("portfolios")}
           className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
             activeTab === "portfolios"
@@ -224,6 +237,9 @@ export default function DashboardPage() {
           CMS Sandbox
         </button>
       </div>
+
+      {/* Tab 0: Angkatan MOU & Tracker (Supabase Live) */}
+      {activeTab === "mou" && <MOUProjectManager />}
 
       {/* Tab 1: Portfolios Management & Tactile Folder Dock */}
       {activeTab === "portfolios" && (
