@@ -65,7 +65,8 @@ export default function HeroV2() {
                 alt="Asset 8 Stiker Kiri Atas"
                 width={288}
                 height={288}
-                className="w-full h-auto object-contain sticker-bob-a"
+                style={{ width: "100%", height: "auto" }}
+                className="object-contain sticker-bob-a"
                 priority
               />
             </div>
@@ -80,7 +81,8 @@ export default function HeroV2() {
                 alt="Asset 5 Stiker Kanan Atas"
                 width={320}
                 height={320}
-                className="w-full h-auto object-contain sticker-bob-b"
+                style={{ width: "100%", height: "auto" }}
+                className="object-contain sticker-bob-b"
                 priority
               />
             </div>
@@ -95,7 +97,8 @@ export default function HeroV2() {
                 alt="Asset 16 Stiker Bawah Kiri"
                 width={272}
                 height={272}
-                className="w-full h-auto object-contain sticker-bob-b"
+                style={{ width: "100%", height: "auto" }}
+                className="object-contain sticker-bob-b"
                 priority
               />
             </div>
@@ -110,7 +113,8 @@ export default function HeroV2() {
                 alt="Asset 9 Stiker Bawah Kanan"
                 width={288}
                 height={288}
-                className="w-full h-auto object-contain sticker-bob-a"
+                style={{ width: "100%", height: "auto" }}
+                className="object-contain sticker-bob-a"
                 priority
               />
             </div>
@@ -125,7 +129,8 @@ export default function HeroV2() {
                 alt="Fourjective Center Yearbook Stack"
                 width={460}
                 height={460}
-                className="w-full h-auto object-contain mx-auto"
+                style={{ width: "100%", height: "auto" }}
+                className="object-contain mx-auto"
                 priority
               />
             </div>
