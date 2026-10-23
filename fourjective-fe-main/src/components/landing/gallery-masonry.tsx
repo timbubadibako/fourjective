@@ -214,10 +214,13 @@ export default function GalleryMasonry() {
       {/* HEADER RINGKAS */}
       <div className="relative z-20 max-w-7xl mx-auto pt-10 sm:pt-14 text-center">
         <h3 className="font-playtimes text-3xl sm:text-5xl md:text-6xl leading-[1.0] drop-shadow-sm">
-          Foto Berdatangan,
+          Eksplor Konsep Dulu Yuk,
           <br />
-          <span className="text-orange">Tersusun Jadi Cerita.</span>
+          <span className="text-orange">Dari yang Nyentrik Sampai Klasik.</span>
         </h3>
+        <p className="font-mono text-xs sm:text-sm font-bold text-dark/75 mt-3 max-w-2xl mx-auto leading-relaxed">
+          Karena sekali seumur hidup, bikin konsep yang bikin bangga dan nggak malu-maluin saat dibuka 10 tahun lagi.
+        </p>
       </div>
 
       {/* MASONRY GRID (ala Pinterest, tinggi acak tapi bawah sejajar) */}
@@ -243,10 +246,6 @@ export default function GalleryMasonry() {
                   sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 24vw"
                   className="object-cover"
                 />
-                {/* Stamp label di pojok */}
-                <span className="absolute bottom-1.5 left-1.5 z-10 bg-dark/85 text-white font-mono text-[8px] sm:text-[9px] font-black tracking-widest px-1.5 py-0.5 rounded-sm">
-                  {s.label}
-                </span>
               </div>
             </div>
           ))}
@@ -256,7 +255,7 @@ export default function GalleryMasonry() {
       {/* Papan label bawah */}
       <div className="relative z-20 max-w-7xl mx-auto pb-8 flex justify-center">
         <span className="font-mono text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] text-dark/50">
-          Shot by Fourjective · Dipilih Panitia
+          Shot by Fourjectiv · Dokumentasi Asli Angkatan
         </span>
       </div>
     </section>

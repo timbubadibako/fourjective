@@ -129,8 +129,10 @@ function VideoTile({ item }: { item: VideoTileData }) {
           muted
           loop
           playsInline
+          disablePictureInPicture
+          controlsList="nodownload nofullscreen noremoteplayback"
           preload="none"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
         />
         {/* Overlay play hint (fade saat putar) */}
         <div
@@ -261,7 +263,7 @@ export default function PortfolioV4() {
     <section
       ref={sectionRef}
       id="portfolio"
-      className="relative w-full py-16 sm:py-24 px-4 md:px-8 bg-orange border-b-4 border-dark overflow-hidden select-none"
+      className="relative z-10 w-full py-16 sm:py-24 px-4 md:px-8 bg-orange border-b-4 border-dark overflow-hidden select-none"
       style={{
         backgroundImage:
           "linear-gradient(rgba(24,24,27,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(24,24,27,0.12) 1px, transparent 1px)",

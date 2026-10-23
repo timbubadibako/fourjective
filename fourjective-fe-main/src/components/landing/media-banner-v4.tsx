@@ -31,23 +31,23 @@ export default function MediaBannerV4() {
       <div className="relative z-10 max-w-7xl mx-auto flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
         <div className="max-w-2xl">
           <h3 className="font-playtimes text-4xl sm:text-5xl md:text-6xl leading-[1.0] drop-shadow-sm">
-            Pegang Langsung,
+            Mau Coba
             <br />
-            <span className="text-dark">Buktikan Kualitasnya.</span>
+            <span className="text-dark">Sampel Bukunya?</span>
           </h3>
-          <p className="font-mono text-xs sm:text-sm text-white/85 mt-3 font-semibold">
-            Sampel fisiknya diantar langsung ke sekolahmu.
+          <p className="font-mono text-xs sm:text-sm text-white/90 mt-3 font-bold leading-relaxed">
+            Pegang langsung fisiknya, cek ketebalan kertas &amp; kerapian jahit benangnya bareng tim panitia sekolahmu.
           </p>
         </div>
 
         <div className="shrink-0">
           <a
-            href="https://wa.me/6289657008080?text=Halo%20Fourjective!%20Sekolah%20kami%20ingin%20request%20sampel%20buku%20fisik"
+            href="https://wa.me/6289657008080?text=Halo%20Fourjectiv!%20Sekolah%20kami%20mau%20request%20sampel%20buku%20fisik%20untuk%20rapat%20panitia"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-white hover:bg-[#FFF3EC] text-dark font-mono font-black text-xs sm:text-sm uppercase tracking-wider px-7 py-4 rounded-xl border-3 border-dark shadow-[4px_4px_0px_#18181B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all cursor-pointer"
           >
-            <span>REQUEST SAMPEL FISIK</span>
+            <span>MINTA SAMPELNYA</span>
             <ArrowUpRight className="w-4 h-4" />
           </a>
         </div>

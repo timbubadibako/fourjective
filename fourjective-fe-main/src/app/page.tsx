@@ -823,25 +823,26 @@ export default function HomePage() {
     ScrollTrigger.refresh();
 
     /* NORMALISASI URUTAN PIN:
-       Pin dibuat lintas React effect (galeri & portfolio = komponen anak,
-       hero/traction/showreel/orbit = parent). Kalau urutan pembuatan tidak
-       sama dengan urutan dokumen, start pin di bawahnya dihitung TANPA
-       spacer pin di atasnya → orbit "masuk" terlalu awal & menimpa galeri.
-       ScrollTrigger.sort() menyambung ulang rantai pin sesuai posisi
-       dokumen. refresh() saja TIDAK cukup. Normalisasi dijalankan ulang
-       di rAF berikutnya + sekali lagi setelah layout settle (fonts/img). */
+       Memastikan seluruh spacer pin (hero, traction, showreel, galeri, orbit)
+       tersusun tepat sesuai urutan DOM tanpa tumpang-tindih kalkulasi. */
     const normalizeTriggers = () => {
       ScrollTrigger.sort?.();
       ScrollTrigger.refresh();
     };
+
+    // Jalankan normalisasi saat settle
     const normalizeRaf = requestAnimationFrame(normalizeTriggers);
-    const normalizeDelay = setTimeout(normalizeTriggers, 800);
+    const normalizeDelay = setTimeout(normalizeTriggers, 500);
+    const normalizeDelay2 = setTimeout(normalizeTriggers, 1200);
     window.addEventListener("load", normalizeTriggers);
+    window.addEventListener("resize", normalizeTriggers);
 
     return () => {
       cancelAnimationFrame(normalizeRaf);
       clearTimeout(normalizeDelay);
+      clearTimeout(normalizeDelay2);
       window.removeEventListener("load", normalizeTriggers);
+      window.removeEventListener("resize", normalizeTriggers);
       lenis.off("scroll", onLenisScroll);
       gsap.ticker.remove(lenisRaf);
       lenis.destroy();

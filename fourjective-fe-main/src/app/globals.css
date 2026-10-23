@@ -201,7 +201,7 @@ body {
 .marquee-track {
   display: flex;
   width: max-content;
-  animation: marquee 22s linear infinite;
+  animation: marquee 45s linear infinite;
 }
 @keyframes marquee {
   0% { transform: translateX(0%); }
@@ -209,12 +209,12 @@ body {
 }
 
 .animate-marquee {
-  animation: marquee 22s linear infinite;
+  animation: marquee 45s linear infinite;
 }
 
 /* Reverse marquee direction */
 .animate-marquee-reverse {
-  animation: marquee-reverse 26s linear infinite;
+  animation: marquee-reverse 50s linear infinite;
 }
 @keyframes marquee-reverse {
   0% { transform: translateX(-50%); }

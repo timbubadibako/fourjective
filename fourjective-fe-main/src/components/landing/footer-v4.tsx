@@ -18,16 +18,14 @@ export default function FooterV4() {
       <div className="relative bg-orange border-b-2 border-dark py-3 overflow-hidden">
         <div className="flex whitespace-nowrap font-headline text-xs sm:text-sm tracking-wider text-white animate-marquee uppercase font-black">
           <span className="mx-6 flex items-center gap-2">
-            <span>✦ FOURJECTIVE CREATIVE STUDIO // DIGITAL &amp; PRINT YEARBOOK</span>
+            <span>✦ FOURJECTIV CREATIVE STUDIO // DIGITAL &amp; PRINT YEARBOOK</span>
           </span>
           <span className="mx-4 text-white/50">&bull;</span>
-          <span className="mx-6">EST. 2021 &bull; JAMINAN TEPAT WAKTU SEBELUM WISUDA</span>
+          <span className="mx-6">YEARBOOK ORGANIZER INDONESIA &bull; MELAYANI SELURUH INDONESIA</span>
           <span className="mx-4 text-white/50">&bull;</span>
-          <span className="mx-6 text-dark bg-white px-2 py-0.5 rounded">FREE 3D VIRTUAL FLIPBOOK</span>
+          <span className="mx-6 text-dark bg-white px-2 py-0.5 rounded">DO THE BEST FOR THE BEST MOMENT</span>
           <span className="mx-4 text-white/50">&bull;</span>
-          <span className="mx-6">CETAK MESIN OFFSET HEIDELBERG BERGARANSI</span>
-          <span className="mx-4 text-white/50">&bull;</span>
-          <span className="mx-6">JAKARTA &bull; BANDUNG &bull; KUNINGAN &bull; SURABAYA &bull; BALI</span>
+          <span className="mx-6">SEJAK 2020 &bull; JAMINAN TEPAT WAKTU SEBELUM WISUDA</span>
         </div>
       </div>
 
@@ -41,19 +39,19 @@ export default function FooterV4() {
             </div>
             <div>
               <span className="font-headline font-black text-2xl tracking-tight uppercase text-white block">
-                FOURJECTIVE
+                FOURJECTIV
               </span>
               <span className="font-mono text-[10px] tracking-wider text-orange uppercase font-bold block -mt-0.5">
-                CREATIVE STUDIO // EST. 2021
+                YEARBOOK ORGANIZER INDONESIA // SEJAK 2020
               </span>
             </div>
           </div>
 
           <p className="font-mono text-xs text-white/70 max-w-sm leading-relaxed">
-            Studio kreatif buku tahunan sekolah terpadu. Dari photoshoot konsep, liputan drone aftermovie, sampai cetak offset hardcover berkualitas tinggi.
+            Fourjectiv hadir bukan hanya mencetak buku. Kami merangkai momen berharga melalui video short movie, rewind sekolah bersama tim film profesional, hingga cetak majalah editorial dan yearbook digital interaktif.
           </p>
 
-          <div className="pt-2 flex items-center gap-3">
+          <div className="pt-2 flex flex-wrap items-center gap-3">
             <a
               href="https://wa.me/6285157386631"
               target="_blank"
@@ -61,7 +59,7 @@ export default function FooterV4() {
               className="inline-flex items-center gap-2 bg-[#1C1F26] border border-white/20 hover:border-orange px-3.5 py-2 rounded-lg font-mono text-xs text-white transition-colors"
             >
               <Phone className="w-3.5 h-3.5 text-orange" />
-              <span>+62 851-5738-6631</span>
+              <span>WhatsApp Official</span>
             </a>
             <a
               href="mailto:fourjectiv@gmail.com"
@@ -81,22 +79,22 @@ export default function FooterV4() {
           <ul className="space-y-2 text-xs font-mono text-white/70">
             <li>
               <Link href="/paket" className="hover:text-white transition-colors">
-                Buku Tahunan
+                Paket Buku Tahunan
               </Link>
             </li>
             <li>
               <Link href="/paket" className="hover:text-white transition-colors">
-                Video &amp; Drone 4K
+                Sinematik &amp; Short Film
               </Link>
             </li>
             <li>
               <Link href="/paket" className="hover:text-white transition-colors">
-                Foto Konsep
+                Photoshoot &amp; Konsep
               </Link>
             </li>
             <li>
               <Link href="/paket" className="hover:text-white transition-colors">
-                Merchandise
+                Merchandise Angkatan
               </Link>
             </li>
           </ul>

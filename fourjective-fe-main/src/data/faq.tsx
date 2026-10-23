@@ -30,10 +30,10 @@ export const FAQ_ITEMS: FaqItem[] = [
     answerContent: (
       <div className="space-y-3 font-sans text-sm sm:text-base text-dark/75 leading-relaxed">
         <p>
-          Photoshoot (indoor/outdoor/delivery studio), Video (dokumentasi &amp; short movie), Editing (retouch, grading, layout), Book (cover &amp; cetak), Special (AR &amp; e-book digital), dan Merchandise angkatan.
+          End-to-end Yearbook Organizing: photoshoot konsep (indoor/outdoor/delivery studio), produksi sinematik (short movie &amp; rewind), desain layout majalah editorial, cetak offset bergaransi, 3D Virtual Flipbook, hingga merchandise angkatan.
         </p>
         <p className="border-l-2 border-orange pl-3.5 text-xs sm:text-sm text-dark/85 font-medium">
-          Rincian 7 kapabilitas studio ada di halaman <strong className="text-orange font-bold">/services</strong>.
+          Rincian kapabilitas studio ada di katalog paket layanan kami.
         </p>
       </div>
     ),

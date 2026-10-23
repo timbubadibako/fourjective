@@ -7,7 +7,7 @@ export default function PortfolioOrbitV4() {
   return (
     <section
       id="portfolio-orbit"
-      className="relative w-full h-screen min-h-[700px] bg-[#121318] overflow-hidden select-none border-b-4 border-dark flex items-center justify-center"
+      className="relative z-10 w-full h-screen min-h-[700px] bg-[#121318] overflow-hidden select-none border-b-4 border-dark flex items-center justify-center"
     >
       {/* ================= ORGANIC WAVY RIBBON BACKGROUND (DARK STUDIO PALETTE) ================= */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">

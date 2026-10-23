@@ -51,12 +51,10 @@ export default function TractionV3({ fontMode: initialFontMode = "playtimes" }: 
 
       {/* Retro Star Stamp (Top Right) */}
       <div
-        className="absolute top-10 right-10 sm:right-20 w-20 h-20 rounded-full border-3 border-dashed border-dark/60 flex items-center justify-center font-mono text-[9px] font-black uppercase text-center text-dark leading-none p-2 pointer-events-none select-none rotate-12 bg-white/10"
+        className="absolute top-10 right-10 sm:right-20 w-24 h-24 rounded-full border-3 border-dashed border-dark/60 flex items-center justify-center font-mono text-[9px] font-black uppercase text-center text-dark leading-tight p-2 pointer-events-none select-none rotate-12 bg-white/10"
         aria-hidden="true"
       >
-        <span>
-          {isArcade ? "[ 8-BIT ARCADE ]" : isPlaytimes ? "✦ CLASS OF MEMORIES ✦" : "✦ SEJAK 2020 ✦ FOURJECTIVE"}
-        </span>
+        <span>✦ SEJAK 2020 · TERUS BERJALAN ✦</span>
       </div>
 
       {/* Giant Watermark Background */}
@@ -64,9 +62,7 @@ export default function TractionV3({ fontMode: initialFontMode = "playtimes" }: 
         className="absolute -bottom-8 right-4 font-display font-black text-7xl sm:text-9xl text-black/10 uppercase select-none pointer-events-none tracking-tighter leading-none"
         aria-hidden="true"
       >
-        FOREVER
-        <br />
-        YOUNG
+        FOURJECTIV
       </div>
 
       {/* Main Content */}
@@ -74,11 +70,7 @@ export default function TractionV3({ fontMode: initialFontMode = "playtimes" }: 
         {/* Left Headline */}
         <div className="lg:col-span-5 space-y-3">
           <div className="inline-block bg-dark text-white px-3.5 py-1 rounded-full font-mono text-[10px] sm:text-xs font-black uppercase tracking-widest border border-white/20 mb-2">
-            {isArcade
-              ? "👾 8-BIT TRACTION ARCHIVE"
-              : isPlaytimes
-              ? "✒️ VINTAGE YEARBOOK ARCHIVE"
-              : "✦ TRACTION ARCHIVE"}
+            ✦ REKAM JEJAK STUDIO
           </div>
 
           {/* DRAFT 1: PRESS START 2P (Pixel Arcade 8-Bit) */}
@@ -88,7 +80,7 @@ export default function TractionV3({ fontMode: initialFontMode = "playtimes" }: 
                 className="text-3xl sm:text-4xl md:text-5xl uppercase text-white drop-shadow-[4px_4px_0px_#18181B] leading-[1.3]"
                 style={{ fontFamily: "'Press Start 2P', monospace" }}
               >
-                000 Years
+                6 Years
               </h2>
               <div
                 className="text-xl sm:text-2xl md:text-3xl text-dark leading-[1.3] pt-2"
@@ -108,7 +100,7 @@ export default function TractionV3({ fontMode: initialFontMode = "playtimes" }: 
                 className="text-6xl sm:text-7xl md:text-8xl italic text-white drop-shadow-md leading-[0.95]"
                 style={{ fontFamily: "var(--font-playtimes), cursive, serif" }}
               >
-                000 Years
+                6 Years,
               </h2>
               <div className="font-display font-black text-4xl sm:text-5xl md:text-6xl tracking-tight text-dark uppercase leading-none drop-shadow-sm pt-1">
                 &amp; STILL
@@ -133,7 +125,7 @@ export default function TractionV3({ fontMode: initialFontMode = "playtimes" }: 
           )}
 
           <p className="font-mono text-xs sm:text-sm text-white/95 max-w-sm pt-2 font-bold leading-relaxed">
-            Mendedikasikan energi kreatif untuk buku tahunan sekolah sejak 2020 tanpa kompromi kualitas.
+            Enam tahun menemani ratusan sekolah mengabadikan masa putih abu-abu. Setiap lembaran kami rancang eksklusif, rapi, dan tahan dibuka puluhan tahun ke depan.
           </p>
 
           {/* Graphic Element */}
