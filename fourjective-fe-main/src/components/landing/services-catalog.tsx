@@ -31,7 +31,7 @@ const CARDS: CatalogCard[] = [
       "Cetak hardcover jahit benang standar majalah editorial",
       "Box merchandise angkatan lengkap (medali & lanyard)",
     ],
-    img: "/images/landing-page/our-services/yearbook-img.svg",
+    img: "/images/packages/full-package.webp",
     tint: "#F6EFE6",
   },
   {
@@ -45,7 +45,7 @@ const CARDS: CatalogCard[] = [
       "Aftermovie 4K, film angkatan & video tren",
       "Arsip digital lifetime, aman selamanya",
     ],
-    img: "/images/landing-page/our-services/video-img.svg",
+    img: "/images/packages/digital.webp",
     tint: "#EFE5D8",
   },
   {
@@ -59,7 +59,7 @@ const CARDS: CatalogCard[] = [
       "Sesi foto indoor/outdoor + pendampingan tim kru",
       "Bonus flipbook digital interaktif",
     ],
-    img: "/images/landing-page/our-services/photoshoot-img.svg",
+    img: "/images/packages/angkatan.webp",
     tint: "#F4ECE1",
   },
   {
@@ -73,7 +73,7 @@ const CARDS: CatalogCard[] = [
       "Mesin cetak industri offset presisi tinggi",
       "Quality control per eksemplar & garansi ganti",
     ],
-    img: "/images/landing-page/our-services/layiut-img.svg",
+    img: "/images/packages/desain-cetak.webp",
     tint: "#F0E9DE",
   },
   {
@@ -87,7 +87,7 @@ const CARDS: CatalogCard[] = [
       "Portal privat angkatan + arsip data aman",
       "Nggak takut hilang atau rusak, selalu siap buka",
     ],
-    img: "/images/landing-page/our-services/ar-img.svg",
+    img: "/images/packages/yb-digital.webp",
     tint: "#EAE0D2",
   },
 ];

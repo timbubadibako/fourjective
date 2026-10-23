@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import Header from "@/components/landing/header-pill-v2";
 import Footer from "@/components/landing/footer-v4";
 import {
@@ -23,6 +24,7 @@ interface PackageDetail {
   title: string;
   tagline: string;
   target: string;
+  image: string;
   icon: React.ComponentType<{ className?: string }>;
   deliverables: {
     title: string;
@@ -43,6 +45,7 @@ const PACKAGES_FULL_DETAILS: Record<string, PackageDetail> = {
     title: "Full Package",
     tagline: "Solusi lengkap buku tahunan, aftermovie 4K, foto konsep, dan merchandise tanpa ribet.",
     target: "Cocok untuk panitia angkatan yang menginginkan standar kualitas tertinggi dan pengerjaan beres satu pintu.",
+    image: "/images/packages/full-package.webp",
     icon: Sparkles,
     deliverables: [
       {
@@ -104,6 +107,7 @@ const PACKAGES_FULL_DETAILS: Record<string, PackageDetail> = {
     title: "Digital Package",
     tagline: "Karya sinema dan buku digital interaktif untuk angkatan modern yang praktis.",
     target: "Ideal untuk angkatan yang menginginkan dokumentasi digital spektakuler tanpa biaya cetak fisik yang besar.",
+    image: "/images/packages/digital.webp",
     icon: Video,
     deliverables: [
       {
@@ -151,6 +155,7 @@ const PACKAGES_FULL_DETAILS: Record<string, PackageDetail> = {
     title: "Paket Angkatan",
     tagline: "Solusi efisien kapasitas massal 150—500+ siswa dengan patungan kas terjangkau.",
     target: "Pilihan terbaik untuk sekolah negeri atau swasta besar yang mencari titik temu kualitas terbaik dan anggaran bersahabat.",
+    image: "/images/packages/angkatan.webp",
     icon: Layers,
     deliverables: [
       {
@@ -197,6 +202,7 @@ const PACKAGES_FULL_DETAILS: Record<string, PackageDetail> = {
     title: "Desain & Cetak Terpisah",
     tagline: "Solusi khusus bagi sekolah yang sudah memiliki foto sendiri tapi ingin dicetak mesin pabrik bergaransi.",
     target: "Tepat untuk panitia yang mandiri dalam fotografi dan membutuhkan desainer layout majalah serta mesin cetak offset berkualitas.",
+    image: "/images/packages/desain-cetak.webp",
     icon: Printer,
     deliverables: [
       {
@@ -235,6 +241,7 @@ const PACKAGES_FULL_DETAILS: Record<string, PackageDetail> = {
     title: "YB Digital Standalone",
     tagline: "Buku tahunan digital interaktif tanpa cetak fisik dengan kecepatan tinggi dan akses kapan pun.",
     target: "Paling cocok untuk alternatif hemat, dokumentasi arsip digital sekolah, atau kenangan instan yang mudah dibagikan.",
+    image: "/images/packages/yb-digital.webp",
     icon: Smartphone,
     deliverables: [
       {
@@ -475,6 +482,27 @@ function ServicesContent() {
                   <span className="hidden lg:block text-xs sm:text-sm text-dark/50 font-mono font-bold">
                     Tombol "AJUKAN PENAWARAN" di index kiri ←
                   </span>
+                </div>
+              </div>
+
+              {/* ===== HERO PREVIEW IMAGE DARI DOKUMEN RESMI (WEBP) ===== */}
+              <div className="mt-8 max-w-3xl border-3 border-dark bg-white shadow-brutal overflow-hidden rounded-xl">
+                <div className="px-4 py-2 border-b-2 border-dark bg-[#F4ECE1] flex items-center justify-between font-mono text-[10px] font-black uppercase tracking-wider text-dark/70">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-orange animate-pulse" />
+                    PREVIEW KARYA RESMI · {activePackage.title}
+                  </span>
+                  <span className="text-dark/40">EDISI FOURJECTIV 2026</span>
+                </div>
+                <div className="relative w-full aspect-[16/10] bg-[#14161C] flex items-center justify-center overflow-hidden">
+                  <Image
+                    src={activePackage.image}
+                    alt={`Preview Desain ${activePackage.title}`}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 800px"
+                    className="object-contain"
+                    priority
+                  />
                 </div>
               </div>
 
