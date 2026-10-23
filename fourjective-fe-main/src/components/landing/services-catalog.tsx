@@ -141,9 +141,9 @@ export default function ServicesCatalog() {
                 <span>{pkg.badge}</span>
               </div>
 
-              {/* Stage Ilustrasi: stamp nomor di pojok, tanpa ikon lucide di stage */}
+              {/* Stage Ilustrasi: poster WebP resmi 16:10 */}
               <div
-                className="relative h-[190px] sm:h-[215px] flex items-center justify-center overflow-hidden border-b-3 sm:border-b-4 border-dark"
+                className="relative h-[210px] sm:h-[240px] flex items-center justify-center overflow-hidden border-b-3 sm:border-b-4 border-dark"
                 style={{ backgroundColor: pkg.tint }}
               >
                 <div className="absolute top-3 left-3 z-20">
@@ -152,18 +152,16 @@ export default function ServicesCatalog() {
                   </span>
                 </div>
 
-                <span className="absolute bottom-1 left-0 right-0 text-center font-playtimes text-5xl text-dark/10 leading-none select-none z-0">
-                  {pkg.title}
-                </span>
-
-                <div className="relative z-10 w-[52%] aspect-[4/3] flex items-center justify-center group-hover:scale-105 group-hover:-rotate-1 transition-transform duration-300">
-                  <Image
-                    src={pkg.img}
-                    alt={`${pkg.title} mockup`}
-                    width={335}
-                    height={238}
-                    className="w-full h-auto object-contain drop-shadow-xl"
-                  />
+                <div className="relative z-10 w-full h-full p-3 group-hover:scale-[1.02] transition-transform duration-300">
+                  <div className="relative w-full h-full rounded-lg overflow-hidden border-2 border-dark/60 shadow-md">
+                    <Image
+                      src={pkg.img}
+                      alt={`${pkg.title} mockup`}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      className="object-cover"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -225,7 +223,7 @@ export default function ServicesCatalog() {
               </div>
 
               <div
-                className="relative h-[150px] sm:h-[170px] flex items-center justify-center overflow-hidden border-b-3 border-dark"
+                className="relative h-[190px] sm:h-[210px] flex items-center justify-center overflow-hidden border-b-3 border-dark"
                 style={{ backgroundColor: pkg.tint }}
               >
                 <div className="absolute top-3 left-3 z-20">
@@ -234,18 +232,16 @@ export default function ServicesCatalog() {
                   </span>
                 </div>
 
-                <span className="absolute bottom-0.5 left-0 right-0 text-center font-playtimes text-4xl text-dark/10 leading-none select-none z-0">
-                  {pkg.title}
-                </span>
-
-                <div className="relative z-10 w-[46%] aspect-[4/3] flex items-center justify-center group-hover:scale-105 group-hover:rotate-1 transition-transform duration-300">
-                  <Image
-                    src={pkg.img}
-                    alt={`${pkg.title} mockup`}
-                    width={335}
-                    height={238}
-                    className="w-full h-auto object-contain drop-shadow-xl"
-                  />
+                <div className="relative z-10 w-full h-full p-3 group-hover:scale-[1.02] transition-transform duration-300">
+                  <div className="relative w-full h-full rounded-lg overflow-hidden border-2 border-dark/60 shadow-md">
+                    <Image
+                      src={pkg.img}
+                      alt={`${pkg.title} mockup`}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      className="object-cover"
+                    />
+                  </div>
                 </div>
               </div>
 
