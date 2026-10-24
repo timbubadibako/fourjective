@@ -95,15 +95,30 @@ export default function HeaderPillV2() {
 
           {/* Center: Headline Navigation Links */}
           <div className="hidden sm:flex items-center gap-5 md:gap-7 px-1 font-headline font-bold uppercase tracking-wider text-[13px] md:text-[14px] text-zinc-300">
-            {NAV_ITEMS.map((item) => (
-              <Link
-                key={item.label}
-                href={isLanding ? item.hash : item.route}
-                className="hover:text-white transition-colors relative py-1"
-              >
-                {item.label}
-              </Link>
-            ))}
+            {NAV_ITEMS.map((item) => {
+              const isActive = !isLanding && pathname === item.route;
+              return (
+                <Link
+                  key={item.label}
+                  href={isLanding ? item.hash : item.route}
+                  aria-current={isActive ? "page" : undefined}
+                  className={`relative py-1 transition-colors ${
+                    isActive
+                      ? "text-orange"
+                      : "hover:text-white"
+                  }`}
+                >
+                  {item.label}
+                  {/* Garis indikator aktif di bawah teks */}
+                  <span
+                    aria-hidden
+                    className={`absolute left-0 right-0 -bottom-0.5 h-[3px] rounded-full bg-orange origin-center transition-transform duration-300 ease-out ${
+                      isActive ? "scale-x-100" : "scale-x-0"
+                    }`}
+                  />
+                </Link>
+              );
+            })}
           </div>
 
           {/* Right: SATU pill gabungan — KONSUL (WhatsApp) + PORTAL (akses kode paket) */}
@@ -141,16 +156,23 @@ export default function HeaderPillV2() {
       {/* Mobile Dropdown Pill */}
       {isMobileOpen && (
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 sm:hidden w-[88vw] bg-ink-soft text-white p-4 rounded-3xl border border-white/15 shadow-2xl flex flex-col gap-2 font-headline uppercase tracking-wider text-sm font-bold">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.label}
-              href={isLanding ? item.hash : item.route}
-              onClick={() => setIsMobileOpen(false)}
-              className="px-3.5 py-2.5 rounded-xl hover:bg-zinc-800/80 transition-colors"
-            >
-              {item.label}
-            </Link>
-          ))}
+          {NAV_ITEMS.map((item) => {
+            const isActive = !isLanding && pathname === item.route;
+            return (
+              <Link
+                key={item.label}
+                href={isLanding ? item.hash : item.route}
+                onClick={() => setIsMobileOpen(false)}
+                className={`px-3.5 py-2.5 rounded-xl transition-colors ${
+                  isActive
+                    ? "bg-zinc-800/80 text-orange"
+                    : "hover:bg-zinc-800/80"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
           <a
             href={waLink(WA_MESSAGES.general)}
             target="_blank"

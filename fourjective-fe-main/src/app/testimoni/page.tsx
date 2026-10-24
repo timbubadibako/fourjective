@@ -1,9 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Header from "@/components/landing/header-pill-v2";
 import Footer from "@/components/landing/footer-v4";
+import Lenis from "lenis";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
   ArrowLeft,
   Quote,
@@ -14,6 +17,8 @@ import {
   School,
   Sparkles,
   ShieldCheck,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { WA_MESSAGES, waLink } from "@/lib/site";
 
@@ -120,8 +125,104 @@ const TESTIMONIALS: TestimonialItem[] = [
 
 export default function TestimoniPage() {
   const [filter, setFilter] = useState<"all" | "photoshoot" | "cetak" | "pelayanan">("all");
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [activeIdx, setActiveIdx] = useState(0);
 
   const filtered = filter === "all" ? TESTIMONIALS : TESTIMONIALS.filter((t) => t.category === filter);
+
+  /* Geser track ke index kartu tertentu */
+  const scrollToIdx = (i: number) => {
+    const track = trackRef.current;
+    if (!track) return;
+    const child = track.children[i] as HTMLElement | undefined;
+    if (child) track.scrollTo({ left: child.offsetLeft, behavior: "smooth" });
+  };
+
+  /* Deteksi kartu terdekat saat track digulir (swipe) */
+  const onTrackScroll = () => {
+    const track = trackRef.current;
+    if (!track) return;
+    let best = 0;
+    let bestDist = Infinity;
+    Array.from(track.children).forEach((child, i) => {
+      const el = child as HTMLElement;
+      const dist = Math.abs(el.offsetLeft - track.scrollLeft);
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = i;
+      }
+    });
+    setActiveIdx(best);
+  };
+
+  /* Ganti kategori: reset scroll ke kartu pertama */
+  const changeFilter = (key: "all" | "photoshoot" | "cetak" | "pelayanan") => {
+    setFilter(key);
+    setActiveIdx(0);
+    requestAnimationFrame(() => {
+      trackRef.current?.scrollTo({ left: 0, behavior: "auto" });
+    });
+  };
+
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+
+    /* Lenis smooth-scroll sinkron ticker GSAP */
+    const lenis = new Lenis({ lerp: 0.11, smoothWheel: true });
+    const onLenisScroll = () => ScrollTrigger.update();
+    lenis.on("scroll", onLenisScroll);
+    const rafId = (time: number) => lenis.raf(time * 1000);
+    gsap.ticker.add(rafId);
+    gsap.ticker.lagSmoothing(0);
+
+    const ctx = gsap.context(() => {
+      gsap
+        .timeline({ defaults: { ease: "power3.out" } })
+        .fromTo(
+          "#tsti-masthead h1",
+          { y: 70, opacity: 0, rotate: 1.5 },
+          { y: 0, opacity: 1, rotate: 0, duration: 0.85 }
+        )
+        .fromTo(
+          "#tsti-masthead p",
+          { y: 30, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.6 },
+          "-=0.4"
+        );
+
+      gsap.fromTo(
+        "#tsti-track [data-tsti-card]",
+        { x: 70, opacity: 0 },
+        {
+          x: 0,
+          opacity: 1,
+          duration: 0.7,
+          stagger: 0.08,
+          ease: "power3.out",
+          scrollTrigger: { trigger: "#tsti-track", start: "top 88%" },
+        }
+      );
+
+      gsap.fromTo(
+        "#tsti-cta",
+        { y: 50, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: { trigger: "#tsti-cta", start: "top 85%" },
+        }
+      );
+    });
+
+    return () => {
+      ctx.revert();
+      gsap.ticker.remove(rafId);
+      lenis.off("scroll", onLenisScroll);
+      lenis.destroy();
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-paper text-dark flex flex-col selection:bg-orange selection:text-white">
@@ -140,7 +241,7 @@ export default function TestimoniPage() {
 
       <main className="relative z-10 pt-20 sm:pt-24 pb-0 w-full">
         {/* ===== MASTHEAD ===== */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-8">
+        <div id="tsti-masthead" className="max-w-7xl mx-auto px-4 sm:px-8">
           <div className="flex items-center justify-between gap-4 pb-5">
             <Link
               href="/"
@@ -219,7 +320,7 @@ export default function TestimoniPage() {
               <button
                 key={tab.key}
                 type="button"
-                onClick={() => setFilter(tab.key as any)}
+                onClick={() => changeFilter(tab.key as "all" | "photoshoot" | "cetak" | "pelayanan")}
                 className={`font-mono text-xs font-black uppercase tracking-wider px-4 py-2.5 rounded-lg border-2 transition-all cursor-pointer ${
                   filter === tab.key
                     ? "bg-dark text-white border-dark shadow-[3px_3px_0px_#FF4D00]"
@@ -232,13 +333,20 @@ export default function TestimoniPage() {
           </div>
         </div>
 
-        {/* ===== TESTIMONIALS GRID ===== */}
+        {/* ===== TESTIMONIALS CAROUSEL ===== */}
         <div className="max-w-7xl mx-auto px-4 sm:px-8 pb-16 sm:pb-24">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Track: scroll-snap horizontal (swipe native di mobile) */}
+          <div
+            id="tsti-track"
+            ref={trackRef}
+            onScroll={onTrackScroll}
+            className="relative flex gap-5 overflow-x-auto snap-x snap-mandatory pb-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          >
             {filtered.map((t) => (
-              <div
+              <article
                 key={t.id}
-                className="bg-white border-3 border-dark rounded-xl p-6 sm:p-7 flex flex-col justify-between shadow-[6px_8px_0px_#14161C] hover:-translate-y-1 hover:shadow-[8px_11px_0px_#FF4D00] transition-all"
+                data-tsti-card
+                className="w-[calc(100vw-2.25rem)] sm:w-[440px] lg:w-[460px] shrink-0 snap-start bg-white border-3 border-dark rounded-xl p-6 sm:p-7 flex flex-col justify-between shadow-[6px_8px_0px_#14161C] transition-all"
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 border-b-2 border-dark/10 pb-3 mb-4">
@@ -250,14 +358,20 @@ export default function TestimoniPage() {
                     </span>
                   </div>
 
+                  <div className="flex items-center gap-1 mb-3">
+                    {[...Array(t.rating)].map((_, s) => (
+                      <Star key={s} className="w-3.5 h-3.5 fill-orange text-orange" />
+                    ))}
+                  </div>
+
                   <Quote className="w-8 h-8 text-orange/30 mb-2 -ml-1" />
 
                   <p className="font-sans text-xs sm:text-sm text-dark/85 leading-relaxed font-medium">
                     &ldquo;{t.quote}&rdquo;
                   </p>
 
-                  <div className="mt-4 pt-3 border-t border-dashed border-dark/15 flex items-center gap-1.5 text-emerald-700 font-mono text-[10px] font-bold">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <div className="mt-4 pt-3 border-t border-dark/15 flex items-start gap-1.5 text-emerald-700 font-mono text-[10px] font-bold">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-px" />
                     <span>{t.highlight}</span>
                   </div>
                 </div>
@@ -273,13 +387,52 @@ export default function TestimoniPage() {
                     {t.year}
                   </span>
                 </div>
-              </div>
+              </article>
             ))}
+          </div>
+
+          {/* Kontrol: dots indikator + panah prev/next */}
+          <div className="mt-4 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-1.5">
+              {filtered.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  aria-label={`Ke ulasan ${i + 1}`}
+                  onClick={() => scrollToIdx(i)}
+                  className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                    i === activeIdx
+                      ? "w-6 bg-orange"
+                      : "w-3 bg-dark/15 hover:bg-dark/30"
+                  }`}
+                />
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                aria-label="Ulasan sebelumnya"
+                onClick={() => scrollToIdx(activeIdx - 1)}
+                disabled={activeIdx === 0}
+                className="w-11 h-11 rounded-xl bg-white text-dark border-3 border-dark shadow-[3px_3px_0px_#14161C] hover:shadow-[1px_1px_0px_#14161C] hover:translate-x-0.5 hover:translate-y-0.5 hover:bg-orange hover:text-[#FAF6F0] transition-all items-center justify-center cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-dark disabled:hover:shadow-[3px_3px_0px_#14161C] disabled:hover:translate-x-0 disabled:hover:translate-y-0 hidden sm:flex"
+              >
+                <ChevronLeft className="w-6 h-6 stroke-[3]" />
+              </button>
+              <button
+                type="button"
+                aria-label="Ulasan berikutnya"
+                onClick={() => scrollToIdx(activeIdx + 1)}
+                disabled={activeIdx >= filtered.length - 1}
+                className="w-11 h-11 rounded-xl bg-white text-dark border-3 border-dark shadow-[3px_3px_0px_#14161C] hover:shadow-[1px_1px_0px_#14161C] hover:translate-x-0.5 hover:translate-y-0.5 hover:bg-orange hover:text-[#FAF6F0] transition-all items-center justify-center cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-dark disabled:hover:shadow-[3px_3px_0px_#14161C] disabled:hover:translate-x-0 disabled:hover:translate-y-0 flex"
+              >
+                <ChevronRight className="w-6 h-6 stroke-[3]" />
+              </button>
+            </div>
           </div>
         </div>
 
         {/* ===== BOTTOM CTA ===== */}
-        <div className="border-t-[3px] border-dark bg-dark text-white">
+        <div id="tsti-cta" className="border-t-[3px] border-dark bg-dark text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 py-14 sm:py-20">
             <div className="grid lg:grid-cols-12 gap-8 items-end">
               <div className="lg:col-span-7">

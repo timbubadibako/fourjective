@@ -1,9 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import Lenis from "lenis";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Header from "@/components/landing/header-pill-v2";
 import Footer from "@/components/landing/footer-v4";
 import {
@@ -279,6 +282,100 @@ function ServicesContent() {
   const pkgParam = searchParams.get("package");
 
   const [activeSlug, setActiveSlug] = useState<string>("full-package");
+  const lenisRef = useRef<Lenis | null>(null);
+  const gsapCtxRef = useRef<gsap.Context | null>(null);
+
+  /* Register ScrollTrigger sekali saat module siap (client-side) */
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+  }, []);
+
+  /* === LENIS SMOOTH SCROLL — sinkron gsap.ticker === */
+  useEffect(() => {
+    const lenisInstance = new Lenis({ lerp: 0.11, smoothWheel: true });
+    lenisRef.current = lenisInstance;
+    const onLenisScroll = () => ScrollTrigger.update();
+    lenisInstance.on("scroll", onLenisScroll);
+
+    const rafId = (time: number) => {
+      lenisInstance.raf(time * 1000);
+    };
+    gsap.ticker.add(rafId);
+    gsap.ticker.lagSmoothing(0);
+
+    return () => {
+      gsap.ticker.remove(rafId);
+      lenisInstance.off("scroll", onLenisScroll);
+      lenisInstance.destroy();
+      lenisRef.current = null;
+    };
+  }, []);
+
+  /* === GSAP ENTRANCE TIMELINE (Masthead + Rail stagger + Scroll sections) === */
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      /* 1. Masthead reveal — judul naik, ghost outline menyusul */
+      gsap
+        .timeline({ defaults: { ease: "power3.out" } })
+        .fromTo(
+          "#paket-masthead h1",
+          { y: 70, opacity: 0, rotate: 1.5 },
+          { y: 0, opacity: 1, rotate: 0, duration: 0.85 }
+        )
+        .fromTo(
+          "#paket-masthead p",
+          { y: 30, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.6 },
+          "-=0.4"
+        );
+
+      /* 2. Rail items — stagger slide dari kiri */
+      gsap.fromTo(
+        "#paket-rail button, #paket-mobile-tabs button",
+        { x: -36, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.55, stagger: 0.07, ease: "power2.out" }
+      );
+
+      /* 3. Section blocks — fade-up saat masuk viewport */
+      gsap.utils.toArray<HTMLElement>("[data-gsap-section]").forEach((el) => {
+        gsap.fromTo(
+          el,
+          { y: 42, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.7,
+            ease: "power3.out",
+            scrollTrigger: { trigger: el, start: "top 88%" },
+          }
+        );
+      });
+
+      /* 4. Preview frame — back.out scale spin-in */
+      gsap.fromTo(
+        "#paket-preview-frame",
+        { scale: 0.94, opacity: 0, rotate: -1 },
+        { scale: 1, opacity: 1, rotate: 0, duration: 0.75, ease: "back.out(1.5)" }
+      );
+    });
+
+    gsapCtxRef.current = ctx;
+    return () => {
+      ctx.revert();
+      gsapCtxRef.current = null;
+    };
+  }, []);
+
+  /* === RE-ANIMATE DETAIL PANEL saat ganti tab (activeSlug) === */
+  useEffect(() => {
+    const panel = document.getElementById("paket-detail");
+    if (!panel) return;
+    gsap.fromTo(
+      panel,
+      { y: 26, opacity: 0.25 },
+      { y: 0, opacity: 1, duration: 0.55, ease: "power2.out", clearProps: "all" }
+    );
+  }, [activeSlug]);
 
   useEffect(() => {
     if (pkgParam && PACKAGES_FULL_DETAILS[pkgParam]) {
@@ -293,12 +390,12 @@ function ServicesContent() {
   const waHref = `https://wa.me/6289657008080?text=${encodeURIComponent(activePackage.waQuery)}`;
 
   return (
-    <div className="min-h-screen bg-paper text-dark flex flex-col selection:bg-orange selection:text-white">
+    <div className="min-h-screen bg-paper text-dark flex flex-col selection:bg-orange selection:text-[#FAF6F0]">
       <Header />
 
       <main className="pt-20 sm:pt-24 pb-0 w-full">
         {/* ===== MASTHEAD ===== */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-8">
+        <div id="paket-masthead" className="max-w-7xl mx-auto px-4 sm:px-8">
           <div className="flex items-center justify-between gap-4 pb-5">
             <Link
               href="/#services"
@@ -326,7 +423,20 @@ function ServicesContent() {
               <h1 className="lg:col-span-8 font-playtimes text-dark leading-[1.0] tracking-tight text-5xl sm:text-7xl md:text-8xl">
                 Paket
                 <br />
-                <span className="text-orange">5&nbsp;Lini.</span>
+                <span className="text-orange relative inline-block">
+                  {/* === HIGH-VOLTAGE GHOST OUTLINE (Shifted 2x Layer) === */}
+                  <span
+                    aria-hidden
+                    className="absolute inset-0 text-transparent pointer-events-none select-none translate-x-[7px] translate-y-[7px] sm:translate-x-[10px] sm:translate-y-[10px]"
+                    style={{
+                      WebkitTextStroke: "3px #FF4D00",
+                      paintOrder: "stroke fill",
+                    }}
+                  >
+                    5&nbsp;Lini.
+                  </span>
+                  <span className="relative">5&nbsp;Lini.</span>
+                </span>
               </h1>
               <div className="lg:col-span-4 lg:pb-2">
                 <p className="text-sm sm:text-base text-dark/70 leading-relaxed font-medium">
@@ -345,7 +455,7 @@ function ServicesContent() {
         <div className="border-t-[3px] border-dark">
           <div className="max-w-7xl mx-auto grid lg:grid-cols-[300px_1fr]">
             {/* RAIL (desktop) */}
-            <aside className="hidden lg:block border-r-[3px] border-dark">
+            <aside id="paket-rail" className="hidden lg:block border-r-[3px] border-dark">
               <div className="sticky top-24">
                 <p className="font-mono text-[9px] font-black uppercase tracking-[0.3em] text-dark/40 px-6 pt-6 pb-2">
                   Index Lini
@@ -360,26 +470,36 @@ function ServicesContent() {
                       onClick={() => setActiveSlug(slug)}
                       className={`w-full text-left flex items-center gap-4 px-6 py-5 border-b-2 border-dark/10 transition-colors cursor-pointer group ${
                         isActive
-                          ? "bg-orange text-white"
+                          ? "bg-orange text-[#FAF6F0]"
                           : "hover:bg-dark/[0.035] text-dark"
                       }`}
                     >
                       <span
-                        className={`font-headline font-black text-2xl leading-none ${
-                          isActive ? "text-white" : "text-dark/25 group-hover:text-orange"
+                        className={`relative z-10 inline-block origin-top-left font-headline font-black text-2xl leading-none will-change-transform ${
+                          isActive ? "scale-[1.5] -rotate-6 translate-y-2 sm:scale-[1.6]" : "text-dark/25 group-hover:text-orange"
                         }`}
+                        style={
+                          isActive
+                            ? {
+                                color: "#FAF6F0",
+                                WebkitTextStroke: "2px #14161C",
+                                paintOrder: "stroke fill",
+                                textShadow: "3px 4px 0px #14161C",
+                              }
+                            : undefined
+                        }
                       >
                         {String(i + 1).padStart(2, "0")}
                       </span>
                       <span
                         className={`font-headline font-black uppercase text-xs tracking-wider leading-snug ${
-                          isActive ? "text-white" : ""
+                          isActive ? "text-[#FAF6F0]" : ""
                         }`}
                       >
                         {p.title}
                       </span>
                       {isActive ? (
-                        <span className="ml-auto w-2 h-2 bg-white shrink-0" />
+                        <span className="ml-auto w-2 h-2 bg-[#FAF6F0] shrink-0" />
                       ) : (
                         <span className="ml-auto w-2 h-2 border-2 border-dark/20 shrink-0" />
                       )}
@@ -394,7 +514,7 @@ function ServicesContent() {
                     href={waHref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full inline-flex items-center justify-center gap-2 bg-orange text-white font-headline font-black text-[11px] uppercase tracking-widest px-5 py-4 border-3 border-dark shadow-[5px_6px_0px_#14161C] hover:shadow-[2px_3px_0px_#14161C] hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
+                    className="w-full inline-flex items-center justify-center gap-2 bg-orange text-[#FAF6F0] font-headline font-black text-[11px] uppercase tracking-widest px-5 py-4 border-3 border-dark shadow-[5px_6px_0px_#14161C] hover:shadow-[2px_3px_0px_#14161C] hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
                   >
                     <MessageCircle className="w-4 h-4" />
                     <span>Ajukan Penawaran</span>
@@ -404,7 +524,7 @@ function ServicesContent() {
             </aside>
 
             {/* TABS (mobile) */}
-            <div className="lg:hidden border-y-[3px] border-dark bg-white">
+            <div id="paket-mobile-tabs" className="lg:hidden border-y-[3px] border-dark bg-white">
               <div className="flex overflow-x-auto">
                 {slugs.map((slug, i) => {
                   const p = PACKAGES_FULL_DETAILS[slug];
@@ -415,14 +535,14 @@ function ServicesContent() {
                       type="button"
                       onClick={() => setActiveSlug(slug)}
                       className={`px-4 py-3 flex items-center gap-2 whitespace-nowrap border-r-2 border-dark/10 font-headline font-black uppercase text-[11px] tracking-wider cursor-pointer ${
-                        isActive
-                          ? "bg-orange text-white"
-                          : "text-dark/60 hover:text-dark"
-                      }`}
+                      isActive
+                        ? "bg-orange text-[#FAF6F0]"
+                        : "text-dark/60 hover:text-dark"
+                    }`}
                     >
                       <span
                         className={`font-mono text-[10px] font-black ${
-                          isActive ? "text-white/80" : "text-dark/30"
+                          isActive ? "text-[#FAF6F0]/80" : "text-dark/30"
                         }`}
                       >
                         {String(i + 1).padStart(2, "0")}
@@ -435,10 +555,10 @@ function ServicesContent() {
             </div>
 
             {/* DETAIL CONTENT */}
-            <div className="min-w-0 px-4 sm:px-8 lg:px-10 pt-8 lg:pt-10 pb-20">
+            <div id="paket-detail" className="min-w-0 px-4 sm:px-8 lg:px-10 pt-8 lg:pt-10 pb-20">
               {/* Header */}
               <div className="flex flex-wrap items-center gap-3 mb-4">
-                <span className="font-mono text-[9px] sm:text-[10px] font-black text-white uppercase tracking-[0.2em] bg-orange border-2 border-dark px-2.5 py-1">
+                <span className="font-mono text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] bg-orange border-2 border-dark px-2.5 py-1 !text-[#FAF6F0]">
                   {activePackage.badge}
                 </span>
                 <span className="font-mono text-[9px] font-black uppercase tracking-[0.25em] text-dark/35">
@@ -486,7 +606,7 @@ function ServicesContent() {
               </div>
 
               {/* ===== HERO PREVIEW IMAGE DARI DOKUMEN RESMI (WEBP) ===== */}
-              <div className="mt-8 max-w-3xl border-3 border-dark bg-white shadow-brutal overflow-hidden rounded-xl">
+              <div id="paket-preview-frame" data-gsap-section className="mt-8 max-w-3xl border-3 border-dark bg-white shadow-brutal overflow-hidden rounded-xl">
                 <div className="px-4 py-2 border-b-2 border-dark bg-[#F4ECE1] flex items-center justify-between font-mono text-[10px] font-black uppercase tracking-wider text-dark/70">
                   <span className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-orange animate-pulse" />
@@ -507,9 +627,9 @@ function ServicesContent() {
               </div>
 
               {/* ===== SECTION 01 — DELIVERABLES ===== */}
-              <section className="mt-14">
+              <section data-gsap-section className="mt-14">
                 <div className="flex items-center gap-4 border-b-[3px] border-dark pb-3">
-                  <span className="font-headline font-black text-orange text-2xl leading-none">
+                  <span className="relative inline-block font-headline font-black text-orange text-2xl leading-none">
                     01
                   </span>
                   <h3 className="font-headline font-black uppercase text-sm sm:text-base tracking-wider text-dark">
@@ -544,19 +664,19 @@ function ServicesContent() {
               </section>
 
               {/* ===== SECTION 02 — EO (flat orange band) ===== */}
-              <section className="mt-12 bg-orange text-white border-y-[3px] border-dark -mx-4 sm:-mx-8 lg:-mx-10 px-4 sm:px-8 lg:px-10 py-10 sm:py-12 shadow-[10px_12px_0px_#FFEDD9]">
+              <section data-gsap-section className="mt-12 bg-orange text-[#FAF6F0] border-y-[3px] border-dark -mx-4 sm:-mx-8 lg:-mx-10 px-4 sm:px-8 lg:px-10 py-10 sm:py-12 shadow-[10px_12px_0px_#FFEDD9]">
                 <div className="flex items-center gap-4 border-b-[3px] border-dark/25 pb-3 mb-6">
-                  <span className="font-headline font-black text-white/90 text-2xl leading-none">
+                  <span className="font-headline font-black text-[#FAF6F0]/90 text-2xl leading-none">
                     02
                   </span>
                   <div className="flex items-center gap-2">
-                    <CalendarCheck className="w-4 h-4 text-white" />
-                    <h3 className="font-headline font-black uppercase text-sm sm:text-base tracking-wider text-white">
+                    <CalendarCheck className="w-4 h-4 text-[#FAF6F0]" />
+                    <h3 className="font-headline font-black uppercase text-sm sm:text-base tracking-wider text-[#FAF6F0]">
                       Bonus Pengelolaan EO
                     </h3>
                   </div>
                 </div>
-                <p className="font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-white/85 mb-6 max-w-3xl leading-relaxed">
+                <p className="font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-[#FAF6F0]/85 mb-6 max-w-3xl leading-relaxed">
                   Nilai plus khusus Fourjective — semua paket sudah termasuk
                   asistensi tim event profesional.
                 </p>
@@ -564,7 +684,7 @@ function ServicesContent() {
                   {activePackage.eoBenefits.map((b, i) => (
                     <div
                       key={i}
-                      className="flex items-start gap-3 py-3 border-b-2 border-dark/20 text-xs sm:text-sm text-white leading-relaxed"
+                      className="flex items-start gap-3 py-3 border-b-2 border-dark/20 text-xs sm:text-sm text-[#FAF6F0] leading-relaxed"
                     >
                       <Check className="w-4 h-4 shrink-0 mt-0.5 stroke-[2.5]" />
                       <span>{b}</span>
@@ -574,7 +694,7 @@ function ServicesContent() {
               </section>
 
               {/* ===== SECTION 03 — SPECS (tabel) ===== */}
-              <section className="mt-12">
+              <section data-gsap-section className="mt-12">
                 <div className="flex items-center gap-4 border-b-[3px] border-dark pb-3">
                   <span className="font-headline font-black text-dark text-2xl leading-none">
                     03
