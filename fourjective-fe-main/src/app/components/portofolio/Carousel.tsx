@@ -140,6 +140,12 @@ export default function Carousel({
   useEffect(() => {
     if (!selectedBook) return;
 
+    // Scroll mulus ke area desk studio saat buku terbuka
+    const deskEl = document.getElementById("studio-desk-stage");
+    if (deskEl) {
+      deskEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
     const timer = setTimeout(() => {
       const bookEl = document.getElementById("virtual-flipbook-container");
       if (!bookEl) return;
@@ -153,13 +159,13 @@ export default function Carousel({
       try {
         const isMobile = window.innerWidth < 768;
         const pf = new (PageFlip as any)(bookEl, {
-          width: isMobile ? 320 : 450,
-          height: isMobile ? 460 : 600,
-          size: "stretch",
-          minWidth: 280,
-          maxWidth: 600,
-          minHeight: 400,
-          maxHeight: 800,
+          width: isMobile ? 300 : 420,
+          height: isMobile ? 430 : 560,
+          size: "fixed",
+          minWidth: 260,
+          maxWidth: 500,
+          minHeight: 380,
+          maxHeight: 700,
           showCover: true,
           drawShadow: true,
           flippingTime: 700,
@@ -176,13 +182,141 @@ export default function Carousel({
       } catch (err) {
         console.error("Flipbook init error:", err);
       }
-    }, 150);
+    }, 200);
 
     return () => clearTimeout(timer);
   }, [selectedBook]);
 
   return (
     <div className="w-full">
+      {/* ===== INLINE STUDIO DESK READER (MUNCUL DI HALAMAN LANGSUNG) ===== */}
+      {selectedBook && (
+        <section
+          id="studio-desk-stage"
+          className="mb-14 sm:mb-16 bg-[#FFFDF9] border-4 border-dark rounded-3xl p-5 sm:p-8 shadow-[10px_12px_0px_#14161C] relative overflow-hidden transition-all duration-300 animate-in fade-in zoom-in-95"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(24, 24, 27, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(24, 24, 27, 0.04) 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+          }}
+        >
+          {/* Desk Header Toolbar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b-3 border-dark">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-orange text-white flex items-center justify-center border-2 border-dark shadow-[2px_2px_0px_#000] shrink-0">
+                <Sparkles className="w-5 h-5 stroke-[2.5]" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[10px] font-black uppercase tracking-wider text-orange">
+                    STUDIO DESK • VIRTUAL 3D READER
+                  </span>
+                  <span className="inline-flex items-center gap-1 font-mono text-[9px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                    ● Akses Tamu Terbuka
+                  </span>
+                </div>
+                <h2 className="font-headline font-black text-xl sm:text-2xl text-dark leading-tight mt-0.5">
+                  {selectedBook.namaSekolah} ({selectedBook.tahun})
+                </h2>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 self-end sm:self-auto">
+              <span className="font-mono text-xs text-dark/60 font-bold hidden md:inline-block mr-2">
+                Hal. {pageIndex + 1} dari {selectedBook.pages.length}
+              </span>
+              <button
+                onClick={() => {
+                  try {
+                    pageFlipRef.current?.destroy();
+                  } catch (e) {}
+                  setSelectedBook(null);
+                }}
+                className="bg-dark hover:bg-orange text-white font-mono text-xs font-black uppercase tracking-wider px-4 py-2.5 rounded-xl border-2 border-dark shadow-[3px_3px_0px_#FF4D00] transition-colors cursor-pointer"
+              >
+                Tutup Meja Baca
+              </button>
+            </div>
+          </div>
+
+          {/* Studio Stage Workspace */}
+          <div className="relative py-8 sm:py-12 flex items-center justify-center min-h-[500px] sm:min-h-[620px]">
+            {/* Prev Navigation Button */}
+            <button
+              onClick={() => {
+                try {
+                  pageFlipRef.current?.flipPrev();
+                } catch (e) {}
+              }}
+              className="absolute left-1 sm:left-4 z-20 w-11 h-11 rounded-xl bg-white text-dark border-3 border-dark shadow-[3px_3px_0px_#18181B] hover:shadow-[1px_1px_0px_#18181B] hover:translate-x-0.5 hover:translate-y-0.5 hover:bg-orange hover:text-white flex items-center justify-center transition-all cursor-pointer"
+              title="Halaman Sebelumnya"
+            >
+              <ChevronLeft className="w-6 h-6 stroke-[3]" />
+            </button>
+
+            {/* Book Flipbook Element */}
+            <div className="relative z-10 flex items-center justify-center">
+              <div
+                id="virtual-flipbook-container"
+                className="drop-shadow-[0_20px_35px_rgba(20,22,28,0.25)]"
+              >
+                {selectedBook.pages.map((imgUrl, i) => (
+                  <div
+                    key={i}
+                    className="flip-page bg-white overflow-hidden border border-dark/15"
+                    data-density={i === 0 ? "hard" : "soft"}
+                  >
+                    <div className="relative w-full h-full bg-[#FAF6F0]">
+                      <img
+                        src={imgUrl}
+                        alt={`Halaman ${i + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute bottom-2.5 right-2.5 bg-dark/85 text-white font-mono text-[9px] font-bold px-2 py-0.5 rounded border border-white/20">
+                        {i === 0 ? "COVER" : `HALAMAN 0${i}`}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Next Navigation Button */}
+            <button
+              onClick={() => {
+                try {
+                  pageFlipRef.current?.flipNext();
+                } catch (e) {}
+              }}
+              className="absolute right-1 sm:right-4 z-20 w-11 h-11 rounded-xl bg-white text-dark border-3 border-dark shadow-[3px_3px_0px_#18181B] hover:shadow-[1px_1px_0px_#18181B] hover:translate-x-0.5 hover:translate-y-0.5 hover:bg-orange hover:text-white flex items-center justify-center transition-all cursor-pointer"
+              title="Halaman Berikutnya"
+            >
+              <ChevronRight className="w-6 h-6 stroke-[3]" />
+            </button>
+          </div>
+
+          {/* Studio Desk Footer Banner */}
+          <div className="border-t-3 border-dark pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono font-bold text-dark/70 bg-[#FAF6F0] p-4 rounded-xl border-2 border-dark/20">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-orange"></span>
+              <span>Spesifikasi Fisik Asli: {selectedBook.spec}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-dark/50">Tertarik cetak buku ini?</span>
+              <a
+                href={generateWhatsAppLink(selectedBook.namaSekolah)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-orange hover:underline inline-flex items-center gap-1 font-black"
+              >
+                <span>Ajukan Sampel Fisik ke Sekolah</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ===== 3 KARTU SAMPUL BUKU TAHUNAN ARSIP ===== */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
         {filtered.map((item, idx) => (
@@ -364,87 +498,6 @@ export default function Carousel({
               <span>PT Fourjective Studio Indonesia</span>
               <span>Kuningan, Jawa Barat</span>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* ===== VIRTUAL FLIPBOOK VIEWER MODAL (JIKA TOKEN BERHASIL) ===== */}
-      {selectedBook && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark/95 backdrop-blur-md p-4 animate-in fade-in duration-200">
-          {/* Top Control Bar */}
-          <div className="absolute top-4 left-4 right-4 z-50 flex items-center justify-between text-white">
-            <div className="flex items-center gap-2 bg-dark/80 border border-white/20 px-3.5 py-1.5 rounded-xl backdrop-blur-md">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span className="font-mono text-xs font-bold">{selectedBook.namaSekolah}</span>
-              <span className="text-white/40">|</span>
-              <span className="font-mono text-[10px] text-orange uppercase font-bold">Akses Tamu Terbuka</span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  try {
-                    pageFlipRef.current?.destroy();
-                  } catch (e) {}
-                  setSelectedBook(null);
-                }}
-                className="bg-orange hover:bg-orange/90 text-white font-mono text-xs font-black uppercase px-3.5 py-1.5 rounded-xl border-2 border-white/20 transition-colors cursor-pointer"
-              >
-                Tutup Reader
-              </button>
-            </div>
-          </div>
-
-          {/* Flipbook Container */}
-          <div className="relative max-h-[85vh] w-full max-w-4xl flex items-center justify-center pt-10">
-            {/* Prev Button */}
-            <button
-              onClick={() => {
-                try {
-                  pageFlipRef.current?.flipPrev();
-                } catch (e) {}
-              }}
-              className="absolute left-2 sm:left-4 z-40 w-10 h-10 rounded-full bg-white text-dark border-2 border-dark shadow-[2px_2px_0px_#000] flex items-center justify-center hover:bg-orange hover:text-white transition-colors cursor-pointer"
-              title="Halaman Sebelumnya"
-            >
-              <ChevronLeft className="w-5 h-5 stroke-[3]" />
-            </button>
-
-            {/* The Actual HTML Book */}
-            <div id="virtual-flipbook-container" className="shadow-2xl">
-              {selectedBook.pages.map((imgUrl, i) => (
-                <div key={i} className="flip-page bg-white overflow-hidden" data-density={i === 0 ? "hard" : "soft"}>
-                  <div className="relative w-full h-full">
-                    <img
-                      src={imgUrl}
-                      alt={`Halaman ${i + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute bottom-2 right-2 bg-dark/80 text-white font-mono text-[9px] px-2 py-0.5 rounded">
-                      Hal. {i + 1}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Next Button */}
-            <button
-              onClick={() => {
-                try {
-                  pageFlipRef.current?.flipNext();
-                } catch (e) {}
-              }}
-              className="absolute right-2 sm:right-4 z-40 w-10 h-10 rounded-full bg-white text-dark border-2 border-dark shadow-[2px_2px_0px_#000] flex items-center justify-center hover:bg-orange hover:text-white transition-colors cursor-pointer"
-              title="Halaman Berikutnya"
-            >
-              <ChevronRight className="w-5 h-5 stroke-[3]" />
-            </button>
-          </div>
-
-          {/* Bottom Navigation Hint */}
-          <div className="absolute bottom-4 left-0 right-0 text-center font-mono text-xs text-white/60">
-            Klik tepi halaman atau gunakan tombol panah untuk membalik lembaran virtual
           </div>
         </div>
       )}
