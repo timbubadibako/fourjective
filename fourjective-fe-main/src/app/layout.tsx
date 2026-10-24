@@ -1,247 +1,85 @@
-"use client";
+import type { Metadata } from "next";
+import RootLayoutClient from "./layout-client";
 
-// import type { Metadata } from "next";
-import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
-import localFont from "next/font/local";
-import "./globals.css";
-import Navbar from "./components/nav";
-import PopUpNav from "./components/pop-up-nav";
-import path from "path";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fourjective.com";
 
-const poppins = localFont({
-  src: [
-    {
-      path: "./fonts/Poppins/Poppins-Thin.ttf",
-      weight: "200",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Poppins/Poppins-ThinItalic.ttf",
-      weight: "200",
-      style: "italic",
-    },
-    {
-      path: "./fonts/Poppins/Poppins-Light.ttf",
-      weight: "300",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Poppins/Poppins-LightItalic.ttf",
-      weight: "300",
-      style: "italic",
-    },
-    {
-      path: "./fonts/Poppins/Poppins-Regular.ttf",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Poppins/Poppins-Italic.ttf",
-      weight: "400",
-      style: "italic",
-    },
-    {
-      path: "./fonts/Poppins/Poppins-Medium.ttf",
-      weight: "500",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Poppins/Poppins-MediumItalic.ttf",
-      weight: "500",
-      style: "italic",
-    },
-    {
-      path: "./fonts/Poppins/Poppins-SemiBold.ttf",
-      weight: "600",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Poppins/Poppins-SemiBoldItalic.ttf",
-      weight: "600",
-      style: "italic",
-    },
-    {
-      path: "./fonts/Poppins/Poppins-Bold.ttf",
-      weight: "700",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Poppins/Poppins-BoldItalic.ttf",
-      weight: "700",
-      style: "italic",
-    },
-    {
-      path: "./fonts/Poppins/Poppins-ExtraBold.ttf",
-      weight: "800",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Poppins/Poppins-ExtraBoldItalic.ttf",
-      weight: "800",
-      style: "italic",
-    },
-    {
-      path: "./fonts/Poppins/Poppins-Black.ttf",
-      weight: "900",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Poppins/Poppins-BlackItalic.ttf",
-      weight: "900",
-      style: "italic",
-    },
+export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "FOURJECTIVE | Vendor Buku Tahunan Sekolah #1",
+    template: "%s | FOURJECTIVE",
+  },
+  description:
+    "Vendor Buku Tahunan Sekolah (BTS) #1 terpercaya sejak 2021. Konsep kreatif, sesi photoshoot tematik, cetak hardcover premium, dan 3D interactive flipbook.",
+  keywords: [
+    "buku tahunan sekolah",
+    "bts organizer",
+    "vendor buku tahunan",
+    "yearbook photoshoot",
+    "cetak buku tahunan",
+    "fourjective",
+    "fourjective creative studio",
+    "buku tahunan kuningan",
+    "buku tahunan cirebon",
+    "buku tahunan jabodetabek",
+    "3d flipbook yearbook",
   ],
-  variable: "--font-poppins",
-});
-
-const playtimes = localFont({
-  src: [
-    {
-      path: "./fonts/Playtimes/Playtimes.ttf",
-      weight: "400",
-      style: "normal",
+  authors: [{ name: "Fourjective Creative Studio", url: siteUrl }],
+  creator: "Fourjective Creative Studio",
+  publisher: "Fourjective Creative Studio",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "id_ID",
+    url: siteUrl,
+    siteName: "FOURJECTIVE",
+    title: "FOURJECTIVE | Vendor Buku Tahunan Sekolah #1",
+    description:
+      "Vendor Buku Tahunan Sekolah (BTS) #1 terpercaya sejak 2021. Konsep kreatif, photoshoot tematik, cetak hardcover premium, dan 3D flipbook.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FOURJECTIVE | Vendor Buku Tahunan Sekolah #1",
+    description:
+      "Vendor Buku Tahunan Sekolah #1 terpercaya sejak 2021. Photoshoot tematik, cetak hardcover premium, dan 3D interactive flipbook.",
+    creator: "@fourjectiv",
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
     },
-  ],
-  variable: "--font-playtimes",
-});
-
-const leagueSpartan = localFont({
-  src: [
-    {
-      path: "./fonts/LeagueSpartan/LeagueSpartan-Thin.ttf",
-      weight: "100",
-      style: "thin",
-    },
-    {
-      path: "./fonts/LeagueSpartan/LeagueSpartan-ExtraLight.ttf",
-      weight: "200",
-      style: "extralight",
-    },
-    {
-      path: "./fonts/LeagueSpartan/LeagueSpartan-Light.ttf",
-      weight: "300",
-      style: "light",
-    },
-    {
-      path: "./fonts/LeagueSpartan/LeagueSpartan-Regular.ttf",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "./fonts/LeagueSpartan/LeagueSpartan-Medium.ttf",
-      weight: "500",
-      style: "medium",
-    },
-    {
-      path: "./fonts/LeagueSpartan/LeagueSpartan-SemiBold.ttf",
-      weight: "600",
-      style: "semibold",
-    },
-    {
-      path: "./fonts/LeagueSpartan/LeagueSpartan-Bold.ttf",
-      weight: "700",
-      style: "bold",
-    },
-    {
-      path: "./fonts/LeagueSpartan/LeagueSpartan-ExtraBold.ttf",
-      weight: "800",
-      style: "extrabold",
-    },
-    {
-      path: "./fonts/LeagueSpartan/LeagueSpartan-Black.ttf",
-      weight: "900",
-      style: "black",
-    },
-  ],
-  variable: "--font-leagueSpartan",
-});
-
-const lexendZetta = localFont({
-  src: [
-    {
-      path: "./fonts/LexendZetta/LexendZetta-Thin.ttf",
-      weight: "100",
-      style: "thin",
-    },
-    {
-      path: "./fonts/LexendZetta/LexendZetta-ExtraLight.ttf",
-      weight: "200",
-      style: "extralight",
-    },
-    {
-      path: "./fonts/LexendZetta/LexendZetta-Light.ttf",
-      weight: "300",
-      style: "light",
-    },
-    {
-      path: "./fonts/LexendZetta/LexendZetta-Regular.ttf",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "./fonts/LexendZetta/LexendZetta-Medium.ttf",
-      weight: "500",
-      style: "medium",
-    },
-    {
-      path: "./fonts/LexendZetta/LexendZetta-SemiBold.ttf",
-      weight: "600",
-      style: "semibold",
-    },
-    {
-      path: "./fonts/LexendZetta/LexendZetta-Bold.ttf",
-      weight: "700",
-      style: "bold",
-    },
-    {
-      path: "./fonts/LexendZetta/LexendZetta-ExtraBold.ttf",
-      weight: "800",
-      style: "extrabold",
-    },
-    {
-      path: "./fonts/LexendZetta/LexendZetta-Black.ttf",
-      weight: "900",
-      style: "black",
-    },
-  ],
-  variable: "--font-lexendZetta",
-});
-
-const kronaOne = localFont({
-  src: [
-    {
-      path: "./fonts/Krona_One/KronaOne.ttf",
-      weight: "400",
-    },
-  ],
-  variable: "--font-kronaOne",
-});
-// export const metadata: Metadata = {
-//   title: "Fourjectiv",
-//   description: "Generated by create next app",
-// };
+  },
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [isNavVisible, setIsNavVisible] = useState(false);
-  const pathname = usePathname();
-
-  const toggleNav = () => {
-    setIsNavVisible((prev) => !prev);
-    document.body.style.overflow = isNavVisible ? "auto" : "hidden";
-  };
-
-  useEffect(() => {
-    setIsNavVisible(false);
-    document.body.style.overflow = "auto";
-  }, [pathname]);
-
   return (
-    <html lang="en">
+    <html lang="id">
       <head>
         {/* Preconnect to API domain */}
         <link rel="preconnect" href="https://api.fourjectiv.com" />
@@ -263,26 +101,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
       </head>
-      <body
-        className={`${poppins.variable} ${playtimes.variable} ${lexendZetta.variable} ${leagueSpartan.variable} ${kronaOne.variable} antialiased`}
-      >
-        {pathname !== "/" &&
-          !pathname.startsWith("/paket") &&
-          !pathname.startsWith("/services") &&
-          !pathname.startsWith("/portofolio") &&
-          !pathname.startsWith("/testimoni") &&
-          !pathname.startsWith("/about") &&
-          !pathname.startsWith("/gallery") &&
-          !pathname.startsWith("/portal") &&
-          !pathname.startsWith("/track") &&
-          !pathname.includes("/dashboard") && (
-            <>
-              <Navbar toggleNav={toggleNav} />
-              <PopUpNav isNavVisible={isNavVisible} toggleNav={toggleNav} />
-            </>
-          )}
-        {children}
-      </body>
+      <RootLayoutClient>{children}</RootLayoutClient>
     </html>
   );
 }

@@ -11,6 +11,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "test:e2e": "node scripts/test-e2e.mjs",
     "lint": "eslint .",
     "compress-images": "node scripts/compress-images.js",
     "check-large-files": "node scripts/check-large-files.js",
