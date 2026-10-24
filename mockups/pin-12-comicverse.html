@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fourjective — Comic Verse Style (Pin 12 Reference)</title>
+  
+  <!-- Fonts: Bebas Neue for tall condensed woodblock comic titles + Plus Jakarta Sans for body -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            comic: {
+              red: '#FF2A14',
+              orange: '#FF5722',
+              black: '#101012',
+              charcoal: '#1A1A1E',
+              paper: '#F4F2EB',
+              cream: '#ECE8DF',
+              border: '#2C2C33'
+            }
+          },
+          fontFamily: {
+            comic: ['"Bebas Neue"', 'Impact', 'sans-serif'],
+            syne: ['Syne', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <style>
+    /* Distressed Halftone Background Texture */
+    .comic-bg {
+      background-color: #101012;
+      background-image: radial-gradient(#25252b 1px, transparent 1px);
+      background-size: 8px 8px;
+    }
+
+    .halftone-red {
+      background-color: #FF2A14;
+      background-image: radial-gradient(rgba(0, 0, 0, 0.15) 1.5px, transparent 1.5px);
+      background-size: 6px 6px;
+    }
+
+    /* Scotch Tape Corner Effect */
+    .scotch-tape {
+      position: absolute;
+      width: 64px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.45);
+      backdrop-filter: blur(2px);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+      border-left: 1px dashed rgba(255, 255, 255, 0.6);
+      border-right: 1px dashed rgba(255, 255, 255, 0.6);
+      transform: rotate(-35deg);
+      z-index: 30;
+      pointer-events: none;
+    }
+    .scotch-tape-tr {
+      top: -8px;
+      right: -16px;
+      transform: rotate(40deg);
+    }
+    .scotch-tape-tl {
+      top: -8px;
+      left: -16px;
+      transform: rotate(-35deg);
+    }
+
+    /* Comic Code Stamp Seal */
+    .comic-seal {
+      width: 44px;
+      height: 52px;
+      border: 2px solid #000;
+      background: #FFF;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      line-height: 1;
+      box-shadow: 2px 2px 0px #000;
+    }
+
+    /* Comic Woodblock Headline */
+    .headline-comic {
+      font-family: 'Bebas Neue', Impact, sans-serif;
+      letter-spacing: 0.02em;
+      line-height: 0.88;
+      text-transform: uppercase;
+    }
+
+    /* Paper Fold Shading */
+    .paper-crease {
+      position: relative;
+    }
+    .paper-crease::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(105deg, transparent 48%, rgba(255,255,255,0.08) 50%, rgba(0,0,0,0.3) 52%, transparent 55%);
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    /* Comic speech/action bubble */
+    .comic-badge-pow {
+      clip-path: polygon(0% 0%, 20% 10%, 40% 0%, 60% 12%, 80% 2%, 100% 15%, 90% 40%, 100% 65%, 85% 85%, 65% 100%, 40% 90%, 20% 100%, 0% 80%, 10% 50%);
+    }
+  </style>
+</head>
+<body class="comic-bg text-comic-paper font-sans antialiased selection:bg-comic-red selection:text-white overflow-x-hidden">
+
+  <!-- Top Floating Switcher / Reference Inspector -->
+  <aside aria-label="Reference Panel" class="fixed bottom-5 right-5 z-50 flex items-center gap-2 bg-black/95 backdrop-blur-md p-2 rounded-full border border-white/20 shadow-2xl">
+    <button onclick="toggleRefModal()" class="flex items-center gap-2 px-4 py-2 bg-comic-red text-white font-comic text-base tracking-wider rounded-full hover:scale-105 transition-transform shadow-lg">
+      <i data-lucide="eye" class="w-4 h-4"></i>
+      <span>Bandingkan Pin 12</span>
+    </button>
+    <a href="index.html" class="px-3 py-2 text-white/80 hover:text-white text-xs font-bold rounded-full hover:bg-white/10 transition-colors">
+      Hub Mockup
+    </a>
+  </aside>
+
+  <!-- Modal Reference Comparison -->
+  <div id="ref-modal" class="fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-comic-charcoal border border-white/20 rounded-2xl max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl w-full">
+      <div class="p-4 border-b border-white/10 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="px-2.5 py-1 bg-comic-red text-white text-xs font-black rounded">PIN 12</span>
+          <h3 class="text-white font-syne font-bold text-sm">Referensi: Comic Verse / Halftone Noir (1200x1880 px)</h3>
+        </div>
+        <button onclick="toggleRefModal()" class="text-white/70 hover:text-white p-1 rounded-lg hover:bg-white/10">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="p-4 overflow-y-auto flex justify-center bg-black/60">
+        <img src="references/desain-web/12_Pin_1151936410989954163.jpg" alt="Pin 12 Reference" class="max-w-full h-auto rounded-lg shadow-2xl border border-white/10">
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TOP NAV BAR (EXACT COMIC VERSE STYLE) ================= -->
+  <header class="w-full border-b border-comic-border bg-comic-black sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <a href="#" class="flex items-center gap-2">
+        <div class="w-7 h-7 bg-comic-red rounded flex items-center justify-center text-white font-comic text-xl font-bold">
+          4J
+        </div>
+        <span class="font-comic text-2xl tracking-wider text-white uppercase">FOURJECTIVE COMICS</span>
+      </a>
+
+      <!-- Menu links -->
+      <nav class="hidden md:flex items-center gap-6 text-xs font-bold uppercase tracking-widest text-white/70">
+        <a href="#katalog" class="hover:text-comic-red transition-colors">Katalog</a>
+        <a href="#arsip" class="hover:text-comic-red transition-colors">Arsip Vintage</a>
+        <a href="#paket" class="hover:text-comic-red transition-colors">Pilihan Paket</a>
+        <a href="#kontak" class="hover:text-comic-red transition-colors">Kontak Studio</a>
+      </nav>
+
+      <!-- Action buttons -->
+      <div class="flex items-center gap-4">
+        <button class="text-white/80 hover:text-white p-1.5" title="Cari Tema">
+          <i data-lucide="search" class="w-4 h-4"></i>
+        </button>
+        <button class="text-white/80 hover:text-white p-1.5 relative" title="Keranjang Pesanan">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          <span class="absolute top-0 right-0 w-2 h-2 rounded-full bg-comic-red"></span>
+        </button>
+        <a href="https://wa.me/6281234567890" target="_blank" class="hidden sm:inline-flex px-4 py-1.5 bg-white hover:bg-comic-red hover:text-white text-black font-comic text-base tracking-wider rounded transition-colors uppercase">
+          ORDER NOW
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= HERO SECTION (COMIC VERSE MASSIVE TITLE + FAN COLLAGE) ================= -->
+  <section class="pt-10 pb-20 px-6 max-w-7xl mx-auto border-b border-comic-border">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- Left Column: Giant Red Headline -->
+      <div class="lg:col-span-8">
+        <h1 class="headline-comic text-comic-red text-6xl sm:text-8xl md:text-9xl lg:text-[9.5rem]">
+          BEST YEARBOOK<br>
+          STUDIO YOU'VE<br>
+          EVER SEEN
+        </h1>
+      </div>
+
+      <!-- Right Column: Editorial Subtext & Action -->
+      <div class="lg:col-span-4 lg:pt-4 flex flex-col justify-between h-full">
+        <p class="text-xs sm:text-sm text-white/70 leading-relaxed font-normal">
+          Eksplorasi koleksi buku tahunan sekolah terlengkap: mulai dari estetika zine klasik, komik pulp vintage 80-an, hingga rilis hybrid Augmented Reality terkini. Setiap angkatan punya kisah legendarisnya sendiri.
+        </p>
+        
+        <div class="mt-8 flex items-center gap-4">
+          <a href="#paket" class="px-6 py-2.5 bg-comic-red text-white font-comic text-lg tracking-wider rounded hover:bg-comic-orange transition-all">
+            LIHAT PILIHAN PAKET →
+          </a>
+          <span class="text-[11px] font-mono text-white/40 uppercase tracking-widest">VOL. 2024 / NO. 01</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fanned Collage of Vintage Comic Yearbook Covers (Exact Pin 12 Style) -->
+    <div class="mt-14 pt-8 border-t border-comic-border/60">
+      <div class="text-xs font-mono uppercase tracking-widest text-white/40 mb-6 flex items-center gap-2">
+        <span class="w-2 h-2 bg-comic-red rounded-full"></span>
+        <span>THE FOURJECTIVE RETRO GALLERY ARCHIVE</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- Comic Cover 1: Wonder Woman Style / Barbie -->
+        <div class="relative bg-comic-charcoal p-3 rounded border border-white/20 shadow-2xl transform -rotate-2 hover:rotate-0 transition-transform duration-300 group paper-crease">
+          <div class="scotch-tape scotch-tape-tl"></div>
+          <div class="scotch-tape scotch-tape-tr"></div>
+          
+          <div class="bg-black text-white p-2 border border-white/20 mb-2 flex items-center justify-between">
+            <span class="font-comic text-xs tracking-wider text-comic-red">SPECIAL ISSUE #01</span>
+            <span class="font-mono text-[9px] text-white/70">60¢ MARVELOUS</span>
+          </div>
+
+          <div class="aspect-[3/4] overflow-hidden rounded bg-black relative">
+            <img src="images/landing-page/portfolio/barbie.png" alt="Barbie Vintage" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="absolute bottom-2 left-2 right-2 bg-black/80 backdrop-blur-sm p-2 rounded text-center">
+              <p class="font-comic text-sm tracking-wider text-white">THE WONDER YEAR</p>
+              <p class="text-[10px] text-white/70 font-mono">SMA TARUNA NUSANTARA</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comic Cover 2: Green Lantern Style / Jumanji -->
+        <div class="relative bg-comic-charcoal p-3 rounded border border-white/20 shadow-2xl transform rotate-1 hover:rotate-0 transition-transform duration-300 group paper-crease">
+          <div class="scotch-tape scotch-tape-tr"></div>
+
+          <div class="bg-black text-white p-2 border border-white/20 mb-2 flex items-center justify-between">
+            <span class="font-comic text-xs tracking-wider text-green-400">JUNGLE EXPEDITION #14</span>
+            <span class="comic-seal text-[8px]">
+              <span>CODE</span>
+              <span class="text-[6px]">AUTH</span>
+            </span>
+          </div>
+
+          <div class="aspect-[3/4] overflow-hidden rounded bg-black relative">
+            <img src="images/landing-page/portfolio/jumanji.png" alt="Jumanji Vintage" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="absolute bottom-2 left-2 right-2 bg-black/80 backdrop-blur-sm p-2 rounded text-center">
+              <p class="font-comic text-sm tracking-wider text-white">LOST IN WILDERNESS</p>
+              <p class="text-[10px] text-white/70 font-mono">SMAN 3 BANDUNG</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comic Cover 3: Dark Noir / Spider-Man -->
+        <div class="relative bg-comic-charcoal p-3 rounded border border-white/20 shadow-2xl transform -rotate-1 hover:rotate-0 transition-transform duration-300 group paper-crease">
+          <div class="scotch-tape scotch-tape-tl"></div>
+
+          <div class="bg-black text-white p-2 border border-white/20 mb-2 flex items-center justify-between">
+            <span class="font-comic text-xs tracking-wider text-comic-red">MIDNIGHT NOIR #88</span>
+            <span class="font-mono text-[9px] text-white/70">COLLECTOR ED.</span>
+          </div>
+
+          <div class="aspect-[3/4] overflow-hidden rounded bg-black relative">
+            <img src="images/landing-page/portfolio/dark.png" alt="Dark Vintage" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="absolute bottom-2 left-2 right-2 bg-black/80 backdrop-blur-sm p-2 rounded text-center">
+              <p class="font-comic text-sm tracking-wider text-white">THE SPECTACULAR KNIGHTS</p>
+              <p class="text-[10px] text-white/70 font-mono">SMAN 8 JAKARTA</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comic Cover 4: Cyber Anime / Colorfull -->
+        <div class="relative bg-comic-charcoal p-3 rounded border border-white/20 shadow-2xl transform rotate-2 hover:rotate-0 transition-transform duration-300 group paper-crease">
+          <div class="scotch-tape scotch-tape-tr"></div>
+          <div class="scotch-tape scotch-tape-tl"></div>
+
+          <div class="bg-black text-white p-2 border border-white/20 mb-2 flex items-center justify-between">
+            <span class="font-comic text-xs tracking-wider text-cyan-400">NEO TOKYO 2099</span>
+            <span class="font-mono text-[9px] text-white/70">VOL. 4</span>
+          </div>
+
+          <div class="aspect-[3/4] overflow-hidden rounded bg-black relative">
+            <img src="images/landing-page/portfolio/colorfull.png" alt="Cyberpunk Vintage" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="absolute bottom-2 left-2 right-2 bg-black/80 backdrop-blur-sm p-2 rounded text-center">
+              <p class="font-comic text-sm tracking-wider text-white">BLUE PULSE CHRONICLES</p>
+              <p class="text-[10px] text-white/70 font-mono">SMA LABSCHOOL</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SECTION 2: EDITORIAL PUNCH STATEMENT ================= -->
+  <section class="py-24 px-6 max-w-6xl mx-auto border-b border-comic-border relative">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      
+      <!-- Massive Statement -->
+      <div class="lg:col-span-8">
+        <h2 class="headline-comic text-white text-5xl sm:text-7xl md:text-8xl">
+          KAMI MEMILIKI SELEKSI<br>
+          PRODUKSI TERLENGKAP,<br>
+          TERMASUK <span class="text-comic-red">4K CINEMA,</span><br>
+          <span class="text-white/80">AR INTERAKTIF,</span> POSTER,<br>
+          DAN MERCHANDISE
+        </h2>
+      </div>
+
+      <!-- Floating Comic Issue with Scotch Tape -->
+      <div class="lg:col-span-4 flex justify-center">
+        <div class="relative bg-black p-3 rounded border border-white/30 shadow-2xl rotate-3 hover:rotate-0 transition-all max-w-[240px]">
+          <div class="scotch-tape scotch-tape-tr"></div>
+          <div class="scotch-tape scotch-tape-tl"></div>
+          <div class="aspect-[3/4] overflow-hidden rounded">
+            <img src="images/landing-page/portfolio/zombie.png" alt="Merch Issue" class="w-full h-full object-cover">
+          </div>
+          <div class="mt-2 text-center">
+            <span class="font-comic text-comic-red text-base tracking-wider">LIMITED EDITION ZINE</span>
+            <p class="text-[10px] text-white/60 font-mono">DENGAN STIKER HOLOGRAM</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SECTION 3: WIDE SELECTION OF BEST YEARBOOKS ================= -->
+  <section id="katalog" class="py-20 px-6 max-w-7xl mx-auto border-b border-comic-border">
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+      <div>
+        <h2 class="headline-comic text-comic-red text-6xl sm:text-8xl">
+          WIDE SELECTION<br>
+          <span class="text-white">OF BEST YEARBOOKS</span>
+        </h2>
+      </div>
+      <div class="max-w-md">
+        <p class="text-xs text-white/70 leading-relaxed font-normal mb-4">
+          Setiap buku dirancang bagai edisi kolektor komik: dicetak di atas kertas seni bertekstur, hardbound debossed, dan terintegrasi aplikasi AR video.
+        </p>
+        <button class="px-5 py-2 bg-transparent hover:bg-white hover:text-black border border-white text-white font-comic text-base tracking-wider rounded transition-colors uppercase">
+          SEE ALL ARCHIVES
+        </button>
+      </div>
+    </div>
+
+    <!-- Comic Issues Shelf -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      
+      <!-- Shelf Item 1 -->
+      <div class="bg-comic-charcoal/50 p-3 rounded border border-comic-border hover:border-comic-red transition-all group">
+        <div class="aspect-[3/4] overflow-hidden rounded bg-black mb-3 relative">
+          <img src="images/landing-page/portfolio/colorfull.png" alt="Secret Wars" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+          <span class="absolute top-2 left-2 bg-comic-red text-white font-comic text-xs px-2 py-0.5 rounded">NEW RELEASE</span>
+        </div>
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <h3 class="font-comic text-lg text-white group-hover:text-comic-red transition-colors">SECRET WARS #102</h3>
+            <p class="text-[11px] text-white/60 font-mono">SMA Taruna Nusantara</p>
+          </div>
+          <span class="font-comic text-lg text-white font-bold">Rp 380K</span>
+        </div>
+      </div>
+
+      <!-- Shelf Item 2 -->
+      <div class="bg-comic-charcoal/50 p-3 rounded border border-comic-border hover:border-comic-red transition-all group">
+        <div class="aspect-[3/4] overflow-hidden rounded bg-black mb-3 relative">
+          <img src="images/landing-page/portfolio/barbie.png" alt="Blue Lock" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+          <span class="absolute top-2 left-2 bg-blue-600 text-white font-comic text-xs px-2 py-0.5 rounded">BEST SELLER</span>
+        </div>
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <h3 class="font-comic text-lg text-white group-hover:text-comic-red transition-colors">BLUE VELVET #17</h3>
+            <p class="text-[11px] text-white/60 font-mono">SMAN 1 Bandung</p>
+          </div>
+          <span class="font-comic text-lg text-white font-bold">Rp 350K</span>
+        </div>
+      </div>
+
+      <!-- Shelf Item 3 -->
+      <div class="bg-comic-charcoal/50 p-3 rounded border border-comic-border hover:border-comic-red transition-all group">
+        <div class="aspect-[3/4] overflow-hidden rounded bg-black mb-3 relative">
+          <img src="images/landing-page/portfolio/dark.png" alt="X-Men" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+        </div>
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <h3 class="font-comic text-lg text-white group-hover:text-comic-red transition-colors">THE UNCANNY #33</h3>
+            <p class="text-[11px] text-white/60 font-mono">SMAN 8 Yogyakarta</p>
+          </div>
+          <span class="font-comic text-lg text-white font-bold">Rp 420K</span>
+        </div>
+      </div>
+
+      <!-- Shelf Item 4 -->
+      <div class="bg-comic-charcoal/50 p-3 rounded border border-comic-border hover:border-comic-red transition-all group">
+        <div class="aspect-[3/4] overflow-hidden rounded bg-black mb-3 relative">
+          <img src="images/landing-page/portfolio/jumanji.png" alt="Safari" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+        </div>
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <h3 class="font-comic text-lg text-white group-hover:text-comic-red transition-colors">EXPEDITION #05</h3>
+            <p class="text-[11px] text-white/60 font-mono">SMA Al-Azhar</p>
+          </div>
+          <span class="font-comic text-lg text-white font-bold">Rp 310K</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= SECTION 4: HIGH-IMPACT VERMILION RED PRICING (CHOOSE YOUR PLAN) ================= -->
+  <section id="paket" class="halftone-red text-white py-24 px-6 relative overflow-hidden">
+    <div class="max-w-7xl mx-auto">
+      
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end mb-16">
+        <div class="lg:col-span-8">
+          <span class="font-mono text-xs uppercase tracking-widest text-black/80 font-black">★ PAKET BUKU TAHUNAN RESMI ★</span>
+          <h2 class="headline-comic text-white text-6xl sm:text-8xl md:text-9xl mt-2 drop-shadow-lg">
+            CHOOSE YOUR PLAN
+          </h2>
+        </div>
+        <div class="lg:col-span-4">
+          <p class="text-xs sm:text-sm text-black/90 font-medium leading-relaxed bg-white/30 backdrop-blur-md p-4 rounded-xl border border-white/40">
+            Pilih paket yang paling cocok untuk kelas atau angkatanmu. Semua paket sudah termasuk arahan gaya, sesi photoshoot, dan file digital HD.
+          </p>
+        </div>
+      </div>
+
+      <!-- 3 Comic Panel Cards (Exact Pin 12 Style with Scotch Tape & Comic Heads) -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+        
+        <!-- PLAN 1: BASIC -->
+        <div class="bg-white text-black p-6 rounded-2xl shadow-2xl border-2 border-black relative flex flex-col justify-between hover:-translate-y-2 transition-transform">
+          <div class="scotch-tape scotch-tape-tl"></div>
+
+          <div>
+            <!-- Comic Character Panel -->
+            <div class="aspect-[4/3] bg-black rounded-lg overflow-hidden mb-4 border border-black relative">
+              <img src="images/landing-page/portfolio/jumanji.png" alt="Basic Character" class="w-full h-full object-cover">
+              <div class="absolute bottom-2 left-2 bg-black/80 text-white font-comic text-xs px-2 py-0.5 rounded">
+                STANDARD EDITION
+              </div>
+            </div>
+
+            <div class="border-b-2 border-black pb-4 mb-4">
+              <span class="font-comic text-2xl text-comic-red">Rp 280.000 <span class="text-xs text-black/60 font-sans">/ Siswa</span></span>
+              <h3 class="headline-comic text-4xl text-black mt-1">BASIC</h3>
+            </div>
+
+            <ul class="space-y-2 text-xs font-semibold text-black/80 mb-6">
+              <li class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-black"></span>
+                <span>Hardcover standard laminasi doff</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-black"></span>
+                <span>Photoshoot 1 hari (1 lokasi)</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-black"></span>
+                <span>Layout editorial 80 halaman</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-black"></span>
+                <span>Free 1x revisi desain cover</span>
+              </li>
+            </ul>
+          </div>
+
+          <a href="https://wa.me/6281234567890?text=Halo%20Fourjective,%20saya%20tertarik%20Paket%20Basic" target="_blank" class="w-full py-3 bg-black hover:bg-comic-red text-white text-center font-comic text-lg tracking-wider rounded transition-colors uppercase">
+            PILIH BASIC →
+          </a>
+        </div>
+
+        <!-- PLAN 2: ULTIMATE (Featured) -->
+        <div class="bg-black text-white p-6 rounded-2xl shadow-2xl border-4 border-white relative flex flex-col justify-between transform md:-translate-y-4 hover:-translate-y-6 transition-transform">
+          <div class="scotch-tape scotch-tape-tr"></div>
+          <div class="scotch-tape scotch-tape-tl"></div>
+
+          <span class="absolute -top-4 right-6 bg-comic-red text-white font-comic text-xs px-3 py-1 rounded-full uppercase tracking-wider border border-white">
+            ★ MOST POPULAR
+          </span>
+
+          <div>
+            <!-- Comic Character Panel -->
+            <div class="aspect-[4/3] bg-zinc-900 rounded-lg overflow-hidden mb-4 border border-white/30 relative">
+              <img src="images/landing-page/portfolio/dark.png" alt="Ultimate Character" class="w-full h-full object-cover">
+              <div class="absolute bottom-2 left-2 bg-comic-red text-white font-comic text-xs px-2 py-0.5 rounded">
+                COLLECTOR HYBRID
+              </div>
+            </div>
+
+            <div class="border-b-2 border-white/20 pb-4 mb-4">
+              <span class="font-comic text-2xl text-comic-red">Rp 450.000 <span class="text-xs text-white/60 font-sans">/ Siswa</span></span>
+              <h3 class="headline-comic text-4xl text-white mt-1">ULTIMATE</h3>
+            </div>
+
+            <ul class="space-y-2 text-xs font-semibold text-white/80 mb-6">
+              <li class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-comic-red"></span>
+                <span class="text-white font-bold">Sinematografi 4K Video Teaser & Aftermovie</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-comic-red"></span>
+                <span class="text-white font-bold">Augmented Reality (AR) Scan Interaktif</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-comic-red"></span>
+                <span>Hardcover Emboss Foil Emas / Perak</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-comic-red"></span>
+                <span>Photoshoot 3 hari (Studio + Outdoor)</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-comic-red"></span>
+                <span>Free Custom Maskot & Stiker Pack Hologram</span>
+              </li>
+            </ul>
+          </div>
+
+          <a href="https://wa.me/6281234567890?text=Halo%20Fourjective,%20saya%20tertarik%20Paket%20Ultimate" target="_blank" class="w-full py-3 bg-comic-red hover:bg-comic-orange text-white text-center font-comic text-lg tracking-wider rounded transition-colors uppercase shadow-lg">
+            AMBIL ULTIMATE →
+          </a>
+        </div>
+
+        <!-- PLAN 3: PREMIUM -->
+        <div class="bg-white text-black p-6 rounded-2xl shadow-2xl border-2 border-black relative flex flex-col justify-between hover:-translate-y-2 transition-transform">
+          <div class="scotch-tape scotch-tape-tr"></div>
+
+          <div>
+            <!-- Comic Character Panel -->
+            <div class="aspect-[4/3] bg-black rounded-lg overflow-hidden mb-4 border border-black relative">
+              <img src="images/landing-page/portfolio/colorfull.png" alt="Premium Character" class="w-full h-full object-cover">
+              <div class="absolute bottom-2 left-2 bg-black/80 text-white font-comic text-xs px-2 py-0.5 rounded">
+                DELUXE EDITION
+              </div>
+            </div>
+
+            <div class="border-b-2 border-black pb-4 mb-4">
+              <span class="font-comic text-2xl text-comic-red">Rp 360.000 <span class="text-xs text-black/60 font-sans">/ Siswa</span></span>
+              <h3 class="headline-comic text-4xl text-black mt-1">PREMIUM</h3>
+            </div>
+
+            <ul class="space-y-2 text-xs font-semibold text-black/80 mb-6">
+              <li class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-black"></span>
+                <span>Hardcover eksklusif spot UV textured</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-black"></span>
+                <span>Photoshoot 2 hari (2 lokasi tematik)</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-black"></span>
+                <span>Sinematik 1-minute Highlight Reel</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-black"></span>
+                <span>Bonus Bookmark & Stiker Pack Angkatan</span>
+              </li>
+            </ul>
+          </div>
+
+          <a href="https://wa.me/6281234567890?text=Halo%20Fourjective,%20saya%20tertarik%20Paket%20Premium" target="_blank" class="w-full py-3 bg-black hover:bg-comic-red text-white text-center font-comic text-lg tracking-wider rounded transition-colors uppercase">
+            PILIH PREMIUM →
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer id="kontak" class="py-16 px-6 bg-comic-black border-t border-comic-border text-center">
+    <div class="max-w-4xl mx-auto">
+      <div class="w-12 h-12 bg-comic-red mx-auto rounded-lg flex items-center justify-center text-white font-comic text-3xl mb-4">
+        4J
+      </div>
+      <h3 class="headline-comic text-white text-4xl mb-2">FOURJECTIVE COMICS</h3>
+      <p class="text-xs text-white/60 font-mono max-w-md mx-auto">
+        MENYULAP KENANGAN MASA SEKOLAH MENJADI KARYA SENI POP-KULTUR BERKELAS.
+      </p>
+
+      <div class="flex items-center justify-center gap-6 mt-8">
+        <a href="https://instagram.com" class="text-white/60 hover:text-comic-red text-xs font-mono uppercase tracking-wider">Instagram</a>
+        <span class="text-white/20">•</span>
+        <a href="https://wa.me/6281234567890" class="text-white/60 hover:text-comic-red text-xs font-mono uppercase tracking-wider">WhatsApp Hotline</a>
+        <span class="text-white/20">•</span>
+        <a href="https://tiktok.com" class="text-white/60 hover:text-comic-red text-xs font-mono uppercase tracking-wider">TikTok BTS</a>
+      </div>
+
+      <p class="text-[11px] text-white/30 font-mono mt-8">
+        © 2024 FOURJECTIVE STUDIO. INSPIRASI: PIN 12 COMIC VERSE.
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    function toggleRefModal() {
+      const modal = document.getElementById('ref-modal');
+      modal.classList.toggle('hidden');
+      modal.classList.toggle('flex');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,2229 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4jectiv — Giant Fanned Paper Typography Tuning Studio</title>
+  
+  <!-- Premium Display Fonts matching BuMaGa -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Paytone+One&family=Rubik:wght@800;900&family=Syne:wght@800;900&family=Unbounded:wght@700;800;900&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            paper: {
+              bg: '#F5F2EC',
+              texture: '#ECE7DD',
+              grid: 'rgba(0, 0, 0, 0.07)',
+              dark: '#0C0C0E'
+            }
+          },
+          fontFamily: {
+            rubik: ['"Rubik"', 'sans-serif'],
+            dela: ['"Dela Gothic One"', 'cursive'],
+            paytone: ['"Paytone One"', 'sans-serif'],
+            unbounded: ['"Unbounded"', 'sans-serif'],
+            syne: ['"Syne"', 'sans-serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Fibrous Paper Canvas */
+    .paper-canvas {
+      background-color: #F5F2EB;
+      background-image: 
+        radial-gradient(#d6cebd 0.75px, transparent 0.75px),
+        radial-gradient(rgba(0,0,0,0.03) 1px, transparent 1px);
+      background-size: 16px 16px, 32px 32px;
+      position: relative;
+    }
+
+    /* Vertical Guidelines (Hidden to give focus to the fading navbar hairlines) */
+    .guideline-col {
+      display: none;
+    }
+
+    /* Vertical Fading Hairlines flanking each Navbar Column */
+    .nav-fade-line {
+      position: absolute;
+      top: -4px;
+      width: 1px;
+      height: clamp(140px, 22vh, 230px);
+      background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.42) 0%,
+        rgba(0, 0, 0, 0.24) 35%,
+        rgba(0, 0, 0, 0.08) 65%,
+        rgba(0, 0, 0, 0) 100%
+      );
+      pointer-events: none;
+      z-index: 15;
+      transition: background 0.25s ease;
+    }
+
+    .nav-column {
+      position: relative;
+      padding-left: clamp(6px, 1.1vw, 14px);
+      padding-right: clamp(6px, 1.1vw, 14px);
+      padding-top: 2px;
+      padding-bottom: 4px;
+      border-radius: 4px;
+      transition: background-color 0.2s ease;
+    }
+
+    .nav-column:hover {
+      background-color: rgba(0, 0, 0, 0.025);
+    }
+
+    .nav-column:hover .nav-fade-line {
+      background: linear-gradient(
+        to bottom,
+        rgba(255, 43, 153, 0.75) 0%,
+        rgba(255, 43, 153, 0.40) 40%,
+        rgba(0, 0, 0, 0.08) 75%,
+        rgba(0, 0, 0, 0) 100%
+      );
+    }
+
+    /* LETTER STACK - Isolated Stacking Context */
+    .letter-stack {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      cursor: pointer;
+      isolation: isolate;
+      flex-shrink: 0;
+      line-height: 0.9;
+      transition: outline 0.15s ease, background-color 0.15s ease;
+      border-radius: 18px;
+    }
+
+    .letter-stack:hover {
+      outline: 2.5px dashed rgba(255, 43, 153, 0.45);
+      outline-offset: 8px;
+    }
+
+    .letter-stack.is-selected {
+      outline: 3px dashed #FF2B99 !important;
+      outline-offset: 12px !important;
+      background-color: rgba(255, 43, 153, 0.05);
+    }
+
+    /* Floating selection tag above selected letter */
+    .selection-tag {
+      position: absolute;
+      top: -34px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #FF2B99;
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 900;
+      font-family: 'Unbounded', sans-serif;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      white-space: nowrap;
+      pointer-events: none;
+      box-shadow: 0 4px 12px rgba(255, 43, 153, 0.45);
+      z-index: 50;
+      animation: bounceTag 1.5s infinite alternate ease-in-out;
+    }
+
+    @keyframes bounceTag {
+      from { transform: translateX(-50%) translateY(0); }
+      to { transform: translateX(-50%) translateY(-4px); }
+    }
+
+    /* Individual Paper Cutout Layer */
+    .sticker-layer {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      line-height: 0.9;
+      pointer-events: none;
+      transform-origin: 50% 50%;
+      will-change: transform;
+    }
+
+    /* FRONT FACE LAYER (Layer 0) - Light sheen from top-left, NO outer stroke */
+    .layer-top {
+      position: relative;
+      z-index: 30;
+      background: 
+        radial-gradient(ellipse at 16% 16%, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.45) 24%, rgba(255, 255, 255, 0) 52%),
+        linear-gradient(135deg, #FFC2E6 0%, #FF60B7 35%, #FF2B99 75%, #F5188E 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.5));
+    }
+
+    /* Stadium Pill Loop in Header */
+    .pill-loop {
+      height: clamp(32px, 4.2vh, 46px);
+      border: 4px solid #0C0C0E;
+      border-radius: 9999px;
+      background: transparent;
+    }
+
+    /* Scalloped Perforated Paper Tear Border */
+    .scallop-divider {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 28px;
+      overflow: hidden;
+      line-height: 0;
+      z-index: 25;
+    }
+    .scallop-svg {
+      width: 100%;
+      height: 100%;
+      fill: #0C0C0E;
+    }
+
+    /* Glassmorphic Studio Panel */
+    .studio-panel {
+      background: rgba(14, 14, 18, 0.96);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0,0,0,0.8);
+    }
+
+    /* Custom range sliders */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 9999px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #FF2B99;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(255, 43, 153, 0.8);
+      transition: transform 0.1s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* Toast notification */
+    #toast-msg {
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    /* Manifesto Constellation Pixel Helpers & Strict 1:1 Grid */
+    .pixelated {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      shape-rendering: crispEdges;
+    }
+
+    .grid-matrix-18x5 {
+      aspect-ratio: 18 / 5;
+    }
+  </style>
+</head>
+<body class="paper-canvas text-paper-dark font-sans antialiased selection:bg-pink-500 selection:text-white">
+
+  <!-- ================= 5 VERTICAL EDITORIAL GUIDELINES ================= -->
+  <div class="guideline-col left-[4%]"></div>
+  <div class="guideline-col left-[27%]"></div>
+  <div class="guideline-col left-[50%]"></div>
+  <div class="guideline-col left-[73%]"></div>
+  <div class="guideline-col left-[96%]"></div>
+
+  <!-- ================= BOTTOM-LEFT FLOATING REFERENCE & HUB BUTTONS ================= -->
+  <aside aria-label="Reference Panel" class="fixed bottom-3 left-4 z-50 flex items-center gap-2">
+    <button onclick="toggleRefModal()" class="flex items-center gap-1.5 px-3 py-1.5 bg-white text-black font-unbounded text-[10px] font-black rounded-full border-2 border-black shadow-[2px_2px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all">
+      <i data-lucide="image" class="w-3.5 h-3.5 text-pink-500"></i>
+      <span>Foto Referensi Pin 09</span>
+    </button>
+    <a href="index.html" class="px-3 py-1.5 bg-black text-white font-unbounded text-[10px] font-bold rounded-full hover:bg-neutral-800 transition-colors">
+      Hub
+    </a>
+  </aside>
+
+  <!-- Reference Modal -->
+  <div id="ref-modal" class="fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-zinc-900 border border-white/20 rounded-3xl max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl w-full">
+      <div class="p-4 border-b border-white/10 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="px-2.5 py-1 bg-pink-500 text-white text-xs font-black rounded">SCREENSHOT ASLI</span>
+          <h3 class="text-white font-syne font-bold text-sm">Hero "BuMaGa" Digital Paper Style</h3>
+        </div>
+        <button onclick="toggleRefModal()" class="text-white/70 hover:text-white p-1 rounded-lg hover:bg-white/10">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="p-6 overflow-y-auto flex justify-center bg-black/50">
+        <img src="references/desain-web/09_Pin_1151936410989953989.jpg" alt="Original Reference" class="max-w-full h-auto rounded-xl shadow-2xl border border-white/10">
+      </div>
+    </div>
+  </div>
+
+  <!-- Preset Share Modal Popup -->
+  <div id="preset-share-modal" class="fixed inset-0 z-[120] bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="bg-zinc-900 border border-pink-500/40 rounded-3xl max-w-xl w-full p-6 text-white shadow-2xl flex flex-col space-y-4">
+      <div class="flex items-start justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-pink-600 flex items-center justify-center text-white shadow-lg shadow-pink-500/40 flex-shrink-0">
+            <i data-lucide="check-check" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-unbounded font-black text-sm text-white uppercase">Preset Berhasil Disalin!</h3>
+            <p class="text-xs text-stone-300 mt-0.5">Format JSON sudah tersimpan di clipboard Anda.</p>
+          </div>
+        </div>
+        <button onclick="togglePresetModal(false)" class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-stone-300 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="bg-pink-950/40 border border-pink-500/30 rounded-2xl p-3.5 text-xs text-pink-200 leading-relaxed flex items-center gap-3">
+        <i data-lucide="message-square-plus" class="w-5 h-5 text-pink-400 flex-shrink-0"></i>
+        <span>
+          <strong>Cara kirim ke saya:</strong> Buka chat Antigravity, lalu tekan <kbd class="px-2 py-0.5 bg-black/60 rounded border border-pink-400/40 font-mono text-[11px] text-white">Ctrl + V</kbd> (atau Paste) dan kirim. Saya akan langsung membaca preset ini dan menerapkannya!
+        </span>
+      </div>
+
+      <div class="space-y-1.5">
+        <div class="flex items-center justify-between text-[11px] font-mono text-stone-400">
+          <span>KONTEN CLIPBOARD (SIAP DI-PASTE):</span>
+          <span id="copy-status-text" class="text-emerald-400 font-bold">Tersalin Otomatis ✓</span>
+        </div>
+        <textarea id="modal-preset-box" readonly class="w-full h-36 bg-black/70 border border-white/10 rounded-xl p-3 text-[10px] font-mono text-pink-300 outline-none resize-none selection:bg-pink-500 selection:text-white"></textarea>
+      </div>
+
+      <div class="flex items-center gap-2 pt-1">
+        <button onclick="copyModalPresetText()" class="flex-1 py-2.5 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-unbounded font-black text-[11px] flex items-center justify-center gap-2 shadow-lg shadow-pink-600/40 transition-transform active:scale-95">
+          <i data-lucide="copy" class="w-4 h-4"></i>
+          <span>Salin Ulang</span>
+        </button>
+        <button onclick="downloadPresetJson()" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-unbounded font-bold text-[11px] flex items-center gap-1.5 transition-colors">
+          <i data-lucide="download" class="w-4 h-4"></i>
+          <span>Download JSON</span>
+        </button>
+        <button onclick="togglePresetModal(false)" class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-stone-300 font-unbounded font-bold text-[11px] transition-colors">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Feedback Notification -->
+  <div id="toast-msg" class="fixed top-4 left-1/2 -translate-x-1/2 z-[130] bg-zinc-900 text-white border border-pink-500/50 px-5 py-2.5 rounded-full shadow-2xl flex items-center gap-2 text-xs font-bold opacity-0 pointer-events-none transform -translate-y-4">
+    <i data-lucide="check-circle-2" class="w-4 h-4 text-pink-400"></i>
+    <span id="toast-text">Berhasil!</span>
+  </div>
+
+  <!-- ================= FLOATING NAVBAR (MUNCUL OTOMATIS SAAT SCROLLED, TANPA GARIS TEPIS) ================= -->
+  <nav id="floating-navbar" class="fixed top-3.5 sm:top-5 left-1/2 -translate-x-1/2 z-40 w-[94%] max-w-5xl rounded-full bg-[#F5F2EB]/95 sm:bg-white/90 backdrop-blur-md border border-black/10 shadow-[0_12px_36px_rgba(0,0,0,0.12),0_2px_6px_rgba(0,0,0,0.06)] px-5 sm:px-7 py-2.5 sm:py-3 flex items-center justify-between transition-all duration-300 transform -translate-y-28 opacity-0 pointer-events-none">
+    <!-- Left: 4JECTIV (Bold Display Brand) -->
+    <a href="#" class="flex items-center gap-2 group select-none flex-shrink-0">
+      <span class="font-unbounded font-black text-xs sm:text-sm md:text-base tracking-tight text-black group-hover:text-pink-600 transition-colors uppercase leading-none">
+        4JECTIV
+      </span>
+    </a>
+
+    <!-- Center: Menu Links (Single-Line, NO vertical hairlines / edge lines) -->
+    <div class="flex items-center gap-6 sm:gap-9 md:gap-11">
+      <button type="button" onclick="setActiveNav('layanan')" id="float-nav-layanan" class="floating-nav-btn font-sans text-xs sm:text-sm font-medium text-black/60 hover:text-black border-b-2 border-transparent pb-0.5 transition-all cursor-pointer">
+        Layanan
+      </button>
+      <button type="button" onclick="setActiveNav('portofolio')" id="float-nav-portofolio" class="floating-nav-btn font-sans text-xs sm:text-sm font-bold text-black border-b-2 border-black pb-0.5 transition-all cursor-pointer">
+        Portofolio
+      </button>
+      <button type="button" onclick="setActiveNav('kontak')" id="float-nav-kontak" class="floating-nav-btn font-sans text-xs sm:text-sm font-medium text-black/60 hover:text-black border-b-2 border-transparent pb-0.5 transition-all cursor-pointer">
+        Kontak
+      </button>
+    </div>
+
+    <!-- Right: CTA Button -->
+    <div class="flex items-center gap-2 flex-shrink-0">
+      <a href="https://wa.me/6281234567890" target="_blank" class="px-4 sm:px-5 py-1.5 sm:py-2 rounded-full bg-black hover:bg-neutral-800 text-white font-unbounded font-black text-[9px] sm:text-[10px] md:text-[11px] uppercase tracking-wider transition-all hover:scale-105 active:scale-95 shadow-sm inline-block">
+        Diskusikan Projek
+      </a>
+    </div>
+  </nav>
+
+  <!-- ================= 100VH FULL-VIEWPORT HERO SECTION ================= -->
+  <!-- Jarak tepian kiri dan kanan persis versi lama: px-3 sm:px-6 md:px-8 lg:px-10, pt-2 sm:pt-4 -->
+  <section id="hero-section" class="relative z-20 h-screen h-[100dvh] max-h-screen w-full flex flex-col justify-between overflow-hidden pt-2 sm:pt-4 pb-0 px-3 sm:px-6 md:px-8 lg:px-10 transition-all duration-300">
+    
+    <!-- 1. TOP HEADER + OVERLINE -->
+    <div class="w-full flex-shrink-0">
+      <!-- Row 1: 5-Column Architectural Nav with Single Line Names & Downward Fading Lines (Versi Asli dengan Garis Tepis) -->
+      <header id="grid-navbar" class="w-full mb-1 sm:mb-2 relative z-30 pt-1">
+        <div class="grid grid-cols-5 gap-3 sm:gap-4 md:gap-6 w-full items-center">
+          
+          <!-- Col 1: 4JECTIV (BOLD) -->
+          <a href="#" class="nav-column block group select-none py-1">
+            <div class="nav-fade-line left-0"></div>
+            <span class="font-unbounded font-black text-xs sm:text-sm md:text-base tracking-tight text-black group-hover:text-pink-600 transition-colors uppercase leading-none truncate block">
+              4JECTIV
+            </span>
+            <div class="nav-fade-line right-0"></div>
+          </a>
+
+          <!-- Col 2: LAYANAN -->
+          <button type="button" onclick="setActiveNav('layanan')" class="nav-column block group select-none py-1 text-left w-full cursor-pointer">
+            <div class="nav-fade-line left-0"></div>
+            <span id="grid-nav-text-layanan" class="font-sans font-medium text-xs sm:text-sm tracking-wide text-black/80 hover:text-black border-b-2 border-transparent pb-0.5 transition-colors uppercase leading-none truncate inline-block">
+              Layanan
+            </span>
+            <div class="nav-fade-line right-0"></div>
+          </button>
+
+          <!-- Col 3: PORTOFOLIO -->
+          <button type="button" onclick="setActiveNav('portofolio')" class="nav-column block group select-none py-1 text-left w-full cursor-pointer">
+            <div class="nav-fade-line left-0"></div>
+            <span id="grid-nav-text-portofolio" class="font-sans font-bold text-xs sm:text-sm tracking-wide text-black border-b-2 border-black pb-0.5 uppercase leading-none truncate inline-block">
+              Portofolio
+            </span>
+            <div class="nav-fade-line right-0"></div>
+          </button>
+
+          <!-- Col 4: KONTAK -->
+          <button type="button" onclick="setActiveNav('kontak')" class="nav-column block group select-none py-1 text-left w-full cursor-pointer">
+            <div class="nav-fade-line left-0"></div>
+            <span id="grid-nav-text-kontak" class="font-sans font-medium text-xs sm:text-sm tracking-wide text-black/80 hover:text-black border-b-2 border-transparent pb-0.5 transition-colors uppercase leading-none truncate inline-block">
+              Kontak
+            </span>
+            <div class="nav-fade-line right-0"></div>
+          </button>
+
+          <!-- Col 5: CTA (PALING KANAN) -->
+          <a href="https://wa.me/6281234567890" target="_blank" class="nav-column block group select-none text-right py-0.5">
+            <div class="nav-fade-line left-0"></div>
+            <span class="inline-block px-2.5 sm:px-3.5 py-1 rounded-full border-2 border-black text-[9px] sm:text-[10px] md:text-[11px] font-unbounded font-black tracking-wider uppercase text-black hover:bg-black hover:text-white transition-all">
+              Diskusikan Projek
+            </span>
+            <div class="nav-fade-line right-0"></div>
+          </a>
+
+        </div>
+      </header>
+
+      <!-- Black Overline with Stadium Pill Loop (Edge to Edge) -->
+      <div class="flex items-center justify-between w-full mt-1 mb-1">
+        <span class="font-unbounded font-black text-lg sm:text-3xl md:text-4xl lg:text-5xl tracking-tight text-black leading-none uppercase select-none">
+          DIGITAL
+        </span>
+
+        <!-- Elongated Stadium Pill Loop (Exact like БЮ[____]РО) -->
+        <div class="pill-loop flex-grow mx-2 sm:mx-4 md:mx-6 flex items-center justify-center cursor-pointer group" title="4jectiv Creative Studio">
+          <span class="text-[8px] sm:text-[10px] md:text-[11px] font-mono tracking-widest text-black/40 group-hover:text-pink-600 transition-colors uppercase font-bold truncate px-2">
+            ★ CREATIVE YEARBOOK & CINEMA STUDIO ★
+          </span>
+        </div>
+
+        <span class="font-unbounded font-black text-lg sm:text-3xl md:text-4xl lg:text-5xl tracking-tight text-black leading-none uppercase select-none">
+          STUDIO
+        </span>
+      </div>
+    </div>
+
+    <!-- 2. CENTER: GIANT WALL-TO-WALL FANNED PAPER TYPOGRAPHY -->
+    <!-- Zero excessive side margins: leftmost char touches left edge, rightmost touches right edge -->
+    <!-- Click any letter to tune directly! -->
+    <div class="w-full flex-grow flex items-center justify-center my-auto overflow-visible py-1 relative">
+      <div id="sticker-container" class="w-full flex items-center justify-between overflow-visible">
+        <!-- Giant letters dynamically injected with Rubik 900 / Dela Gothic One -->
+      </div>
+    </div>
+
+    <!-- 3. BOTTOM: CTA BUTTON + PERFORATED SCALLOP TEAR DIVIDER -->
+    <div class="w-full flex-shrink-0 flex flex-col items-center pb-8 relative">
+      
+      <!-- Electric Blue Pill CTA Button -->
+      <div class="mb-2 sm:mb-3 z-30">
+        <a href="#manifesto-constellation" class="inline-flex items-center justify-center px-8 sm:px-10 py-2.5 sm:py-3.5 rounded-full bg-[#2C3BE8] hover:bg-[#1f2dc4] text-white font-unbounded font-black text-xs sm:text-sm uppercase tracking-widest shadow-[0_10px_25px_rgba(44,59,232,0.4)] hover:-translate-y-0.5 transition-all">
+          <span>LIHAT PORTOFOLIO</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FLOATING DOCK & STUDIO CONTROLLER ================= -->
+  
+  <!-- Minimized Quick Dock Bar (Bottom Right) -->
+  <aside id="quick-dock" class="fixed bottom-3 right-4 z-50 studio-panel rounded-full px-4 py-2 text-white text-[11px] flex items-center gap-2.5 sm:gap-3 shadow-2xl border border-white/20">
+    <div class="flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-pink-500 animate-ping"></span>
+      <span class="font-unbounded font-black text-[10px] text-pink-400 uppercase">HURUF:</span>
+      <span id="dock-active-char" class="px-2 py-0.5 rounded-md bg-pink-600 font-unbounded font-black text-xs text-white">4</span>
+    </div>
+
+    <div class="h-3.5 w-px bg-white/20"></div>
+
+    <!-- Quick Letters Switcher Strip -->
+    <div id="dock-letter-chips" class="flex items-center gap-1">
+      <!-- Injected dynamically: [4] [j] [e] [c] [t] [i] [v] -->
+    </div>
+
+    <div class="h-3.5 w-px bg-white/20"></div>
+
+    <!-- Quick Navbar Scroll Test & State Button -->
+    <button onclick="toggleNavStyle()" id="dock-nav-mode-btn" class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white font-unbounded font-bold text-[10px] border border-white/10 transition-all active:scale-95" title="Klik untuk scroll menguji transisi: Garis Tepis (Top) ↔ Melayang (Scrolled)">
+      <i data-lucide="arrow-down-up" class="w-3.5 h-3.5 text-cyan-400"></i>
+      <span id="dock-nav-mode-text">Nav: Garis Tepis (Top) 📐</span>
+    </button>
+
+    <div class="h-3.5 w-px bg-white/20"></div>
+
+    <!-- Main Copy Preset Button directly in Dock -->
+    <button onclick="copyPresetForChat()" class="flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-pink-600 hover:bg-pink-500 text-white font-unbounded font-black text-[10px] shadow-lg shadow-pink-600/40 transition-transform active:scale-95" title="Salin preset saat ini untuk dipaste ke chat Antigravity">
+      <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+      <span>Salin Preset</span>
+    </button>
+
+    <button onclick="toggleStudioDrawer(true)" class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-400 text-black font-unbounded font-black text-[10px] hover:bg-yellow-300 transition-transform active:scale-95">
+      <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
+      <span>Studio</span>
+    </button>
+  </aside>
+
+  <!-- Full Expanded Tuning Studio Drawer (Floating Right Bottom Modal) -->
+  <div id="studio-drawer" class="fixed bottom-4 right-4 z-50 studio-panel rounded-3xl w-full max-w-md sm:max-w-lg p-5 text-white shadow-2xl border border-white/20 hidden flex-col max-h-[92vh] overflow-hidden">
+    
+    <!-- Header -->
+    <div class="flex items-center justify-between pb-3 border-b border-white/10 flex-shrink-0">
+      <div class="flex items-center gap-2.5">
+        <div class="w-7 h-7 rounded-lg bg-pink-600 flex items-center justify-center shadow-lg shadow-pink-500/30">
+          <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
+        </div>
+        <div>
+          <h2 class="font-unbounded font-black text-xs uppercase tracking-wider text-white">
+            4JECTIV TUNING STUDIO
+          </h2>
+          <p class="text-[10px] text-stone-400 font-mono">
+            Klik huruf di layar atau pilih chip di bawah
+          </p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <!-- Prominent Copy Preset Button in Drawer Header -->
+        <button onclick="copyPresetForChat()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-unbounded font-black text-[10px] shadow-lg shadow-pink-500/30 transition-transform active:scale-95" title="Salin preset untuk dipaste ke chat">
+          <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+          <span>Salin Preset</span>
+        </button>
+        <button onclick="toggleStudioDrawer(false)" class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-stone-300 hover:text-white transition-colors" title="Minimize">
+          <i data-lucide="minimize-2" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Letter Selector Horizontal Strip -->
+    <div class="py-3 flex-shrink-0 border-b border-white/10">
+      <div class="flex items-center justify-between text-[10px] font-mono text-stone-400 mb-1.5">
+        <span>PILIH HURUF TARGET:</span>
+        <span id="selected-char-display" class="text-pink-400 font-bold font-unbounded">4 (#1)</span>
+      </div>
+      <div id="drawer-letter-chips" class="flex items-center gap-1.5 overflow-x-auto pb-1">
+        <!-- Dynamically rendered chips -->
+      </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="flex items-center gap-1 py-2.5 flex-shrink-0 border-b border-white/10">
+      <button onclick="switchTab('per-huruf')" id="tab-btn-per-huruf" class="flex-1 py-1.5 rounded-lg text-center font-unbounded font-black text-[10px] uppercase bg-pink-600 text-white transition-colors">
+        🎯 Per-Huruf
+      </button>
+      <button onclick="switchTab('global')" id="tab-btn-global" class="flex-1 py-1.5 rounded-lg text-center font-unbounded font-black text-[10px] uppercase bg-white/10 text-stone-300 hover:text-white transition-colors">
+        🌐 Global
+      </button>
+      <button onclick="switchTab('presets')" id="tab-btn-presets" class="flex-1 py-1.5 rounded-lg text-center font-unbounded font-black text-[10px] uppercase bg-white/10 text-stone-300 hover:text-white transition-colors">
+        ⚡ Preset
+      </button>
+      <button onclick="switchTab('export')" id="tab-btn-export" class="flex-1 py-1.5 rounded-lg text-center font-unbounded font-black text-[10px] uppercase bg-white/10 text-stone-300 hover:text-white transition-colors">
+        📋 Export
+      </button>
+    </div>
+
+    <!-- Tab Body Scrollable Container -->
+    <div class="overflow-y-auto flex-grow py-3 pr-1 space-y-4 text-xs font-medium">
+      
+      <!-- ================= TAB 1: PER-HURUF CONTROLS ================= -->
+      <div id="tab-content-per-huruf" class="space-y-4">
+        
+        <!-- 1. Kemiringan Huruf (Rotate) -->
+        <div class="bg-white/5 p-3 rounded-2xl border border-white/5 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label for="slider-baseRot" class="flex items-center gap-1.5 font-unbounded font-bold text-[11px] text-pink-300">
+              <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
+              <span>Kemiringan Huruf (Rotate)</span>
+            </label>
+            <span id="val-baseRot" class="font-mono text-[11px] text-pink-400 font-bold">-2.5°</span>
+          </div>
+          <input type="range" id="slider-baseRot" min="-30" max="30" step="0.5" value="-2.5" oninput="onLetterParamChange('baseRot', this.value)" class="w-full">
+          <div class="flex justify-between text-[9px] font-mono text-stone-400">
+            <span>-30° (Kiri)</span>
+            <span>0° (Tegak)</span>
+            <span>+30° (Kanan)</span>
+          </div>
+        </div>
+
+        <!-- 2. Tinggi / Rendah (Posisi Y) -->
+        <div class="bg-white/5 p-3 rounded-2xl border border-white/5 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label for="slider-yOffset" class="flex items-center gap-1.5 font-unbounded font-bold text-[11px] text-yellow-300">
+              <i data-lucide="arrow-up-down" class="w-3.5 h-3.5"></i>
+              <span>Tinggi / Rendah (Posisi Y)</span>
+            </label>
+            <span id="val-yOffset" class="font-mono text-[11px] text-yellow-400 font-bold">0px</span>
+          </div>
+          <input type="range" id="slider-yOffset" min="-80" max="80" step="1" value="0" oninput="onLetterParamChange('yOffset', this.value)" class="w-full">
+          <div class="flex justify-between text-[9px] font-mono text-stone-400">
+            <span>-80px (Naik)</span>
+            <span>0px (Sejajar)</span>
+            <span>+80px (Turun)</span>
+          </div>
+        </div>
+
+        <!-- 3. Jarak / Geser Horizontal (Posisi X) -->
+        <div class="bg-white/5 p-3 rounded-2xl border border-white/5 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label for="slider-xOffset" class="flex items-center gap-1.5 font-unbounded font-bold text-[11px] text-cyan-300">
+              <i data-lucide="arrow-left-right" class="w-3.5 h-3.5"></i>
+              <span>Jarak / Geser (Posisi X)</span>
+            </label>
+            <span id="val-xOffset" class="font-mono text-[11px] text-cyan-400 font-bold">0px</span>
+          </div>
+          <input type="range" id="slider-xOffset" min="-60" max="60" step="1" value="0" oninput="onLetterParamChange('xOffset', this.value)" class="w-full">
+          <div class="flex justify-between text-[9px] font-mono text-stone-400">
+            <span>-60px (Merapat)</span>
+            <span>0px</span>
+            <span>+60px (Merenggang)</span>
+          </div>
+        </div>
+
+        <!-- 4. Penyebaran Anak Huruf (Fan Distance) -->
+        <div class="bg-white/5 p-3 rounded-2xl border border-white/5 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label for="slider-fanSpread" class="flex items-center gap-1.5 font-unbounded font-bold text-[11px] text-emerald-300">
+              <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+              <span>Penyebaran Anak Huruf (Fan)</span>
+            </label>
+            <span id="val-fanSpread" class="font-mono text-[11px] text-emerald-400 font-bold">1.0x</span>
+          </div>
+          <input type="range" id="slider-fanSpread" min="0.2" max="3.0" step="0.05" value="1.0" oninput="onLetterParamChange('fanSpread', this.value)" class="w-full">
+          <div class="flex justify-between text-[9px] font-mono text-stone-400">
+            <span>0.2x (Rapat Tipis)</span>
+            <span>1.0x (Normal)</span>
+            <span>3.0x (Sangat Lebar)</span>
+          </div>
+        </div>
+
+        <!-- 5. Kemiringan Anak Huruf (Layer Rotate Step) -->
+        <div class="bg-white/5 p-3 rounded-2xl border border-white/5 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label for="slider-layerRot" class="flex items-center gap-1.5 font-unbounded font-bold text-[11px] text-violet-300">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+              <span>Kemiringan Anak Huruf (Layer Rot)</span>
+            </label>
+            <span id="val-layerRot" class="font-mono text-[11px] text-violet-400 font-bold">-1.2°</span>
+          </div>
+          <input type="range" id="slider-layerRot" min="-5.0" max="5.0" step="0.1" value="-1.2" oninput="onLetterParamChange('layerRot', this.value)" class="w-full">
+          <div class="flex justify-between text-[9px] font-mono text-stone-400">
+            <span>-5° (Berlawanan Jarum Jam)</span>
+            <span>0°</span>
+            <span>+5° (Searah)</span>
+          </div>
+        </div>
+
+        <!-- 6. Vektor Proyeksi dx & dy -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-white/5 p-2.5 rounded-2xl border border-white/5 space-y-1">
+            <div class="flex justify-between items-center text-[10px] font-mono text-stone-300">
+              <span>Arah X (dx):</span>
+              <span id="val-dx" class="text-pink-400 font-bold">-4.5px</span>
+            </div>
+            <input type="range" id="slider-dx" min="-12" max="12" step="0.2" value="-4.5" oninput="onLetterParamChange('dx', this.value)" class="w-full">
+          </div>
+          <div class="bg-white/5 p-2.5 rounded-2xl border border-white/5 space-y-1">
+            <div class="flex justify-between items-center text-[10px] font-mono text-stone-300">
+              <span>Arah Y (dy):</span>
+              <span id="val-dy" class="text-pink-400 font-bold">+5.8px</span>
+            </div>
+            <input type="range" id="slider-dy" min="-12" max="12" step="0.2" value="5.8" oninput="onLetterParamChange('dy', this.value)" class="w-full">
+          </div>
+        </div>
+
+        <!-- Tombol Reset Huruf Terpilih -->
+        <div class="pt-1 flex items-center justify-between">
+          <button onclick="resetCurrentLetter()" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-red-500/20 hover:text-red-300 text-stone-300 text-[10px] font-bold transition-colors flex items-center gap-1.5">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            <span>Reset Huruf Ini</span>
+          </button>
+          <button onclick="selectNextLetter(1)" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-stone-300 hover:text-white text-[10px] font-bold transition-colors flex items-center gap-1.5">
+            <span>Huruf Berikutnya</span>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ================= TAB 2: GLOBAL CONTROLS ================= -->
+      <div id="tab-content-global" class="space-y-4 hidden">
+        
+        <!-- Teks Switcher -->
+        <div class="bg-white/5 p-3 rounded-2xl border border-white/5 space-y-2">
+          <span class="block font-unbounded font-bold text-[10px] uppercase text-stone-300">PILIH VARIASI KATA:</span>
+          <div class="grid grid-cols-2 gap-1.5">
+            <button onclick="changeText('4jectiv')" id="btn-4jectiv" class="py-1.5 rounded-xl bg-pink-600 text-white font-unbounded font-black text-[10px]">4jectiv</button>
+            <button onclick="changeText('4Jectiv')" id="btn-4Jectiv" class="py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-unbounded font-black text-[10px]">4Jectiv</button>
+            <button onclick="changeText('4JECTIV')" id="btn-4JECTIV" class="py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-unbounded font-black text-[10px]">4JECTIV</button>
+            <button onclick="changeText('fourjectiv')" id="btn-fourjectiv" class="py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-unbounded font-black text-[10px]">fourjectiv</button>
+          </div>
+        </div>
+
+        <!-- Font Switcher -->
+        <div class="bg-white/5 p-3 rounded-2xl border border-white/5 space-y-2">
+          <span class="block font-unbounded font-bold text-[10px] uppercase text-stone-300">FONT DISPLAY POSTER:</span>
+          <div class="grid grid-cols-2 gap-1.5">
+            <button onclick="changeFont('rubik')" id="font-rubik" class="py-1.5 px-2 rounded-xl bg-yellow-400 text-black font-bold text-[10px]">Rubik 900 (BuMaGa)</button>
+            <button onclick="changeFont('dela')" id="font-dela" class="py-1.5 px-2 rounded-xl bg-white/10 hover:bg-yellow-400 hover:text-black text-white font-bold text-[10px]">Dela Gothic</button>
+            <button onclick="changeFont('paytone')" id="font-paytone" class="py-1.5 px-2 rounded-xl bg-white/10 hover:bg-yellow-400 hover:text-black text-white font-bold text-[10px]">Paytone One</button>
+            <button onclick="changeFont('unbounded')" id="font-unbounded" class="py-1.5 px-2 rounded-xl bg-white/10 hover:bg-yellow-400 hover:text-black text-white font-bold text-[10px]">Unbounded</button>
+          </div>
+        </div>
+
+        <!-- Global Fan Spread -->
+        <div class="bg-white/5 p-3 rounded-2xl border border-white/5 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label for="global-fan-slider" class="font-unbounded font-bold text-[11px] text-pink-300">Global Fan Multiplier</label>
+            <span id="global-fan-val" class="font-mono text-pink-400 font-bold">1.0x</span>
+          </div>
+          <input type="range" id="global-fan-slider" min="0.3" max="2.5" step="0.05" value="1.0" oninput="onGlobalParamChange('globalFanSpread', this.value)" class="w-full">
+        </div>
+
+        <!-- Global Spacing (Kerning) -->
+        <div class="bg-white/5 p-3 rounded-2xl border border-white/5 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label for="global-spacing-slider" class="font-unbounded font-bold text-[11px] text-cyan-300">Jarak Antar Huruf Global</label>
+            <span id="global-spacing-val" class="font-mono text-cyan-400 font-bold">0px</span>
+          </div>
+          <input type="range" id="global-spacing-slider" min="-20" max="40" step="1" value="0" oninput="onGlobalParamChange('globalLetterSpacing', this.value)" class="w-full">
+        </div>
+
+        <!-- Global Layer Rotation -->
+        <div class="bg-white/5 p-3 rounded-2xl border border-white/5 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label for="global-rot-slider" class="font-unbounded font-bold text-[11px] text-violet-300">Global Layer Rotate Delta</label>
+            <span id="global-rot-val" class="font-mono text-violet-400 font-bold">0.0°</span>
+          </div>
+          <input type="range" id="global-rot-slider" min="-3.0" max="3.0" step="0.1" value="0" oninput="onGlobalParamChange('globalLayerRot', this.value)" class="w-full">
+        </div>
+
+        <!-- Palette Color -->
+        <div class="bg-white/5 p-3 rounded-2xl border border-white/5 space-y-2">
+          <span class="block font-unbounded font-bold text-[10px] uppercase text-stone-300">PALET WARNA KERTAS:</span>
+          <div class="flex items-center gap-2">
+            <button onclick="setColorMode('pink')" id="palette-pink" class="flex-1 py-1.5 rounded-xl bg-pink-500 text-white font-bold text-[10px] border-2 border-white">Pink BuMaGa</button>
+            <button onclick="setColorMode('orange')" id="palette-orange" class="flex-1 py-1.5 rounded-xl bg-orange-500 text-white font-bold text-[10px] border-2 border-transparent">Fourjective Orange</button>
+            <button onclick="setColorMode('multi')" id="palette-multi" class="flex-1 py-1.5 rounded-xl bg-gradient-to-r from-pink-500 to-cyan-500 text-white font-bold text-[10px] border-2 border-transparent">Neon Cyber</button>
+          </div>
+        </div>
+
+        <!-- Navbar Style Selector -->
+        <!-- Navbar Mode Controller (Scroll Condition) -->
+        <div class="bg-white/5 p-3 rounded-2xl border border-white/5 space-y-2">
+          <span class="block font-unbounded font-bold text-[10px] uppercase text-stone-300">LOGIKA DINAMIS NAVBAR:</span>
+          <div class="grid grid-cols-2 gap-1.5">
+            <button onclick="scrollToTopView()" class="py-2 px-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-unbounded font-bold text-[10px] flex items-center justify-center gap-1.5 transition-all">
+              <i data-lucide="arrow-up" class="w-3.5 h-3.5 text-pink-400"></i>
+              <span>Posisi Atas (Garis)</span>
+            </button>
+            <button onclick="scrollToScrolledView()" class="py-2 px-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-unbounded font-bold text-[10px] flex items-center justify-center gap-1.5 transition-all">
+              <i data-lucide="arrow-down" class="w-3.5 h-3.5 text-cyan-400"></i>
+              <span>Saat Scrolled (Melayang)</span>
+            </button>
+          </div>
+          <p class="text-[9px] text-stone-400 font-mono leading-tight">
+            * Di posisi paling atas: navbar in-grid dengan garis tepis memudar.<br>
+            * Saat di-scroll kebawah: otomatis muncul navbar melayang tanpa garis tepi (active bold + underline).
+          </p>
+        </div>
+
+      </div>
+
+      <!-- ================= TAB 3: PRESETS ================= -->
+      <div id="tab-content-presets" class="space-y-3 hidden">
+        <p class="text-[11px] text-stone-400 mb-2">
+          Pilih gaya preset instan untuk menguji kombinasi kemiringan, tinggi-rendah, dan lipatan:
+        </p>
+
+        <!-- Preset 0: Locked User Preset (4JECTIV) -->
+        <button onclick="applyPreset('lockedUser')" class="w-full text-left p-3.5 rounded-2xl bg-gradient-to-r from-pink-950/70 to-purple-950/60 hover:from-pink-900/80 hover:to-purple-900/70 border-2 border-pink-500 transition-all group shadow-lg shadow-pink-500/20">
+          <div class="flex items-center justify-between">
+            <span class="font-unbounded font-black text-xs text-white group-hover:text-pink-300">🔥 Preset Pilihan Anda (4JECTIV)</span>
+            <span class="text-[9px] font-mono px-2 py-0.5 rounded bg-pink-600 text-white font-black">LOCKED PRESET</span>
+          </div>
+          <p class="text-[10px] text-pink-200/90 mt-1 leading-normal">
+            4JECTIV • Unbounded • Neon Cyber • Global Fan 2.5x • Irama Y agresif (-80px / +80px) & kemiringan ekspresif!
+          </p>
+        </button>
+
+        <!-- Preset 1: BuMaGa Original -->
+        <button onclick="applyPreset('bumaga')" class="w-full text-left p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-pink-500 transition-all group">
+          <div class="flex items-center justify-between">
+            <span class="font-unbounded font-black text-xs text-white group-hover:text-pink-400">🌟 BuMaGa Classic</span>
+            <span class="text-[9px] font-mono px-2 py-0.5 rounded bg-white/10 text-stone-300">Original Pin 09</span>
+          </div>
+          <p class="text-[10px] text-stone-400 mt-1 leading-normal">
+            Kemiringan organik halus (-2.5° s/d +2°), tinggi sejajar rapi, proyeksi fan disiplin ke kiri-bawah.
+          </p>
+        </button>
+
+        <!-- Preset 2: Street Wave -->
+        <button onclick="applyPreset('streetWave')" class="w-full text-left p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-yellow-400 transition-all group">
+          <div class="flex items-center justify-between">
+            <span class="font-unbounded font-black text-xs text-white group-hover:text-yellow-400">⚡ Street Wave (Naik-Turun)</span>
+            <span class="text-[9px] font-mono px-2 py-0.5 rounded bg-yellow-400/20 text-yellow-300 font-bold">Dynamic Y</span>
+          </div>
+          <p class="text-[10px] text-stone-400 mt-1 leading-normal">
+            Irama tinggi-rendah bergantian (-14px s/d +16px) dengan sudut rotasi dinamis zig-zag ala stiker zine underground!
+          </p>
+        </button>
+
+        <!-- Preset 3: Fanatic Fan -->
+        <button onclick="applyPreset('fanatic')" class="w-full text-left p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-400 transition-all group">
+          <div class="flex items-center justify-between">
+            <span class="font-unbounded font-black text-xs text-white group-hover:text-cyan-400">🌪️ Super Fanatic (Ekstra Tebal)</span>
+            <span class="text-[9px] font-mono px-2 py-0.5 rounded bg-cyan-400/20 text-cyan-300 font-bold">1.8x Spread</span>
+          </div>
+          <p class="text-[10px] text-stone-400 mt-1 leading-normal">
+            Penyebaran anak-anak huruf sangat lebar dengan layer rotasi spiral dramatis untuk kesan 3D tebal.
+          </p>
+        </button>
+
+        <!-- Preset 4: Flat & Clean -->
+        <button onclick="applyPreset('flat')" class="w-full text-left p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-400 transition-all group">
+          <div class="flex items-center justify-between">
+            <span class="font-unbounded font-black text-xs text-white group-hover:text-emerald-400">📏 Flat & Straight (0°)</span>
+            <span class="text-[9px] font-mono px-2 py-0.5 rounded bg-emerald-400/20 text-emerald-300 font-bold">Clean Baseline</span>
+          </div>
+          <p class="text-[10px] text-stone-400 mt-1 leading-normal">
+            Semua kemiringan 0° dan posisi Y lurus sejajar tanpa pergeseran acak, modern presisi.
+          </p>
+        </button>
+      </div>
+
+      <!-- ================= TAB 4: PRESET MANAGER & CHAT EXPORT ================= -->
+      <div id="tab-content-export" class="space-y-4 hidden">
+        
+        <!-- 1. Main Action: Copy for Chat Antigravity -->
+        <div class="bg-gradient-to-br from-pink-950/60 to-purple-950/40 p-4 rounded-2xl border border-pink-500/40 space-y-2.5">
+          <div class="flex items-center gap-2">
+            <span class="p-1 rounded bg-pink-500 text-white"><i data-lucide="send" class="w-3.5 h-3.5"></i></span>
+            <span class="font-unbounded font-black text-xs text-white">SALIN UNTUK CHAT AI:</span>
+          </div>
+          <p class="text-[10px] text-pink-200 leading-relaxed">
+            Klik tombol di bawah, lalu langsung buka tab chat Antigravity dan tekan <kbd class="px-1.5 py-0.5 bg-black/60 rounded border border-pink-400/40 text-white font-mono">Ctrl + V</kbd>. Saya akan langsung membaca preset ini!
+          </p>
+          <button onclick="copyPresetForChat()" class="w-full py-2.5 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-unbounded font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-pink-600/40 transition-transform active:scale-95">
+            <i data-lucide="copy" class="w-4 h-4"></i>
+            <span>SALIN PRESET KE CHAT ANTIGRAVITY</span>
+          </button>
+        </div>
+
+        <!-- 2. Save Preset to Browser LocalStorage -->
+        <div class="bg-white/5 p-3.5 rounded-2xl border border-white/5 space-y-2.5">
+          <span class="block font-unbounded font-bold text-[10px] uppercase text-stone-300">
+            💾 SIMPAN PRESET KE BROWSER (LOCAL STORAGE):
+          </span>
+          <div class="flex items-center gap-2">
+            <input type="text" id="preset-name-input" placeholder="Nama preset (cth: Punk Wave 1)" class="flex-grow bg-black/50 border border-white/15 rounded-xl px-3 py-1.5 text-xs text-white placeholder:text-stone-500 outline-none focus:border-pink-500">
+            <button onclick="saveCurrentPresetToLocal()" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-unbounded font-black text-[10px] whitespace-nowrap transition-colors">
+              Simpan
+            </button>
+          </div>
+          <!-- Saved Presets List -->
+          <div id="saved-presets-list" class="space-y-1.5 max-h-28 overflow-y-auto pr-1">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- 3. Import Preset from Chat -->
+        <div class="bg-white/5 p-3.5 rounded-2xl border border-white/5 space-y-2">
+          <span class="block font-unbounded font-bold text-[10px] uppercase text-stone-300">
+            📥 IMPORT / LOAD PRESET DARI CHAT:
+          </span>
+          <textarea id="import-json-box" placeholder="Paste kode JSON preset dari chat ke sini..." class="w-full h-16 bg-black/60 border border-white/15 rounded-xl p-2.5 text-[10px] font-mono text-cyan-300 outline-none resize-none focus:border-cyan-400"></textarea>
+          <button onclick="importPresetFromInput()" class="w-full py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-unbounded font-black text-[10px] transition-colors flex items-center justify-center gap-1.5">
+            <i data-lucide="play" class="w-3 h-3"></i>
+            <span>Terapkan Preset ke Layar</span>
+          </button>
+        </div>
+
+        <!-- 4. Raw JSON Box -->
+        <div class="bg-white/5 p-3 rounded-2xl border border-white/5 space-y-1.5">
+          <div class="flex justify-between items-center text-[10px] font-mono text-stone-400">
+            <span>RAW JSON CONFIG:</span>
+            <button onclick="resetAllToDefault()" class="text-stone-400 hover:text-red-300 text-[10px] underline">
+              Reset ke BuMaGa
+            </button>
+          </div>
+          <textarea id="export-json-box" readonly class="w-full h-24 bg-black/60 border border-white/10 rounded-xl p-2.5 text-[9px] font-mono text-pink-300 outline-none resize-none focus:border-pink-500"></textarea>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Footer of Drawer -->
+    <div class="pt-2 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-stone-400 flex-shrink-0">
+      <span class="flex items-center gap-1">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        <span>Realtime 60FPS Sync</span>
+      </span>
+      <button onclick="toggleStudioDrawer(false)" class="text-pink-400 hover:underline">
+        Tutup Studio ✕
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ================= MANIFESTO CONSTELLATION SECTION (BU-MA-GA PILL & MASCOT GRID) ================= -->
+  <section id="manifesto-constellation" class="relative bg-[#0C0C0E] text-white w-full overflow-hidden pt-12 sm:pt-16 pb-16 sm:pb-24">
+    
+    <!-- 1. TOP SCALLOP PERFORATED WAVE (100% Edge-to-Edge) -->
+    <div class="w-full absolute top-0 left-0 right-0 overflow-hidden leading-none z-30 pointer-events-none -translate-y-[1px]">
+      <svg class="w-full h-3 sm:h-3.5 block" viewBox="0 0 1200 12" preserveAspectRatio="none">
+        <defs>
+          <pattern id="scallop-stamp-top" width="20" height="12" patternUnits="userSpaceOnUse">
+            <path d="M 0,0 L 20,0 L 20,12 C 16,12 14,2 10,2 C 6,2 4,12 0,12 Z" fill="#F5F2EC" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="12" fill="url(#scallop-stamp-top)" />
+      </svg>
+    </div>
+
+    <!-- 2. CONTENT SWITCHER CONTROL STRIP (COMPACT & DISCREET) -->
+    <div class="relative z-20 max-w-4xl mx-auto px-4 mb-4 sm:mb-6 text-center">
+      <div class="inline-flex items-center justify-center gap-1.5 p-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md flex-wrap">
+        <span class="text-[9px] sm:text-[10px] font-mono text-stone-400 uppercase tracking-widest px-2 sm:px-3">OPSI KONTEN:</span>
+        <button onclick="setManifestoCopy('fourjective')" id="copy-btn-fourjective" class="px-3.5 py-1.5 rounded-full bg-pink-600 text-white font-unbounded font-black text-[10px] shadow-md shadow-pink-600/30 transition-all">
+          ✨ Fourjective (Emosional)
+        </button>
+        <button onclick="setManifestoCopy('studio')" id="copy-btn-studio" class="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-stone-300 font-unbounded font-bold text-[10px] transition-all">
+          ⚡ Kualitas Studio
+        </button>
+        <button onclick="setManifestoCopy('lorem')" id="copy-btn-lorem" class="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-stone-300 font-unbounded font-bold text-[10px] transition-all">
+          📝 Lorem Ipsum
+        </button>
+        <a href="manifesto-grid-builder.html" target="_blank" class="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#FF6E00] to-[#FF4B93] hover:from-[#ff7e1a] hover:to-[#ff5ea0] text-white font-unbounded font-black text-[10px] shadow-md shadow-[#FF6E00]/30 transition-all flex items-center gap-1.5">
+          <span>🎨 Grid Studio</span>
+          <i data-lucide="external-link" class="w-3 h-3"></i>
+        </a>
+        <a href="manifesto-reveal-showcase.html" target="_blank" class="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-sky-300 border border-sky-400/30 font-unbounded font-bold text-[10px] transition-all flex items-center gap-1.5">
+          <span>✨ In-Grid Reveal & Dissolve</span>
+          <i data-lucide="external-link" class="w-3 h-3"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- 3. HEADLINE (Floating purely on solid black space, NO grid behind it) -->
+    <div class="relative z-20 text-center max-w-4xl mx-auto px-4 mb-8 sm:mb-12">
+      <h2 id="manifesto-headline" class="font-unbounded font-black text-2xl sm:text-4xl md:text-5xl text-white tracking-tight uppercase leading-tight select-none drop-shadow-sm">
+        KAMI MEMBUAT SEGALANYA AGAR KAMU...
+      </h2>
+    </div>
+
+    <!-- 4. FULL-WIDTH ARCHITECTURAL MODULAR GRID STAGE: 22 COLUMNS x 5 ROWS (EDGE-TO-EDGE) -->
+    <div class="w-full overflow-x-auto relative z-10 py-2 select-none">
+      <div class="grid-matrix-22x5 relative min-w-[960px] w-full border-y border-white/10 bg-black/40 overflow-hidden shadow-2xl p-0.5 select-none" style="display: grid; grid-template-columns: repeat(22, minmax(0, 1fr)); grid-template-rows: repeat(5, minmax(0, 1fr)); aspect-ratio: 22 / 5;">
+        
+        <!-- Layer 1: Blueprint Background Matrix (Varied: [X], Box [ ], 2x1, 4x4, and pure black spaces) -->
+        <div id="grid-matrix-cells" class="absolute inset-0 w-full h-full pointer-events-none" style="display: grid; grid-template-columns: repeat(22, minmax(0, 1fr)); grid-template-rows: repeat(5, minmax(0, 1fr)); aspect-ratio: 22 / 5;">
+          <!-- Generated via initGridMatrixCells() -->
+        </div>
+
+        <!-- Layer 2: Grid Items strictly fitted within cell footprints -->
+
+        <!-- Item 1: Blue Triangle (1x1 at Col 2, Row 1) -->
+        <div class="z-10 p-2 flex items-center justify-center overflow-hidden" style="grid-column: 2 / span 1; grid-row: 1 / span 1;" title="Blue Triangle (1x1)">
+          <svg viewBox="0 0 54 48" class="w-full h-full max-w-full max-h-full filter drop-shadow-[0_2px_8px_rgba(59,75,247,0.4)]" preserveAspectRatio="xMidYMid meet">
+            <polygon points="27,2 52,46 2,46" fill="#3B4BF7" />
+          </svg>
+        </div>
+
+        <!-- Item 2: Pink Pill (5x1 at Col 4 to 8, Row 1) -->
+        <div class="z-20 p-1 flex items-center justify-center overflow-hidden" style="grid-column: 4 / span 5; grid-row: 1 / span 1;">
+          <div class="w-full h-full rounded-full bg-[#FF4B93] text-[#0C0C0E] font-unbounded font-black text-[10px] sm:text-xs md:text-sm tracking-wide uppercase flex items-center justify-center shadow-[0_4px_16px_rgba(255,75,147,0.35)] select-none px-2 overflow-hidden">
+            <span id="pill-text-pink" class="truncate">DICINTAI</span>
+          </div>
+        </div>
+
+        <!-- Item 3: Concentric Circles / Target (1x1 at Col 11, Row 1) -->
+        <div class="z-10 p-2 flex items-center justify-center overflow-hidden" style="grid-column: 11 / span 1; grid-row: 1 / span 1;" title="Target Glyph (1x1)">
+          <svg viewBox="0 0 50 50" class="w-full h-full max-w-full max-h-full filter drop-shadow-[0_2px_8px_rgba(142,224,0,0.4)]" preserveAspectRatio="xMidYMid meet">
+            <circle cx="25" cy="25" r="23" fill="none" stroke="#8EE000" stroke-width="3.5" />
+            <circle cx="25" cy="25" r="14" fill="none" stroke="#8EE000" stroke-width="3.5" />
+            <circle cx="25" cy="25" r="6" fill="#8EE000" />
+          </svg>
+        </div>
+
+        <!-- Item 4: Spring Coil / Per (2x1 at Col 15 to 16, Row 1 - Resting on top of Blue Pill) -->
+        <div class="z-10 p-1 flex items-center justify-center overflow-hidden" style="grid-column: 15 / span 2; grid-row: 1 / span 1;" title="Spring Coil (2x1)">
+          <svg viewBox="0 0 130 46" class="w-full h-full max-h-full filter drop-shadow-[0_2px_8px_rgba(255,214,0,0.3)]" preserveAspectRatio="xMidYMid meet">
+            <g fill="none" stroke="#FFD600" stroke-width="1.8" stroke-linecap="round" opacity="0.95">
+              <ellipse cx="14" cy="23" rx="9" ry="19" />
+              <ellipse cx="23" cy="23" rx="9" ry="19" />
+              <ellipse cx="32" cy="23" rx="9" ry="19" />
+              <ellipse cx="41" cy="23" rx="9" ry="19" />
+              <ellipse cx="50" cy="23" rx="9" ry="19" />
+              <ellipse cx="59" cy="23" rx="9" ry="19" />
+              <ellipse cx="68" cy="23" rx="9" ry="19" />
+              <ellipse cx="77" cy="23" rx="9" ry="19" />
+              <ellipse cx="86" cy="23" rx="9" ry="19" />
+              <ellipse cx="95" cy="23" rx="9" ry="19" />
+              <ellipse cx="104" cy="23" rx="9" ry="19" />
+              <ellipse cx="113" cy="23" rx="9" ry="19" />
+            </g>
+          </svg>
+        </div>
+
+        <!-- Item 5: Yellow 4-Point Sparkle Star (1x1 at Col 7, Row 2) -->
+        <div class="z-10 p-2.5 flex items-center justify-center overflow-hidden" style="grid-column: 7 / span 1; grid-row: 2 / span 1;" title="Sparkle Star (1x1)">
+          <svg viewBox="0 0 40 40" class="w-full h-full max-w-full max-h-full filter drop-shadow-[0_2px_8px_rgba(255,214,0,0.5)]" preserveAspectRatio="xMidYMid meet">
+            <path d="M 20 2 Q 20 20 2 20 Q 20 20 20 38 Q 20 20 38 20 Q 20 20 20 2 Z" fill="#FFD600" />
+          </svg>
+        </div>
+
+        <!-- Item 6: Cobalt Blue Pill (5x1 at Col 13 to 17, Row 2 - directly under Spring Coil) -->
+        <div class="z-20 p-1 flex items-center justify-center overflow-hidden" style="grid-column: 13 / span 5; grid-row: 2 / span 1;">
+          <div class="w-full h-full rounded-full bg-[#3B4BF7] text-white font-unbounded font-black text-[10px] sm:text-xs md:text-sm tracking-wide uppercase flex items-center justify-center shadow-[0_4px_16px_rgba(59,75,247,0.4)] select-none px-2 overflow-hidden">
+            <span id="pill-text-blue" class="truncate">TERPANA</span>
+          </div>
+        </div>
+
+        <!-- Item 7: Lime Green Pill (5x1 at Col 2 to 6, Row 3) -->
+        <div class="z-20 p-1 flex items-center justify-center overflow-hidden" style="grid-column: 2 / span 5; grid-row: 3 / span 1;">
+          <div class="w-full h-full rounded-full bg-[#8EE000] text-[#0C0C0E] font-unbounded font-black text-[10px] sm:text-xs md:text-sm tracking-wide uppercase flex items-center justify-center shadow-[0_4px_16px_rgba(142,224,0,0.35)] select-none px-2 overflow-hidden">
+            <span id="pill-text-green" class="truncate">DILIRIK</span>
+          </div>
+        </div>
+
+        <!-- Item 8: Lime Green Pacman / 8-bit Pixel Monster (1x1 at Col 15, Row 3 - directly under Blue Pill) -->
+        <div class="z-10 p-2 flex items-center justify-center overflow-hidden" style="grid-column: 15 / span 1; grid-row: 3 / span 1;" title="8-Bit Retro Monster (1x1)">
+          <svg viewBox="0 0 12 11" class="w-full h-full max-w-full max-h-full pixelated filter drop-shadow-[0_2px_8px_rgba(142,224,0,0.4)]" preserveAspectRatio="xMidYMid meet">
+            <rect x="2" y="0" width="1" height="1" fill="#8EE000" />
+            <rect x="9" y="0" width="1" height="1" fill="#8EE000" />
+            <rect x="3" y="1" width="1" height="1" fill="#8EE000" />
+            <rect x="8" y="1" width="1" height="1" fill="#8EE000" />
+            <rect x="2" y="2" width="8" height="1" fill="#8EE000" />
+            <rect x="1" y="3" width="2" height="1" fill="#8EE000" />
+            <rect x="3" y="3" width="2" height="1" fill="#FFFFFF" />
+            <rect x="4" y="3" width="1" height="1" fill="#0C0C0E" />
+            <rect x="5" y="3" width="2" height="1" fill="#8EE000" />
+            <rect x="7" y="3" width="2" height="1" fill="#FFFFFF" />
+            <rect x="8" y="3" width="1" height="1" fill="#0C0C0E" />
+            <rect x="9" y="3" width="2" height="1" fill="#8EE000" />
+            <rect x="0" y="4" width="12" height="2" fill="#8EE000" />
+            <rect x="0" y="6" width="1" height="1" fill="#8EE000" />
+            <rect x="2" y="6" width="8" height="1" fill="#8EE000" />
+            <rect x="11" y="6" width="1" height="1" fill="#8EE000" />
+            <rect x="0" y="7" width="1" height="1" fill="#8EE000" />
+            <rect x="2" y="7" width="1" height="1" fill="#8EE000" />
+            <rect x="9" y="7" width="1" height="1" fill="#8EE000" />
+            <rect x="11" y="7" width="1" height="1" fill="#8EE000" />
+            <rect x="0" y="8" width="1" height="3" fill="#8EE000" />
+            <rect x="3" y="8" width="1" height="3" fill="#8EE000" />
+            <rect x="5" y="8" width="2" height="3" fill="#8EE000" />
+            <rect x="8" y="8" width="1" height="3" fill="#8EE000" />
+            <rect x="11" y="8" width="1" height="3" fill="#8EE000" />
+          </svg>
+        </div>
+
+        <!-- Item 9: Orange Pill (5x1 at Col 7 to 11, Row 4) -->
+        <div class="z-20 p-1 flex items-center justify-center overflow-hidden" style="grid-column: 7 / span 5; grid-row: 4 / span 1;">
+          <div class="w-full h-full rounded-full bg-[#FF6E00] text-[#0C0C0E] font-unbounded font-black text-[10px] sm:text-xs md:text-sm tracking-wide uppercase flex items-center justify-center shadow-[0_4px_16px_rgba(255,110,0,0.4)] select-none px-2 overflow-hidden">
+            <span id="pill-text-orange" class="truncate">DIBICARAKAN</span>
+          </div>
+        </div>
+
+        <!-- Item 10: Pink 5-Point Star (4x4 at Col 18 to 21, Row 2 to 5) -->
+        <div class="z-10 p-2 flex items-center justify-center overflow-hidden" style="grid-column: 18 / span 4; grid-row: 2 / span 4;" title="Pink Star (4x4 Grid Block)">
+          <svg viewBox="0 0 60 60" class="w-full h-full max-w-full max-h-full filter drop-shadow-[0_4px_16px_rgba(255,75,147,0.45)]" preserveAspectRatio="xMidYMid meet">
+            <polygon points="30,2 38,22 59,23 42,37 48,58 30,46 12,58 18,37 1,23 22,22" fill="#FF4B93" />
+          </svg>
+        </div>
+
+        <!-- Item 11: Yellow 8-Bit Pixel Heart (1x1 at Col 3, Row 5) -->
+        <div class="z-10 p-2 flex items-center justify-center overflow-hidden" style="grid-column: 3 / span 1; grid-row: 5 / span 1;" title="Pixel Heart (1x1)">
+          <svg viewBox="0 0 13 11" class="w-full h-full max-w-full max-h-full pixelated filter drop-shadow-[0_2px_8px_rgba(255,214,0,0.45)]" preserveAspectRatio="xMidYMid meet">
+            <rect x="2" y="0" width="3" height="1" fill="#FFD600" />
+            <rect x="8" y="0" width="3" height="1" fill="#FFD600" />
+            <rect x="1" y="1" width="5" height="1" fill="#FFD600" />
+            <rect x="7" y="1" width="5" height="1" fill="#FFD600" />
+            <rect x="0" y="2" width="13" height="3" fill="#FFD600" />
+            <rect x="1" y="5" width="11" height="1" fill="#FFD600" />
+            <rect x="2" y="6" width="9" height="1" fill="#FFD600" />
+            <rect x="3" y="7" width="7" height="1" fill="#FFD600" />
+            <rect x="4" y="8" width="5" height="1" fill="#FFD600" />
+            <rect x="5" y="9" width="3" height="1" fill="#FFD600" />
+            <rect x="6" y="10" width="1" height="1" fill="#FFD600" />
+          </svg>
+        </div>
+
+        <!-- Item 12: Bright Yellow Pill (5x1 at Col 12 to 16, Row 5) -->
+        <div class="z-20 p-1 flex items-center justify-center overflow-hidden" style="grid-column: 12 / span 5; grid-row: 5 / span 1;">
+          <div class="w-full h-full rounded-full bg-[#FFD600] text-[#0C0C0E] font-unbounded font-black text-[10px] sm:text-xs md:text-sm tracking-wide uppercase flex items-center justify-center shadow-[0_4px_16px_rgba(255,214,0,0.35)] select-none px-2 overflow-hidden">
+            <span id="pill-text-yellow" class="truncate">BANGGA</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 5. BOTTOM SCALLOP PERFORATED WAVE (100% Edge-to-Edge) -->
+    <div class="w-full absolute bottom-0 left-0 right-0 overflow-hidden leading-none z-30 pointer-events-none translate-y-[1px]">
+      <svg class="w-full h-3 sm:h-3.5 block" viewBox="0 0 1200 12" preserveAspectRatio="none">
+        <defs>
+          <pattern id="scallop-stamp-bottom" width="20" height="12" patternUnits="userSpaceOnUse">
+            <path d="M 0,12 L 20,12 L 20,0 C 16,0 14,10 10,10 C 6,10 4,0 0,0 Z" fill="#F5F2EC" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="12" fill="url(#scallop-stamp-bottom)" />
+      </svg>
+    </div>
+
+  </section>
+
+  <!-- ================= JAVASCRIPT: ADVANCED TUNING ENGINE ================= -->
+  <script>
+    lucide.createIcons();
+
+    function toggleRefModal() {
+      const modal = document.getElementById('ref-modal');
+      modal.classList.toggle('hidden');
+      modal.classList.toggle('flex');
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast-msg');
+      const text = document.getElementById('toast-text');
+      text.textContent = message;
+      toast.classList.remove('opacity-0', '-translate-y-4');
+      toast.classList.add('opacity-100', 'translate-y-0');
+      setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', '-translate-y-4');
+      }, 2200);
+    }
+
+    // ================= STATE CONFIGURATION =================
+    let currentText = "4jectiv";
+    let currentFont = "rubik";
+    let colorMode = "pink";
+    let selectedIndex = 0; // Currently active letter index
+    let activeNavId = "portofolio"; // Active navigation item
+
+    // ================= DYNAMIC SCROLL NAVBAR CONTROLLER =================
+    function handleNavbarScroll() {
+      const floatNav = document.getElementById('floating-navbar');
+      const dockText = document.getElementById('dock-nav-mode-text');
+      if (!floatNav) return;
+
+      const scrollPos = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+
+      // When scrolled down > 40px, reveal floating navbar (no edge lines, active bold+underline)
+      if (scrollPos > 40) {
+        floatNav.classList.remove('-translate-y-28', 'opacity-0', 'pointer-events-none');
+        floatNav.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+        if (dockText) dockText.textContent = 'Nav: Melayang (Scrolled) ☁️';
+      } else {
+        // At the very top: hide floating navbar, hero shows in-grid navbar with left-right fading lines
+        floatNav.classList.add('-translate-y-28', 'opacity-0', 'pointer-events-none');
+        floatNav.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+        if (dockText) dockText.textContent = 'Nav: Garis Tepis (Top) 📐';
+      }
+    }
+
+    function toggleNavStyle() {
+      const scrollPos = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+      if (scrollPos > 40) {
+        scrollToTopView();
+      } else {
+        scrollToScrolledView();
+      }
+    }
+
+    function scrollToTopView() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      showToast('Posisi Atas: Menampilkan Navbar In-Grid dengan Garis Tepis');
+    }
+
+    function scrollToScrolledView() {
+      const catalog = document.getElementById('katalog');
+      if (catalog) {
+        catalog.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: 350, behavior: 'smooth' });
+      }
+      showToast('Posisi Scrolled: Menampilkan Navbar Melayang (Tanpa Garis Tepis)');
+    }
+
+    function setActiveNav(navKey) {
+      activeNavId = navKey;
+      const navKeys = ['layanan', 'portofolio', 'kontak'];
+
+      // Update floating nav buttons (No edge lines, bold + underline for active)
+      navKeys.forEach(key => {
+        const floatBtn = document.getElementById('float-nav-' + key);
+        if (floatBtn) {
+          if (key === navKey) {
+            floatBtn.className = 'floating-nav-btn font-sans text-xs sm:text-sm font-bold text-black border-b-2 border-black pb-0.5 transition-all cursor-pointer';
+          } else {
+            floatBtn.className = 'floating-nav-btn font-sans text-xs sm:text-sm font-medium text-black/60 hover:text-black border-b-2 border-transparent pb-0.5 transition-all cursor-pointer';
+          }
+        }
+
+        const gridText = document.getElementById('grid-nav-text-' + key);
+        if (gridText) {
+          if (key === navKey) {
+            gridText.className = 'font-sans font-bold text-xs sm:text-sm tracking-wide text-black border-b-2 border-black pb-0.5 uppercase leading-none truncate block';
+          } else {
+            gridText.className = 'font-sans font-medium text-xs sm:text-sm tracking-wide text-black/80 hover:text-black border-b-2 border-transparent pb-0.5 transition-colors uppercase leading-none truncate block';
+          }
+        }
+      });
+
+      const labelMap = {
+        'layanan': 'Layanan',
+        'portofolio': 'Portofolio',
+        'kontak': 'Kontak'
+      };
+      showToast(`Navigasi Aktif: ${labelMap[navKey] || navKey}`);
+    }
+
+    // ================= MANIFESTO CONSTELLATION COPY OPTIONS =================
+    const MANIFESTO_COPY_OPTIONS = {
+      fourjective: {
+        headline: "KAMI MEMBUAT SEGALANYA AGAR KAMU...",
+        pink: "DICINTAI",
+        green: "DILIRIK",
+        orange: "DIBICARAKAN",
+        blue: "TERPANA",
+        yellow: "BANGGA"
+      },
+      studio: {
+        headline: "SETIAP DETAIL KARYA KAMI DIBUAT AGAR...",
+        pink: "LEBIH ESTETIK",
+        green: "BEBAS CLICHÉ",
+        orange: "CINEMATIC 4K",
+        blue: "INTERAKTIF AR",
+        yellow: "ABADI SELAMANYA"
+      },
+      lorem: {
+        headline: "LOREM IPSUM DOLOR SIT AMET",
+        pink: "LOREM IPSUM",
+        green: "CONSECTETUR",
+        orange: "ADIPISCING",
+        blue: "ELIT SED DO",
+        yellow: "TEMPOR INCIDIDUNT"
+      },
+      bumaga: {
+        headline: "ДЕЛАЕМ ВСЕ, ЧТОБЫ ВАС",
+        pink: "ЛЮБИЛИ",
+        green: "ЗАХОТЕЛИ",
+        orange: "ОБСУЖДАЛИ",
+        blue: "ЗАМЕЧАЛИ",
+        yellow: "ВЫБИРАЛИ"
+      }
+    };
+
+    let activeManifestoKey = 'fourjective';
+
+    function setManifestoCopy(key) {
+      const data = MANIFESTO_COPY_OPTIONS[key];
+      if (!data) return;
+      activeManifestoKey = key;
+
+      const headlineEl = document.getElementById('manifesto-headline');
+      if (headlineEl) {
+        headlineEl.style.opacity = '0';
+        headlineEl.style.transform = 'translateY(-4px)';
+        headlineEl.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+        setTimeout(() => {
+          headlineEl.textContent = data.headline;
+          headlineEl.style.opacity = '1';
+          headlineEl.style.transform = 'translateY(0)';
+        }, 150);
+      }
+
+      const pillKeys = ['pink', 'green', 'orange', 'blue', 'yellow'];
+      pillKeys.forEach((p, idx) => {
+        const el = document.getElementById('pill-text-' + p);
+        if (el) {
+          setTimeout(() => {
+            el.style.opacity = '0';
+            el.style.transform = 'scale(0.9)';
+            el.style.transition = 'opacity 0.15s ease, transform 0.15s ease';
+            setTimeout(() => {
+              el.textContent = data[p];
+              el.style.opacity = '1';
+              el.style.transform = 'scale(1)';
+            }, 120);
+          }, idx * 30);
+        }
+      });
+
+      // Update switcher buttons styling
+      ['fourjective', 'studio', 'lorem', 'bumaga'].forEach(k => {
+        const btn = document.getElementById('copy-btn-' + k);
+        if (btn) {
+          if (k === key) {
+            btn.className = 'px-3.5 py-1.5 rounded-full bg-pink-600 text-white font-unbounded font-black text-[10px] shadow-md shadow-pink-600/30 transition-all';
+          } else {
+            btn.className = 'px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-stone-300 font-unbounded font-bold text-[10px] transition-all';
+          }
+        }
+      });
+
+      const labelMap = {
+        fourjective: 'Opsi 1: Fourjective (Emosional)',
+        studio: 'Opsi 2: Kualitas Studio',
+        lorem: 'Opsi 3: Teks Lorem Ipsum',
+        bumaga: 'Opsi 4: BuMaGa Original'
+      };
+      showToast(`Konten diubah ke: ${labelMap[key] || key}`);
+    }
+
+    // ================= INITIALIZE ARCHITECTURAL BLUEPRINT GRID CELLS (VARIED: X, BOX, 2x1, 4x4) =================
+    function initGridMatrixCells() {
+      const container = document.getElementById('grid-matrix-cells');
+      if (!container) return;
+
+      const cellSvg = '<svg class="w-full h-full stroke-white/[0.08]" preserveAspectRatio="none" viewBox="0 0 100 100"><line x1="0" y1="0" x2="100" y2="100" stroke-width="1.2"/><line x1="100" y1="0" x2="0" y2="100" stroke-width="1.2"/></svg>';
+      
+      const BLUEPRINT_CELLS = [
+        // 1x1 Cells with 'X'
+        { type: 'x', col: 1, row: 1 },
+        { type: 'x', col: 13, row: 1 },
+        { type: 'x', col: 17, row: 1 },
+        { type: 'x', col: 19, row: 1 },
+        { type: 'x', col: 21, row: 1 },
+        
+        { type: 'x', col: 8, row: 2 },
+        { type: 'x', col: 9, row: 2 },
+        { type: 'x', col: 22, row: 2 },
+        
+        { type: 'x', col: 7, row: 3 },
+        { type: 'x', col: 8, row: 3 },
+        { type: 'x', col: 11, row: 3 },
+        { type: 'x', col: 16, row: 3 },
+        
+        { type: 'x', col: 1, row: 4 },
+        { type: 'x', col: 2, row: 4 },
+        { type: 'x', col: 3, row: 4 },
+        { type: 'x', col: 4, row: 4 },
+        { type: 'x', col: 13, row: 4 },
+        { type: 'x', col: 17, row: 4 },
+        
+        { type: 'x', col: 6, row: 5 },
+        { type: 'x', col: 9, row: 5 },
+        { type: 'x', col: 10, row: 5 },
+        { type: 'x', col: 17, row: 5 },
+        { type: 'x', col: 22, row: 5 },
+
+        // 1x1 Empty Boxes (Border only, no X)
+        { type: 'box', col: 3, row: 1 },
+        { type: 'box', col: 10, row: 1 },
+        { type: 'box', col: 12, row: 1 },
+        { type: 'box', col: 14, row: 1 },
+        { type: 'box', col: 18, row: 1 },
+        { type: 'box', col: 20, row: 1 },
+        
+        { type: 'box', col: 12, row: 2 },
+        
+        { type: 'box', col: 17, row: 3 },
+        
+        { type: 'box', col: 5, row: 4 },
+        { type: 'box', col: 16, row: 4 },
+        { type: 'box', col: 22, row: 4 },
+        
+        { type: 'box', col: 1, row: 5 },
+        { type: 'box', col: 11, row: 5 },
+        { type: 'box', col: 16, row: 5 },
+
+        // 2x1 Empty Rectangle Blocks (Border around 2 cols x 1 row)
+        { type: 'box', col: 8, row: 1, cspan: 2, rspan: 1 },
+        { type: 'box', col: 1, row: 2, cspan: 2, rspan: 1 },
+        { type: 'box', col: 10, row: 2, cspan: 2, rspan: 1 },
+        { type: 'box', col: 9, row: 3, cspan: 2, rspan: 1 },
+        { type: 'box', col: 12, row: 3, cspan: 2, rspan: 1 },
+        { type: 'box', col: 11, row: 4, cspan: 2, rspan: 1 },
+        { type: 'box', col: 14, row: 4, cspan: 2, rspan: 1 },
+        { type: 'box', col: 4, row: 5, cspan: 2, rspan: 1 },
+        { type: 'box', col: 7, row: 5, cspan: 2, rspan: 1 },
+
+        // 4x4 Empty Star Footprint Block (Border around 4 cols x 4 rows)
+        { type: 'box', col: 18, row: 2, cspan: 4, rspan: 4 }
+      ];
+
+      let html = '';
+      BLUEPRINT_CELLS.forEach(c => {
+        const cspan = c.cspan || 1;
+        const rspan = c.rspan || 1;
+        const style = `grid-column: ${c.col} / span ${cspan}; grid-row: ${c.row} / span ${rspan};`;
+        if (c.type === 'x') {
+          html += `<div class="border border-white/[0.08] relative overflow-hidden flex items-center justify-center pointer-events-none" style="${style}">${cellSvg}</div>`;
+        } else {
+          html += `<div class="border border-white/[0.08] relative overflow-hidden pointer-events-none" style="${style}"></div>`;
+        }
+      });
+      container.innerHTML = html;
+    }
+
+    // Global modifiers
+    let globalFanSpread = 1.0;
+    let globalLetterSpacing = 0; // px
+    let globalLayerRot = 0.0;    // deg
+
+    const FONT_MAP = {
+      rubik: "'Rubik', sans-serif",
+      dela: "'Dela Gothic One', cursive",
+      paytone: "'Paytone One', sans-serif",
+      unbounded: "'Unbounded', sans-serif",
+      syne: "'Syne', sans-serif"
+    };
+
+    const PALETTES = {
+      pink: {
+        // Base: Vibrant Hot Pink (#FF2B99). Each layer is in the exact same hue, stepped ~0.05 subtly
+        topGradient: 'radial-gradient(ellipse at 16% 16%, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.45) 24%, rgba(255, 255, 255, 0) 52%), linear-gradient(135deg, #FFC2E6 0%, #FF60B7 35%, #FF2B99 75%, #F5188E 100%)',
+        layers: [
+          '#F72493', // Layer 1 (~0.03 step, pure vibrant hot pink)
+          '#EF148A', // Layer 2 (~0.05 step)
+          '#E60580', // Layer 3 (~0.08 step)
+          '#DC0076', // Layer 4 (~0.11 step)
+          '#D0006E'  // Layer 5 (~0.14 step, stays rich pink, NO dark maroon!)
+        ],
+        shadowBase: 'rgba(130, 0, 65, '
+      },
+      orange: {
+        // Base: Fourjective Electric Orange (#FF6E00). Each layer remains pure saturated orange
+        topGradient: 'radial-gradient(ellipse at 16% 16%, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.45) 24%, rgba(255, 255, 255, 0) 52%), linear-gradient(135deg, #FFE2C7 0%, #FF8F38 35%, #FF6E00 75%, #F56500 100%)',
+        layers: [
+          '#F76600', // Layer 1 (pure punchy orange)
+          '#EE5D00', // Layer 2
+          '#E55500', // Layer 3
+          '#DC4C00', // Layer 4
+          '#D04400'  // Layer 5 (rich deep orange, NO dark mud or brown!)
+        ],
+        shadowBase: 'rgba(120, 35, 0, '
+      },
+      multi: {
+        topGradient: 'radial-gradient(ellipse at 16% 16%, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.45) 24%, rgba(255, 255, 255, 0) 52%), linear-gradient(135deg, #FFB8EC 0%, #FF2E93 45%, #00F0FF 100%)',
+        layers: ['#E6007A', '#B0109E', '#6818B8', '#1A40D0', '#0080DE'],
+        shadowBase: 'rgba(20, 0, 40, '
+      }
+    };
+
+    // Default base vectors and character personalities matching BuMaGa
+    const DEFAULT_CHAR_DEFAULTS = {
+      '4': { baseRot: -2.5, yOffset: 0,  xOffset: 0, fanSpread: 1.0, layerRot: -1.2, dx: -4.5, dy: 5.8 },
+      'j': { baseRot: -1.5, yOffset: 2,  xOffset: 0, fanSpread: 1.0, layerRot: -1.3, dx: -4.2, dy: 6.2 },
+      'e': { baseRot: 1.0,  yOffset: -2, xOffset: 0, fanSpread: 1.0, layerRot: -1.0, dx: -4.0, dy: 5.6 },
+      'c': { baseRot: -1.8, yOffset: 1,  xOffset: 0, fanSpread: 1.0, layerRot: -1.2, dx: -4.3, dy: 5.8 },
+      't': { baseRot: 1.0,  yOffset: -3, xOffset: 0, fanSpread: 1.0, layerRot: -0.9, dx: -3.8, dy: 6.0 },
+      'i': { baseRot: -0.5, yOffset: 2,  xOffset: 0, fanSpread: 1.0, layerRot: -0.8, dx: -3.4, dy: 6.2 },
+      'v': { baseRot: 2.0,  yOffset: -1, xOffset: 0, fanSpread: 1.0, layerRot: -1.0, dx: -4.0, dy: 5.8 },
+      'J': { baseRot: -2.0, yOffset: 2,  xOffset: 0, fanSpread: 1.0, layerRot: -1.4, dx: -4.5, dy: 6.5 },
+      'f': { baseRot: -2.5, yOffset: 0,  xOffset: 0, fanSpread: 1.0, layerRot: -1.2, dx: -4.5, dy: 5.6 },
+      'o': { baseRot: 1.5,  yOffset: -1, xOffset: 0, fanSpread: 1.0, layerRot: -1.0, dx: -4.0, dy: 5.8 },
+      'u': { baseRot: -1.0, yOffset: 1,  xOffset: 0, fanSpread: 1.0, layerRot: -1.1, dx: -4.2, dy: 6.0 },
+      'r': { baseRot: 2.0,  yOffset: -2, xOffset: 0, fanSpread: 1.0, layerRot: -1.0, dx: -3.8, dy: 5.6 }
+    };
+
+    // Array of per-character configs currently active
+    let letterConfigs = [];
+
+    function initLetterConfigs(text) {
+      letterConfigs = text.split('').map((char, i) => {
+        const d = DEFAULT_CHAR_DEFAULTS[char] || DEFAULT_CHAR_DEFAULTS[char.toLowerCase()] || {
+          baseRot: 0, yOffset: 0, xOffset: 0, fanSpread: 1.0, layerRot: -1.1, dx: -4.2, dy: 5.8
+        };
+        return {
+          char: char,
+          index: i,
+          baseRot: d.baseRot,
+          yOffset: d.yOffset || 0,
+          xOffset: d.xOffset || 0,
+          fanSpread: d.fanSpread || 1.0,
+          layerRot: d.layerRot || -1.1,
+          dx: d.dx || -4.2,
+          dy: d.dy || 5.8
+        };
+      });
+      if (selectedIndex >= letterConfigs.length) {
+        selectedIndex = 0;
+      }
+    }
+
+    // ================= RENDER STICKER TEXT ENGINE =================
+    const container = document.getElementById('sticker-container');
+
+    function renderStickerText() {
+      container.innerHTML = '';
+      const palette = PALETTES[colorMode];
+      const fontCSS = FONT_MAP[currentFont];
+      const TOTAL_LAYERS = 6;
+
+      const len = letterConfigs.length;
+      const vwTarget = (len <= 7) ? (94 / len) : (90 / len);
+      const vhTarget = (len <= 7) ? 28 : 20;
+      const fontSize = `clamp(3.8rem, min(${vwTarget}vw, ${vhTarget}vh), 15rem)`;
+
+      letterConfigs.forEach((cfg, idx) => {
+        if (cfg.char === ' ') {
+          const spacer = document.createElement('div');
+          spacer.className = 'w-4 sm:w-8 inline-block flex-shrink-0';
+          container.appendChild(spacer);
+          return;
+        }
+
+        const stack = document.createElement('div');
+        stack.className = 'letter-stack' + (idx === selectedIndex ? ' is-selected' : '');
+        stack.id = 'stack-' + idx;
+        stack.dataset.index = idx;
+        stack.dataset.char = cfg.char;
+
+        stack.style.fontSize = fontSize;
+        stack.style.fontFamily = fontCSS;
+        stack.style.marginRight = `${globalLetterSpacing}px`;
+
+        // Direct position and rotation transform
+        stack.style.transform = `translate(${cfg.xOffset}px, ${cfg.yOffset}px) rotate(${cfg.baseRot}deg)`;
+
+        // Floating tag for selected letter
+        if (idx === selectedIndex) {
+          const tag = document.createElement('span');
+          tag.className = 'selection-tag';
+          tag.id = 'active-tag';
+          tag.textContent = `Edit: "${cfg.char}" (#${idx + 1})`;
+          stack.appendChild(tag);
+        }
+
+        // On-click: Select this letter
+        stack.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectLetter(idx);
+          toggleStudioDrawer(true);
+        });
+
+        // Render 6 stacked layers: back (5) to front (0)
+        for (let l = TOTAL_LAYERS - 1; l >= 0; l--) {
+          const layerSpan = document.createElement('span');
+          layerSpan.className = `sticker-layer layer-${l}`;
+          layerSpan.id = `layer-${idx}-${l}`;
+          layerSpan.textContent = cfg.char;
+          layerSpan.style.fontFamily = fontCSS;
+
+          const totalFan = cfg.fanSpread * globalFanSpread;
+          const offsetX = (cfg.dx * l) * totalFan;
+          const offsetY = (cfg.dy * l) * totalFan;
+          const offsetRot = (cfg.layerRot * l * totalFan) + (globalLayerRot * l);
+
+          layerSpan.style.transform = `translate(${offsetX}px, ${offsetY}px) rotate(${offsetRot}deg)`;
+
+          if (l === 0) {
+            // Front top face
+            layerSpan.classList.add('layer-top');
+            layerSpan.style.backgroundImage = palette.topGradient;
+            layerSpan.style.webkitBackgroundClip = 'text';
+            layerSpan.style.webkitTextFillColor = 'transparent';
+            layerSpan.style.zIndex = '30';
+          } else {
+            // Stacked paper sheets (Layers 1-5)
+            const layerColor = palette.layers[l - 1];
+            layerSpan.style.color = layerColor;
+            layerSpan.style.zIndex = (30 - l * 5).toString();
+
+            if (l === 1) {
+              layerSpan.style.filter = `drop-shadow(1px 1.5px 1px ${palette.shadowBase}0.24))`;
+            } else if (l === 2) {
+              layerSpan.style.filter = `drop-shadow(1.5px 2.5px 2px ${palette.shadowBase}0.36))`;
+            } else if (l === 3) {
+              layerSpan.style.filter = `drop-shadow(2px 4px 3px ${palette.shadowBase}0.50))`;
+            } else if (l === 4) {
+              layerSpan.style.filter = `drop-shadow(3px 6px 5px ${palette.shadowBase}0.64))`;
+            } else if (l === TOTAL_LAYERS - 1) {
+              layerSpan.style.filter = `
+                drop-shadow(4px 8px 6px ${palette.shadowBase}0.78))
+                drop-shadow(7px 16px 20px rgba(0, 0, 0, 0.42))
+                drop-shadow(12px 28px 36px rgba(0, 0, 0, 0.25))
+              `;
+            }
+          }
+
+          stack.appendChild(layerSpan);
+        }
+
+        container.appendChild(stack);
+      });
+
+      updateLetterChips();
+      syncDrawerInputs();
+      updateExportPreview();
+    }
+
+    // ================= REALTIME DOM UPDATES (NO REBUILD, 60+ FPS) =================
+    function updateSingleLetterDOM(idx) {
+      const cfg = letterConfigs[idx];
+      if (!cfg) return;
+
+      const stack = document.getElementById('stack-' + idx);
+      if (!stack) return;
+
+      // Update stack root
+      stack.style.transform = `translate(${cfg.xOffset}px, ${cfg.yOffset}px) rotate(${cfg.baseRot}deg)`;
+      stack.style.marginRight = `${globalLetterSpacing}px`;
+
+      // Update child layers
+      const TOTAL_LAYERS = 6;
+      for (let l = 0; l < TOTAL_LAYERS; l++) {
+        const layerSpan = document.getElementById(`layer-${idx}-${l}`);
+        if (!layerSpan) continue;
+
+        const totalFan = cfg.fanSpread * globalFanSpread;
+        const offsetX = (cfg.dx * l) * totalFan;
+        const offsetY = (cfg.dy * l) * totalFan;
+        const offsetRot = (cfg.layerRot * l * totalFan) + (globalLayerRot * l);
+
+        layerSpan.style.transform = `translate(${offsetX}px, ${offsetY}px) rotate(${offsetRot}deg)`;
+      }
+
+      updateExportPreview();
+    }
+
+    function updateAllLettersDOM() {
+      letterConfigs.forEach((_, idx) => updateSingleLetterDOM(idx));
+    }
+
+    // ================= SELECTION & CHIPS LOGIC =================
+    function selectLetter(idx) {
+      selectedIndex = idx;
+      
+      // Update DOM selection classes
+      document.querySelectorAll('.letter-stack').forEach((st, i) => {
+        if (i === idx) {
+          st.classList.add('is-selected');
+          let tag = st.querySelector('.selection-tag');
+          if (!tag) {
+            tag = document.createElement('span');
+            tag.className = 'selection-tag';
+            st.appendChild(tag);
+          }
+          tag.textContent = `Edit: "${letterConfigs[idx].char}" (#${idx + 1})`;
+        } else {
+          st.classList.remove('is-selected');
+          const tag = st.querySelector('.selection-tag');
+          if (tag) tag.remove();
+        }
+      });
+
+      updateLetterChips();
+      syncDrawerInputs();
+    }
+
+    function selectNextLetter(dir) {
+      const nextIdx = (selectedIndex + dir + letterConfigs.length) % letterConfigs.length;
+      selectLetter(nextIdx);
+    }
+
+    function updateLetterChips() {
+      const dockChips = document.getElementById('dock-letter-chips');
+      const drawerChips = document.getElementById('drawer-letter-chips');
+      const activeCharBadge = document.getElementById('dock-active-char');
+      const drawerDisplay = document.getElementById('selected-char-display');
+
+      if (letterConfigs[selectedIndex]) {
+        activeCharBadge.textContent = letterConfigs[selectedIndex].char;
+        drawerDisplay.textContent = `"${letterConfigs[selectedIndex].char}" (Urutan #${selectedIndex + 1})`;
+      }
+
+      const generateChipHtml = (isDrawer) => {
+        return letterConfigs.map((cfg, idx) => {
+          const isSel = idx === selectedIndex;
+          const bg = isSel 
+            ? 'bg-pink-600 text-white shadow-md shadow-pink-500/50 scale-105' 
+            : 'bg-white/10 text-stone-300 hover:bg-white/20';
+          const size = isDrawer ? 'px-3 py-1.5 text-xs' : 'px-2 py-0.5 text-[10px]';
+          return `
+            <button onclick="selectLetter(${idx})" class="${size} rounded-xl font-unbounded font-black ${bg} transition-all">
+              ${cfg.char}
+            </button>
+          `;
+        }).join('');
+      };
+
+      if (dockChips) dockChips.innerHTML = generateChipHtml(false);
+      if (drawerChips) drawerChips.innerHTML = generateChipHtml(true);
+    }
+
+    // ================= SLIDER & INPUT HANDLERS =================
+    function onLetterParamChange(param, value) {
+      const val = parseFloat(value);
+      const cfg = letterConfigs[selectedIndex];
+      if (!cfg) return;
+
+      cfg[param] = val;
+
+      // Update text displays
+      const valEl = document.getElementById('val-' + param);
+      if (valEl) {
+        if (param === 'baseRot' || param === 'layerRot') valEl.textContent = `${val.toFixed(1)}°`;
+        else if (param === 'yOffset' || param === 'xOffset') valEl.textContent = `${val}px`;
+        else if (param === 'fanSpread') valEl.textContent = `${val.toFixed(2)}x`;
+        else if (param === 'dx' || param === 'dy') valEl.textContent = `${val > 0 ? '+' : ''}${val.toFixed(1)}px`;
+      }
+
+      updateSingleLetterDOM(selectedIndex);
+    }
+
+    function onGlobalParamChange(param, value) {
+      const val = parseFloat(value);
+      if (param === 'globalFanSpread') {
+        globalFanSpread = val;
+        document.getElementById('global-fan-val').textContent = `${val.toFixed(2)}x`;
+      } else if (param === 'globalLetterSpacing') {
+        globalLetterSpacing = val;
+        document.getElementById('global-spacing-val').textContent = `${val}px`;
+      } else if (param === 'globalLayerRot') {
+        globalLayerRot = val;
+        document.getElementById('global-rot-val').textContent = `${val.toFixed(1)}°`;
+      }
+
+      updateAllLettersDOM();
+    }
+
+    function syncDrawerInputs() {
+      const cfg = letterConfigs[selectedIndex];
+      if (!cfg) return;
+
+      // Sync per-letter sliders
+      const setSlider = (id, val, textId, suffix = '') => {
+        const slider = document.getElementById(id);
+        const text = document.getElementById(textId);
+        if (slider) slider.value = val;
+        if (text) text.textContent = `${val}${suffix}`;
+      };
+
+      setSlider('slider-baseRot', cfg.baseRot, 'val-baseRot', '°');
+      setSlider('slider-yOffset', cfg.yOffset, 'val-yOffset', 'px');
+      setSlider('slider-xOffset', cfg.xOffset, 'val-xOffset', 'px');
+      setSlider('slider-fanSpread', cfg.fanSpread, 'val-fanSpread', 'x');
+      setSlider('slider-layerRot', cfg.layerRot, 'val-layerRot', '°');
+      setSlider('slider-dx', cfg.dx, 'val-dx', 'px');
+      setSlider('slider-dy', cfg.dy, 'val-dy', 'px');
+    }
+
+    function resetCurrentLetter() {
+      const cfg = letterConfigs[selectedIndex];
+      if (!cfg) return;
+      const d = DEFAULT_CHAR_DEFAULTS[cfg.char] || DEFAULT_CHAR_DEFAULTS[cfg.char.toLowerCase()] || {
+        baseRot: 0, yOffset: 0, xOffset: 0, fanSpread: 1.0, layerRot: -1.1, dx: -4.2, dy: 5.8
+      };
+      cfg.baseRot = d.baseRot;
+      cfg.yOffset = d.yOffset || 0;
+      cfg.xOffset = d.xOffset || 0;
+      cfg.fanSpread = d.fanSpread || 1.0;
+      cfg.layerRot = d.layerRot || -1.1;
+      cfg.dx = d.dx || -4.2;
+      cfg.dy = d.dy || 5.8;
+
+      syncDrawerInputs();
+      updateSingleLetterDOM(selectedIndex);
+      showToast(`Huruf "${cfg.char}" dikembalikan ke default!`);
+    }
+
+    function resetAllToDefault() {
+      initLetterConfigs(currentText);
+      globalFanSpread = 1.0;
+      globalLetterSpacing = 0;
+      globalLayerRot = 0.0;
+      document.getElementById('global-fan-slider').value = 1.0;
+      document.getElementById('global-fan-val').textContent = '1.0x';
+      document.getElementById('global-spacing-slider').value = 0;
+      document.getElementById('global-spacing-val').textContent = '0px';
+      document.getElementById('global-rot-slider').value = 0;
+      document.getElementById('global-rot-val').textContent = '0.0°';
+      renderStickerText();
+      showToast('Semua pengaturan dikembalikan ke default BuMaGa!');
+    }
+
+    // ================= PRESETS LOGIC =================
+    function applyPreset(presetKey) {
+      if (presetKey === 'lockedUser') {
+        const lockedPreset = {
+          type: "4JECTIV_TYPO_PRESET",
+          presetName: "Custom 4jectiv Tuning (Locked)",
+          text: "4JECTIV",
+          font: "unbounded",
+          colorMode: "multi",
+          global: {
+            fanSpread: 2.5,
+            letterSpacing: 0,
+            layerRot: -0.5
+          },
+          letters: [
+            { char: "4", baseRot: 9.5, yOffset: -80, xOffset: -20, fanSpread: 1.55, layerRot: 0.5, dx: 5.4, dy: 1 },
+            { char: "J", baseRot: -2, yOffset: 80, xOffset: -18, fanSpread: 0.95, layerRot: 3, dx: -4.5, dy: 6.5 },
+            { char: "E", baseRot: -9, yOffset: -80, xOffset: -8, fanSpread: 1, layerRot: -1.7, dx: -3.6, dy: 8.4 },
+            { char: "C", baseRot: -17.5, yOffset: 80, xOffset: -14, fanSpread: 1.25, layerRot: -5, dx: -2, dy: 5.8 },
+            { char: "T", baseRot: 10.5, yOffset: -41, xOffset: -60, fanSpread: 1.3, layerRot: -2.6, dx: 6, dy: 4 },
+            { char: "I", baseRot: -17.5, yOffset: 80, xOffset: 20, fanSpread: 1.4, layerRot: -0.8, dx: -3.4, dy: 6.2 },
+            { char: "V", baseRot: 2, yOffset: -80, xOffset: -39, fanSpread: 1.6, layerRot: -2.1, dx: 2, dy: 4.6 }
+          ]
+        };
+        applyPresetData(lockedPreset);
+        showToast('🔥 Preset hasil tuning Anda berhasil dimuat!');
+        return;
+      }
+
+      if (presetKey === 'bumaga') {
+        // BuMaGa Classic
+        initLetterConfigs(currentText);
+        globalFanSpread = 1.0;
+        globalLetterSpacing = 0;
+        globalLayerRot = 0;
+      } else if (presetKey === 'streetWave') {
+        // Street Wave: Alternating dynamic heights + contrasting rotations
+        const waveY = [-16, 14, -12, 16, -14, 12, -10, 14, -12, 10];
+        const waveRot = [-6.5, 5.0, -4.5, 6.0, -5.5, 4.5, -4.0, 5.5, -5.0, 4.0];
+        letterConfigs.forEach((cfg, i) => {
+          cfg.yOffset = waveY[i % waveY.length];
+          cfg.baseRot = waveRot[i % waveRot.length];
+          cfg.fanSpread = 1.1;
+          cfg.layerRot = -1.3;
+        });
+        globalFanSpread = 1.05;
+        globalLetterSpacing = 4;
+      } else if (presetKey === 'fanatic') {
+        // Super Fanatic: Huge fanning distance and rotation
+        letterConfigs.forEach((cfg, i) => {
+          cfg.fanSpread = 1.8;
+          cfg.layerRot = -2.2;
+          cfg.dx = -5.5;
+          cfg.dy = 7.0;
+        });
+        globalFanSpread = 1.35;
+        globalLayerRot = -0.5;
+      } else if (presetKey === 'flat') {
+        // Flat & Clean 0
+        letterConfigs.forEach((cfg) => {
+          cfg.baseRot = 0;
+          cfg.yOffset = 0;
+          cfg.xOffset = 0;
+          cfg.fanSpread = 0.85;
+          cfg.layerRot = 0;
+          cfg.dx = -4.0;
+          cfg.dy = 5.0;
+        });
+        globalFanSpread = 0.9;
+        globalLetterSpacing = 0;
+        globalLayerRot = 0;
+      }
+
+      renderStickerText();
+      showToast(`Preset "${presetKey}" berhasil diterapkan!`);
+    }
+
+    // ================= TAB SWITCHING =================
+    function switchTab(tabId) {
+      const tabs = ['per-huruf', 'global', 'presets', 'export'];
+      tabs.forEach(t => {
+        const btn = document.getElementById('tab-btn-' + t);
+        const content = document.getElementById('tab-content-' + t);
+        if (t === tabId) {
+          btn.className = 'flex-1 py-1.5 rounded-lg text-center font-unbounded font-black text-[10px] uppercase bg-pink-600 text-white transition-colors';
+          content.classList.remove('hidden');
+        } else {
+          btn.className = 'flex-1 py-1.5 rounded-lg text-center font-unbounded font-black text-[10px] uppercase bg-white/10 text-stone-300 hover:text-white transition-colors';
+          content.classList.add('hidden');
+        }
+      });
+      if (tabId === 'export') {
+        updateExportPreview();
+      }
+    }
+
+    function toggleStudioDrawer(show) {
+      const drawer = document.getElementById('studio-drawer');
+      const quickDock = document.getElementById('quick-dock');
+      if (show) {
+        drawer.classList.remove('hidden');
+        drawer.classList.add('flex');
+        quickDock.classList.add('opacity-0', 'pointer-events-none');
+        syncDrawerInputs();
+        lucide.createIcons();
+      } else {
+        drawer.classList.add('hidden');
+        drawer.classList.remove('flex');
+        quickDock.classList.remove('opacity-0', 'pointer-events-none');
+      }
+    }
+
+    // ================= TEXT & FONT CONTROLS =================
+    function changeText(text) {
+      currentText = text;
+      ['4jectiv', '4Jectiv', '4JECTIV', 'fourjectiv'].forEach(t => {
+        const btn = document.getElementById('btn-' + t);
+        if (btn) {
+          if (t === text) {
+            btn.className = 'py-1.5 rounded-xl bg-pink-600 text-white font-unbounded font-black text-[10px]';
+          } else {
+            btn.className = 'py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-unbounded font-black text-[10px]';
+          }
+        }
+      });
+      initLetterConfigs(currentText);
+      renderStickerText();
+    }
+
+    function changeFont(fontKey) {
+      currentFont = fontKey;
+      ['rubik', 'dela', 'paytone', 'unbounded'].forEach(f => {
+        const btn = document.getElementById('font-' + f);
+        if (btn) {
+          if (f === fontKey) {
+            btn.className = 'py-1.5 px-2 rounded-xl bg-yellow-400 text-black font-bold text-[10px]';
+          } else {
+            btn.className = 'py-1.5 px-2 rounded-xl bg-white/10 hover:bg-yellow-400 hover:text-black text-white font-bold text-[10px]';
+          }
+        }
+      });
+      renderStickerText();
+    }
+
+    function setColorMode(mode) {
+      colorMode = mode;
+      ['pink', 'orange', 'multi'].forEach(m => {
+        const btn = document.getElementById('palette-' + m);
+        if (btn) {
+          btn.style.borderColor = (m === mode) ? '#ffffff' : 'transparent';
+        }
+      });
+      renderStickerText();
+    }
+
+    // ================= PRESET SHARING, EXPORT & CHAT INTEGRATION =================
+    
+    // Robust clipboard copy with fallback for file:// protocol and older browsers
+    function copyToClipboard(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        return new Promise((resolve, reject) => {
+          const successful = document.execCommand('copy');
+          textArea.remove();
+          successful ? resolve() : reject();
+        });
+      }
+    }
+
+    function getFullPresetObject() {
+      return {
+        type: "4JECTIV_TYPO_PRESET",
+        presetName: "Custom 4jectiv Tuning",
+        text: currentText,
+        font: currentFont,
+        colorMode: colorMode,
+        global: {
+          fanSpread: parseFloat(globalFanSpread.toFixed(2)),
+          letterSpacing: globalLetterSpacing,
+          layerRot: parseFloat(globalLayerRot.toFixed(1))
+        },
+        letters: letterConfigs.map(c => ({
+          char: c.char,
+          baseRot: parseFloat(c.baseRot.toFixed(1)),
+          yOffset: c.yOffset,
+          xOffset: c.xOffset,
+          fanSpread: parseFloat(c.fanSpread.toFixed(2)),
+          layerRot: parseFloat(c.layerRot.toFixed(1)),
+          dx: parseFloat(c.dx.toFixed(1)),
+          dy: parseFloat(c.dy.toFixed(1))
+        }))
+      };
+    }
+
+    // Copy formatted preset specifically tailored to paste into AI chat
+    function copyPresetForChat() {
+      const presetObj = getFullPresetObject();
+      const chatFormattedText = `Nih preset 4jectiv hasil tuning gw:
+\`\`\`json
+${JSON.stringify(presetObj, null, 2)}
+\`\`\``;
+
+      copyToClipboard(chatFormattedText).then(() => {
+        showToast('Preset disalin! Siap dipaste (Ctrl+V) ke chat.');
+        openPresetShareModal(chatFormattedText);
+      }).catch(() => {
+        openPresetShareModal(chatFormattedText);
+        showToast('Buka modal untuk salin manual.');
+      });
+    }
+
+    function openPresetShareModal(text) {
+      const modal = document.getElementById('preset-share-modal');
+      const box = document.getElementById('modal-preset-box');
+      if (modal && box) {
+        box.value = text;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        lucide.createIcons();
+      }
+    }
+
+    function togglePresetModal(show) {
+      const modal = document.getElementById('preset-share-modal');
+      if (modal) {
+        if (show) {
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+        } else {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+        }
+      }
+    }
+
+    function copyModalPresetText() {
+      const box = document.getElementById('modal-preset-box');
+      if (!box) return;
+      box.select();
+      copyToClipboard(box.value).then(() => {
+        showToast('Tersalin! Tinggal paste ke chat Antigravity.');
+      });
+    }
+
+    function downloadPresetJson() {
+      const presetObj = getFullPresetObject();
+      const blob = new Blob([JSON.stringify(presetObj, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `4jectiv-preset-${currentText}-${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast('File preset berhasil diunduh!');
+    }
+
+    // ================= LOCAL STORAGE PRESET MANAGER =================
+    const STORAGE_KEY = '4jectiv_saved_presets';
+
+    function getSavedPresetsFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch(e) {
+        return [];
+      }
+    }
+
+    function saveCurrentPresetToLocal() {
+      const input = document.getElementById('preset-name-input');
+      let name = input ? input.value.trim() : '';
+      if (!name) {
+        name = `Preset ${currentText} (${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})`;
+      }
+      
+      const presetObj = getFullPresetObject();
+      presetObj.presetName = name;
+      presetObj.savedAt = new Date().toISOString();
+
+      const list = getSavedPresetsFromStorage();
+      list.unshift(presetObj);
+      if (list.length > 15) list.pop(); // Keep max 15 presets
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+
+      if (input) input.value = '';
+      renderSavedPresetsList();
+      showToast(`Preset "${name}" tersimpan di browser!`);
+    }
+
+    function loadSavedPreset(index) {
+      const list = getSavedPresetsFromStorage();
+      const preset = list[index];
+      if (!preset) return;
+
+      applyPresetData(preset);
+      showToast(`Preset "${preset.presetName || 'Tersimpan'}" berhasil dimuat!`);
+    }
+
+    function deleteSavedPreset(index) {
+      const list = getSavedPresetsFromStorage();
+      const removed = list.splice(index, 1);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+      renderSavedPresetsList();
+      showToast('Preset dihapus.');
+    }
+
+    function renderSavedPresetsList() {
+      const container = document.getElementById('saved-presets-list');
+      if (!container) return;
+
+      const list = getSavedPresetsFromStorage();
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div class="text-[10px] text-stone-500 font-mono py-1 text-center">
+            Belum ada preset tersimpan di browser
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = list.map((p, idx) => `
+        <div class="flex items-center justify-between p-2 rounded-xl bg-white/5 border border-white/5 text-[10px]">
+          <div class="truncate mr-2">
+            <span class="font-unbounded font-bold text-white">${p.presetName || 'Preset'}</span>
+            <span class="text-stone-400 font-mono text-[9px] ml-1.5">${p.text} • ${p.font}</span>
+          </div>
+          <div class="flex items-center gap-1 flex-shrink-0">
+            <button onclick="loadSavedPreset(${idx})" class="px-2 py-0.5 rounded-lg bg-pink-600 hover:bg-pink-500 text-white font-bold transition-colors">
+              Muat
+            </button>
+            <button onclick="deleteSavedPreset(${idx})" class="p-1 rounded-lg bg-white/10 hover:bg-red-500/20 text-stone-400 hover:text-red-300 transition-colors" title="Hapus">
+              ✕
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ================= IMPORT PRESET FROM CHAT =================
+    function importPresetFromInput() {
+      const box = document.getElementById('import-json-box');
+      if (!box || !box.value.trim()) {
+        showToast('Silakan paste JSON ke kotak import terlebih dahulu.');
+        return;
+      }
+
+      let rawStr = box.value.trim();
+      // Clean up markdown code block if present
+      rawStr = rawStr.replace(/```json/gi, '').replace(/```/g, '').trim();
+
+      try {
+        const parsed = JSON.parse(rawStr);
+        applyPresetData(parsed);
+        box.value = '';
+        showToast('🎉 Preset berhasil di-load ke layar!');
+      } catch (err) {
+        showToast('Format JSON tidak valid, periksa kembali paste Anda.');
+      }
+    }
+
+    function applyPresetData(data) {
+      if (data.text) {
+        currentText = data.text;
+      }
+      if (data.font && FONT_MAP[data.font]) {
+        currentFont = data.font;
+      }
+      if (data.colorMode && PALETTES[data.colorMode]) {
+        colorMode = data.colorMode;
+      }
+      if (data.global) {
+        if (typeof data.global.fanSpread === 'number') globalFanSpread = data.global.fanSpread;
+        if (typeof data.global.letterSpacing === 'number') globalLetterSpacing = data.global.letterSpacing;
+        if (typeof data.global.layerRot === 'number') globalLayerRot = data.global.layerRot;
+      }
+
+      // Update letters
+      if (Array.isArray(data.letters)) {
+        letterConfigs = data.letters.map((c, i) => ({
+          char: c.char || currentText[i] || '?',
+          index: i,
+          baseRot: typeof c.baseRot === 'number' ? c.baseRot : 0,
+          yOffset: typeof c.yOffset === 'number' ? c.yOffset : 0,
+          xOffset: typeof c.xOffset === 'number' ? c.xOffset : 0,
+          fanSpread: typeof c.fanSpread === 'number' ? c.fanSpread : 1.0,
+          layerRot: typeof c.layerRot === 'number' ? c.layerRot : -1.1,
+          dx: typeof c.dx === 'number' ? c.dx : -4.2,
+          dy: typeof c.dy === 'number' ? c.dy : 5.8
+        }));
+      } else {
+        initLetterConfigs(currentText);
+      }
+
+      // Sync active buttons
+      ['4jectiv', '4Jectiv', '4JECTIV', 'fourjectiv'].forEach(t => {
+        const btn = document.getElementById('btn-' + t);
+        if (btn) btn.className = (t === currentText)
+          ? 'py-1.5 rounded-xl bg-pink-600 text-white font-unbounded font-black text-[10px]'
+          : 'py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-unbounded font-black text-[10px]';
+      });
+
+      ['rubik', 'dela', 'paytone', 'unbounded'].forEach(f => {
+        const btn = document.getElementById('font-' + f);
+        if (btn) btn.className = (f === currentFont)
+          ? 'py-1.5 px-2 rounded-xl bg-yellow-400 text-black font-bold text-[10px]'
+          : 'py-1.5 px-2 rounded-xl bg-white/10 hover:bg-yellow-400 hover:text-black text-white font-bold text-[10px]';
+      });
+
+      setColorMode(colorMode);
+      renderStickerText();
+    }
+
+    function updateExportPreview() {
+      const box = document.getElementById('export-json-box');
+      if (!box) return;
+      box.value = JSON.stringify(getFullPresetObject(), null, 2);
+    }
+
+    // Re-render on window resize and handle navbar scroll
+    window.addEventListener('resize', renderStickerText);
+    window.addEventListener('scroll', handleNavbarScroll, { passive: true });
+
+    // Initialize with locked user preset and setup nav scroll state
+    applyPreset('lockedUser');
+    initGridMatrixCells();
+    handleNavbarScroll();
+    setActiveNav('portofolio');
+    renderSavedPresetsList();
+  </script>
+</body>
+</html>

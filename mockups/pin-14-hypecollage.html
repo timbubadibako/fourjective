@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fourjective — Y2K Streetwear & Ripped Collage (Pin 14 Reference)</title>
+  
+  <!-- Fonts: Rock Salt / Permanent Marker for Hand-drawn graffiti accents + Syne + Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Permanent+Marker&family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            hype: {
+              pink: '#FF007A',
+              hotpink: '#FF1493',
+              purple: '#7928CA',
+              dark: '#111115',
+              paper: '#FAF7F2',
+              cream: '#F3EFE6',
+              border: '#E2DCD2'
+            }
+          },
+          fontFamily: {
+            marker: ['"Caveat"', '"Permanent Marker"', 'cursive'],
+            syne: ['Syne', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <style>
+    /* Paper Crease & Halftone Texture */
+    .bg-zine-paper {
+      background-color: #FAF7F2;
+      background-image: 
+        radial-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+        radial-gradient(rgba(0, 0, 0, 0.02) 2px, transparent 2px);
+      background-size: 16px 16px, 32px 32px;
+    }
+
+    /* Pink Comic Halftone Explosion Burst */
+    .halftone-burst {
+      background: 
+        radial-gradient(circle, #FF007A 25%, transparent 26%),
+        radial-gradient(circle, #FF007A 25%, transparent 26%);
+      background-size: 12px 12px;
+      background-position: 0 0, 6px 6px;
+    }
+
+    /* Ripped jagged paper frame */
+    .ripped-pink-frame {
+      background: #FF007A;
+      clip-path: polygon(
+        0% 4%, 4% 1%, 12% 5%, 20% 0%, 35% 3%, 50% 1%, 65% 4%, 80% 0%, 92% 3%, 100% 0%,
+        98% 30%, 100% 50%, 97% 70%, 100% 90%, 98% 100%,
+        85% 97%, 70% 100%, 55% 96%, 40% 100%, 25% 97%, 10% 100%, 0% 98%,
+        2% 75%, 0% 50%, 3% 25%
+      );
+      padding: 12px;
+      box-shadow: 0 20px 40px rgba(255, 0, 122, 0.3);
+    }
+
+    /* Scotch Clear Packaging Tape */
+    .clear-tape {
+      position: absolute;
+      width: 70px;
+      height: 28px;
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(1.5px);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.18);
+      z-index: 30;
+      pointer-events: none;
+    }
+    .tape-top-left {
+      top: -10px;
+      left: 10px;
+      transform: rotate(-15deg);
+    }
+    .tape-top-right {
+      top: -10px;
+      right: 10px;
+      transform: rotate(18deg);
+    }
+
+    /* Starburst Price Badge */
+    .starburst-badge {
+      clip-path: polygon(
+        50% 0%, 63% 15%, 80% 8%, 85% 26%, 100% 30%, 94% 48%, 100% 65%, 86% 74%, 87% 92%, 70% 88%,
+        50% 100%, 32% 90%, 16% 94%, 17% 75%, 2% 67%, 8% 49%, 0% 32%, 17% 27%, 20% 10%, 37% 16%
+      );
+    }
+
+    /* Graffiti Background Spray Paint */
+    .graffiti-tag {
+      font-family: 'Caveat', cursive;
+      letter-spacing: 0.05em;
+      transform: rotate(-6deg);
+    }
+  </style>
+</head>
+<body class="bg-zine-paper text-hype-dark font-sans antialiased selection:bg-hype-pink selection:text-white overflow-x-hidden">
+
+  <!-- Top Floating Switcher / Reference Inspector -->
+  <aside aria-label="Reference Panel" class="fixed bottom-5 right-5 z-50 flex items-center gap-2 bg-black/95 backdrop-blur-md p-2 rounded-full border border-white/20 shadow-2xl">
+    <button onclick="toggleRefModal()" class="flex items-center gap-2 px-4 py-2 bg-hype-pink text-white font-marker text-base tracking-wider rounded-full hover:scale-105 transition-transform shadow-lg">
+      <i data-lucide="eye" class="w-4 h-4"></i>
+      <span>Bandingkan Pin 14</span>
+    </button>
+    <a href="index.html" class="px-3 py-2 text-white/80 hover:text-white text-xs font-bold rounded-full hover:bg-white/10 transition-colors">
+      Hub Mockup
+    </a>
+  </aside>
+
+  <!-- Modal Reference Comparison -->
+  <div id="ref-modal" class="fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-zinc-900 border border-white/20 rounded-2xl max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl w-full">
+      <div class="p-4 border-b border-white/10 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="px-2.5 py-1 bg-hype-pink text-white text-xs font-black rounded">PIN 14</span>
+          <h3 class="text-white font-syne font-bold text-sm">Referensi: Khaipovye Kepki / Ripped Paper Collage (1200x1880 px)</h3>
+        </div>
+        <button onclick="toggleRefModal()" class="text-white/70 hover:text-white p-1 rounded-lg hover:bg-white/10">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="p-4 overflow-y-auto flex justify-center bg-black/60">
+        <img src="references/desain-web/14_Pin_1151936410989954203.jpg" alt="Pin 14 Reference" class="max-w-full h-auto rounded-lg shadow-2xl border border-white/10">
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TOP NAVBAR (EXACT PIN 14 MINIMALIST STREET STYLE) ================= -->
+  <header class="w-full py-5 px-6 border-b border-black/10 bg-hype-paper sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      
+      <!-- Hand-drawn Logo -->
+      <a href="#" class="flex items-center gap-2">
+        <span class="font-marker text-3xl text-black leading-none -rotate-2">fourjective</span>
+        <span class="text-[10px] font-mono uppercase bg-black text-white px-2 py-0.5 rounded tracking-widest">BTS</span>
+      </a>
+
+      <!-- Menu links -->
+      <nav class="hidden md:flex items-center gap-6 text-xs font-bold text-black/70">
+        <a href="#konsep" class="hover:text-hype-pink transition-colors">Konsep Kustom</a>
+        <a href="#koleksi" class="hover:text-hype-pink transition-colors">Koleksi Zine</a>
+        <a href="#tahap" class="hover:text-hype-pink transition-colors">Tahap Produksi</a>
+        <a href="#testimoni" class="hover:text-hype-pink transition-colors">Ulasan Siswa</a>
+      </nav>
+
+      <a href="#koleksi" class="px-5 py-2 bg-black hover:bg-hype-pink text-white font-bold text-xs uppercase tracking-wider rounded transition-colors">
+        KATALOG
+      </a>
+    </div>
+  </header>
+
+  <!-- ================= HERO SECTION: RIPPED PAPER & PINK HALFTONE COLLAGE ================= -->
+  <section id="konsep" class="pt-12 pb-24 px-6 max-w-6xl mx-auto relative">
+    
+    <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
+      <!-- Big Hand-drawn Headline -->
+      <div>
+        <h1 class="font-marker text-6xl sm:text-8xl md:text-9xl text-black leading-none -rotate-2">
+          buku tahunan
+        </h1>
+        <div class="flex items-center gap-4 mt-2">
+          <span class="font-marker text-5xl sm:text-7xl text-hype-pink rotate-3">paling hype!</span>
+          <span class="text-2xl text-yellow-400">✦</span>
+          <span class="font-mono text-xs uppercase tracking-widest text-black/40">EDISI 2024 / 2025</span>
+        </div>
+      </div>
+
+      <!-- Subtitle Quote -->
+      <div class="max-w-xs text-xs sm:text-sm text-black/70 font-medium leading-relaxed md:pt-4">
+        Bukan sekadar foto kaku berjejer di studio. Ini arsip zine streetwear & film sinematik yang dirancang dari memori terbaik masa SMA kalian.
+      </div>
+    </div>
+
+    <!-- CENTERPIECE: RIPPED PINK COLLAGE FRAME (EXACT PIN 14 HERO) -->
+    <div class="relative mt-8 max-w-4xl mx-auto">
+      
+      <!-- Halftone Burst & Graffiti Behind -->
+      <div class="absolute -top-8 -right-8 w-40 h-40 halftone-burst opacity-60 rounded-full pointer-events-none hidden sm:block"></div>
+      <div class="absolute -bottom-6 -left-6 font-marker text-4xl text-black/10 select-none pointer-events-none">
+        #ANTIKAKU #NOREGRET
+      </div>
+
+      <!-- The Ripped Jagged Frame -->
+      <div class="ripped-pink-frame relative">
+        <div class="bg-white p-4 rounded-xl grid grid-cols-1 sm:grid-cols-3 gap-4">
+          
+          <!-- Photo 1 -->
+          <div class="relative aspect-[3/4] bg-zinc-900 rounded-lg overflow-hidden group">
+            <img src="images/landing-page/portfolio/dark.png" alt="Street Model 1" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-3">
+              <span class="font-marker text-white text-lg tracking-wider -rotate-3">SMA 8 Jakarta</span>
+            </div>
+            <!-- Marker doodle overlay -->
+            <span class="absolute top-2 left-2 font-marker text-yellow-300 text-sm rotate-6">★ street noir</span>
+          </div>
+
+          <!-- Photo 2 (Center) -->
+          <div class="relative aspect-[3/4] bg-zinc-900 rounded-lg overflow-hidden group">
+            <img src="images/landing-page/portfolio/colorfull.png" alt="Street Model 2" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-3">
+              <span class="font-marker text-white text-lg tracking-wider rotate-2">Taruna Bangsa</span>
+            </div>
+            <!-- Marker doodle overlay -->
+            <span class="absolute top-2 right-2 font-marker text-cyan-300 text-sm -rotate-6">4k cinema ✦</span>
+          </div>
+
+          <!-- Photo 3 -->
+          <div class="relative aspect-[3/4] bg-zinc-900 rounded-lg overflow-hidden group">
+            <img src="images/landing-page/portfolio/barbie.png" alt="Street Model 3" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-3">
+              <span class="font-marker text-white text-lg tracking-wider -rotate-2">SMAN 1 Bandung</span>
+            </div>
+            <!-- Marker doodle overlay -->
+            <span class="absolute bottom-10 right-2 font-marker text-lime-300 text-sm rotate-12">pop zine!</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Hand-drawn Doodle Elements Around Frame -->
+      <div class="flex items-center justify-between mt-6 px-4">
+        <div class="flex items-center gap-2">
+          <span class="font-marker text-2xl text-black">keep it wild!</span>
+          <!-- Smileys -->
+          <div class="flex items-center gap-1 text-xl">
+            <span class="text-yellow-500">☻</span>
+            <span class="text-hype-pink">☻</span>
+            <span class="text-black">☻</span>
+          </div>
+        </div>
+
+        <div class="font-marker text-3xl text-black rotate-[-2deg]">
+          arsip masa muda
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= SECTION 2: DARK MIDDLE STREET SECTION (THE VAULT / KOLEKSI) ================= -->
+  <section id="koleksi" class="bg-hype-dark text-white py-24 px-6 relative overflow-hidden -skew-y-1 my-12">
+    <div class="max-w-6xl mx-auto skew-y-1">
+      
+      <!-- Graffiti Background Text -->
+      <div class="absolute top-6 right-10 font-marker text-5xl text-white/5 pointer-events-none select-none">
+        FEEL NOTHING JUST VIBE
+      </div>
+
+      <div class="text-center mb-16">
+        <span class="font-marker text-2xl text-hype-pink">koleksi terbatas</span>
+        <h2 class="font-syne font-black text-3xl sm:text-5xl text-white uppercase mt-1">
+          EDISI TERBARU BTS 2024
+        </h2>
+        <p class="text-xs sm:text-sm text-white/60 font-sans mt-2">Setiap tema diproduksi secara kustom dengan material cetak khusus.</p>
+      </div>
+
+      <!-- 3 Featured Models with Packaging Clear Tape & Starburst Price Badges (Exact Pin 14) -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
+        
+        <!-- Card 1: Dark Edition -->
+        <div class="bg-zinc-900 p-4 rounded-xl border border-white/10 relative group">
+          <div class="clear-tape tape-top-left"></div>
+          <div class="clear-tape tape-top-right"></div>
+
+          <div class="aspect-[3/4] rounded-lg overflow-hidden bg-black relative mb-4">
+            <img src="images/landing-page/portfolio/dark.png" alt="Dark Cap" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            
+            <!-- Neon Pink Starburst Price Tag -->
+            <div class="starburst-badge absolute bottom-3 right-3 bg-hype-pink text-white w-16 h-16 flex items-center justify-center font-marker text-xs font-black shadow-lg">
+              Rp 280K
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs font-bold">
+            <span class="text-white/80 font-mono">EDISI «MIDNIGHT NOIR»</span>
+            <a href="https://wa.me/6281234567890" target="_blank" class="text-hype-pink hover:underline flex items-center gap-1">
+              <span>Pesan</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Card 2: Cyber Acid -->
+        <div class="bg-zinc-900 p-4 rounded-xl border border-white/10 relative group">
+          <div class="clear-tape tape-top-left"></div>
+          <div class="clear-tape tape-top-right"></div>
+
+          <div class="aspect-[3/4] rounded-lg overflow-hidden bg-black relative mb-4">
+            <img src="images/landing-page/portfolio/colorfull.png" alt="Cyber Cap" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            
+            <!-- Hot Pink Starburst Price Tag -->
+            <div class="starburst-badge absolute bottom-3 right-3 bg-hype-pink text-white w-16 h-16 flex items-center justify-center font-marker text-xs font-black shadow-lg">
+              Rp 450K
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs font-bold">
+            <span class="text-white/80 font-mono">EDISI «CYBER HYBRID»</span>
+            <a href="https://wa.me/6281234567890" target="_blank" class="text-hype-pink hover:underline flex items-center gap-1">
+              <span>Pesan</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Card 3: Vintage Pop -->
+        <div class="bg-zinc-900 p-4 rounded-xl border border-white/10 relative group">
+          <div class="clear-tape tape-top-left"></div>
+          <div class="clear-tape tape-top-right"></div>
+
+          <div class="aspect-[3/4] rounded-lg overflow-hidden bg-black relative mb-4">
+            <img src="images/landing-page/portfolio/barbie.png" alt="Pink Cap" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            
+            <!-- Electric Purple Starburst Price Tag -->
+            <div class="starburst-badge absolute bottom-3 right-3 bg-purple-600 text-white w-16 h-16 flex items-center justify-center font-marker text-xs font-black shadow-lg">
+              Rp 360K
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs font-bold">
+            <span class="text-white/80 font-mono">EDISI «PASTEL ZINE»</span>
+            <a href="https://wa.me/6281234567890" target="_blank" class="text-hype-pink hover:underline flex items-center gap-1">
+              <span>Pesan</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="mt-12 text-center">
+        <a href="https://wa.me/6281234567890" target="_blank" class="inline-block px-8 py-3 bg-white text-black font-marker text-lg rounded hover:bg-hype-pink hover:text-white transition-colors">
+          Lihat Seluruh Katalog Koleksi →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SECTION 3: TRANSFORMATION STORY ("BEFORE & AFTER" EXACT PIN 14) ================= -->
+  <section id="tahap" class="py-20 px-6 max-w-5xl mx-auto">
+    
+    <!-- Headline in Marker -->
+    <div class="text-center mb-12">
+      <h2 class="font-marker text-4xl sm:text-6xl text-black leading-tight">
+        ada memori berharga,<br>
+        tapi takut hasilnya kaku kayak foto KTP?
+      </h2>
+      <p class="font-mono text-xs uppercase tracking-widest text-black/50 mt-2">
+        KAMI BERI NYAWA KEDUA — JADIKAN BUKU TAHUNAN PALING HYPE!
+      </p>
+    </div>
+
+    <!-- Transformation Comparison Grid (Connected by Hand-drawn Marker Line) -->
+    <div class="relative grid grid-cols-1 md:grid-cols-2 gap-8 items-center pt-8">
+      
+      <!-- Card 1: The Problem (Boring Yearbook) -->
+      <div class="bg-white p-6 rounded-2xl border-2 border-black/20 shadow-md relative">
+        <span class="absolute -top-3.5 left-6 bg-zinc-200 text-zinc-700 font-mono text-[10px] font-bold px-3 py-1 rounded-full uppercase">
+          KONSEP BIASA / KAKU
+        </span>
+
+        <div class="aspect-[4/3] bg-zinc-100 rounded-xl overflow-hidden mb-4 border border-zinc-200 flex items-center justify-center p-4">
+          <div class="text-center text-zinc-400">
+            <i data-lucide="frown" class="w-12 h-12 mx-auto mb-2 text-zinc-400"></i>
+            <p class="font-mono text-xs">Background studio polos, pose seragam, template kaku tahun lalu.</p>
+          </div>
+        </div>
+
+        <p class="font-marker text-xl text-zinc-600">
+          "Foto kaku berjejer, dibuka sekali lalu disimpan di lemari selamanya..."
+        </p>
+      </div>
+
+      <!-- Card 2: The Fourjective Way (Hype Zine with Ripped Frame) -->
+      <div class="bg-white p-6 rounded-2xl border-4 border-hype-pink shadow-2xl relative">
+        <span class="absolute -top-4 left-6 bg-hype-pink text-white font-marker text-sm px-4 py-1 rounded-full uppercase">
+          FOURJECTIVE WAY! ★
+        </span>
+
+        <div class="aspect-[4/3] rounded-xl overflow-hidden mb-4 border-2 border-black relative">
+          <img src="images/landing-page/portfolio/jumanji.png" alt="Hype Transformation" class="w-full h-full object-cover">
+          <div class="absolute top-2 right-2 bg-yellow-400 text-black font-marker text-xs px-2 py-0.5 rounded rotate-3">
+            100% estetik!
+          </div>
+        </div>
+
+        <p class="font-marker text-2xl text-hype-pink">
+          "Zine streetwear berantakan tapi artistik, dilengkapi video sinematik 4K & AR!"
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Promo Banner Note (Exact Pin 14 Style) -->
+    <div class="mt-12 p-6 bg-yellow-100 rounded-2xl border-2 border-black text-center max-w-xl mx-auto shadow-[4px_4px_0px_#000]">
+      <span class="font-marker text-2xl text-black">diskon angkatan 30%!</span>
+      <p class="text-xs font-medium text-black/80 mt-1">
+        Khusus untuk panitia OSIS yang mengunci jadwal produksi sebelum akhir bulan ini.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= SECTION 4: CALL TO ACTION ================= -->
+  <section class="py-20 px-6 max-w-4xl mx-auto text-center border-t border-black/10">
+    <div class="font-marker text-3xl sm:text-5xl text-black mb-4">
+      mau konsep kayak gini buat sekolahmu?
+    </div>
+    <p class="text-xs sm:text-sm text-black/70 max-w-md mx-auto mb-8 font-medium">
+      Chat kami langsung via WhatsApp. Kirim referensi yang kamu suka, kita brainstorming bareng tim kreatif Fourjective!
+    </p>
+
+    <a href="https://wa.me/6281234567890?text=Halo%20Fourjective,%20saya%20mau%20bikin%20buku%20tahunan%20hype" target="_blank" class="inline-block px-10 py-4 bg-black hover:bg-hype-pink text-white font-marker text-2xl rounded-xl transition-all shadow-[5px_5px_0px_#000] hover:shadow-[2px_2px_0px_#000] hover:translate-x-[3px] hover:translate-y-[3px]">
+      Hubungi via WhatsApp Sekarang! →
+    </a>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="py-12 px-6 bg-hype-paper border-t border-black/10 text-center">
+    <div class="font-marker text-3xl text-black mb-2">fourjective</div>
+    <p class="text-xs font-mono text-black/40 uppercase">
+      © 2024 FOURJECTIVE CREATIVE STUDIO • INSPIRASI: PIN 14 KHAIPOVYE KEPKI
+    </p>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    function toggleRefModal() {
+      const modal = document.getElementById('ref-modal');
+      modal.classList.toggle('hidden');
+      modal.classList.toggle('flex');
+    }
+  </script>
+</body>
+</html>

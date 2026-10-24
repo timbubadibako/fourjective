@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fourjective Design System Portal | Prototypes Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-[#0D0D11] text-white min-h-screen flex flex-col justify-between selection:bg-[#FF6E00] selection:text-white">
+
+  <!-- Header -->
+  <header class="border-b border-white/10 px-6 py-6 max-w-6xl mx-auto w-full flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-3.5">
+      <div class="w-10 h-10 rounded-xl bg-[#FF6E00] text-white font-black text-xl flex items-center justify-center font-mono shadow-[0_0_20px_rgba(255,110,0,0.4)]">
+        4J
+      </div>
+      <div>
+        <h1 class="font-extrabold text-xl tracking-tight">Fourjective Design System Prototypes</h1>
+        <p class="text-xs text-stone-400">Hasil brainstorming & komparasi estetika visual buku tahunan</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="text-xs font-mono bg-white/10 px-3 py-1 rounded-full border border-white/20 text-stone-300">
+        GSAP 3.12 &bull; ScrollTrigger
+      </span>
+    </div>
+  </header>
+
+  <!-- Main Showcase -->
+  <main class="max-w-6xl mx-auto px-6 py-12 w-full space-y-12">
+
+    <!-- ================= 4 NEW PINTEREST ADAPTATIONS SECTION ================= -->
+    <div class="space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-white/10 pb-4">
+        <div>
+          <span class="text-xs font-mono font-bold uppercase tracking-widest text-[#FF6E00] flex items-center gap-1.5 mb-1">
+            <i data-lucide="sparkles" class="w-4 h-4 text-[#FF6E00]"></i>
+            HASIL RISET PINTEREST BOARD «DESAIN WEB»
+          </span>
+          <h2 class="font-extrabold text-2xl sm:text-3xl uppercase tracking-tight text-white">
+            4 Adaptasi Web Design Terpilih
+          </h2>
+        </div>
+        <p class="text-xs text-stone-400 max-w-sm">
+          Dibangun langsung dari 4 pin referensi favoritmu dengan styling presisi, interaktivitas lengkap, dan tombol komparasi referensi.
+        </p>
+      </div>
+
+      <!-- SPOTLIGHT: FANNED STICKER 4JECTIV TYPOGRAPHY HERO -->
+      <div class="bg-gradient-to-r from-[#F5F2EB] to-[#ECE7DD] text-black rounded-3xl p-6 sm:p-8 border-2 border-black shadow-[6px_6px_0px_#FF59AF] flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+        <div class="max-w-xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 bg-black text-white text-[10px] font-mono font-black uppercase rounded-full tracking-wider mb-2">
+            ★ NEW SPECIAL COMPONENT: PIN 09 HERO REPLICA ★
+          </div>
+          <h3 class="font-extrabold text-2xl sm:text-3xl text-black uppercase tracking-tight">
+            Tulisan "4jectiv" Fanned Paper + Tuning Studio
+          </h3>
+          <p class="text-xs sm:text-sm text-stone-700 mt-2 leading-relaxed">
+            Replika presisi hero "BuMaGa" dengan <strong>Tuning Studio interaktif</strong>: klik langsung huruf di layar untuk mengatur kemiringan (rotate), tinggi-rendah (posisi Y), jarak geser (posisi X), sebar anak huruf (fan), kemiringan lipatan kertas, preset Street Wave, dan salin konfigurasi JSON!
+          </p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center gap-3 flex-shrink-0">
+          <a href="fanned-sticker-4jectiv.html" class="inline-flex items-center gap-2.5 px-6 py-3.5 bg-[#FF1C89] hover:bg-[#e00d72] text-white font-extrabold text-xs uppercase tracking-wider rounded-full shadow-[3px_3px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all">
+            <i data-lucide="layers" class="w-4 h-4"></i>
+            <span>Buka Fanned Sticker Hero</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- 4 Card Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- CARD 1: PIN 09 BUMAGA -->
+        <div class="bg-[#18181D] rounded-2xl border border-white/10 hover:border-[#FF52AB] transition-all overflow-hidden flex flex-col justify-between group shadow-xl hover:-translate-y-1">
+          <div>
+            <div class="relative aspect-[4/3] bg-black overflow-hidden border-b border-white/10">
+              <img src="references/desain-web/09_Pin_1151936410989953989.jpg" alt="Pin 09" class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500">
+              <span class="absolute top-2 left-2 px-2.5 py-0.5 rounded bg-[#FF52AB] text-white text-[10px] font-black uppercase tracking-wider shadow">
+                PIN 09
+              </span>
+            </div>
+            <div class="p-5">
+              <span class="text-[11px] font-mono text-[#FF52AB] font-bold uppercase">Digital Paper Style</span>
+              <h3 class="font-extrabold text-lg text-white uppercase mt-0.5">Bumaga Edition</h3>
+              <p class="text-xs text-stone-400 mt-2 leading-relaxed">
+                3D inflated bubble-gum chrome text, sawtooth zigzag paper dividers, hazard crossing tape, pop-out 3D cards, & polaroid crew.
+              </p>
+            </div>
+          </div>
+          <div class="p-5 pt-0">
+            <a href="pin-09-bumaga.html" class="w-full inline-flex items-center justify-center gap-2 bg-[#FF52AB] hover:bg-[#ff2592] text-white font-extrabold text-xs uppercase py-2.5 px-4 rounded-xl transition-colors shadow-md">
+              <span>Buka Mockup Pin 09</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- CARD 2: PIN 12 COMIC VERSE -->
+        <div class="bg-[#18181D] rounded-2xl border border-white/10 hover:border-[#FF2A14] transition-all overflow-hidden flex flex-col justify-between group shadow-xl hover:-translate-y-1">
+          <div>
+            <div class="relative aspect-[4/3] bg-black overflow-hidden border-b border-white/10">
+              <img src="references/desain-web/12_Pin_1151936410989954163.jpg" alt="Pin 12" class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500">
+              <span class="absolute top-2 left-2 px-2.5 py-0.5 rounded bg-[#FF2A14] text-white text-[10px] font-black uppercase tracking-wider shadow">
+                PIN 12
+              </span>
+            </div>
+            <div class="p-5">
+              <span class="text-[11px] font-mono text-[#FF2A14] font-bold uppercase">Halftone Noir Pulp</span>
+              <h3 class="font-extrabold text-lg text-white uppercase mt-0.5">Comic Verse</h3>
+              <p class="text-xs text-stone-400 mt-2 leading-relaxed">
+                Dark crumpled halftone paper, headline kayu ultra-condensed merah, fanned vintage comic covers dengan isolasi bening, & comic pricing.
+              </p>
+            </div>
+          </div>
+          <div class="p-5 pt-0">
+            <a href="pin-12-comicverse.html" class="w-full inline-flex items-center justify-center gap-2 bg-[#FF2A14] hover:bg-[#E01E0A] text-white font-extrabold text-xs uppercase py-2.5 px-4 rounded-xl transition-colors shadow-md">
+              <span>Buka Mockup Pin 12</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- CARD 3: PIN 13 NACHISTOTU -->
+        <div class="bg-[#18181D] rounded-2xl border border-white/10 hover:border-[#D4FF00] transition-all overflow-hidden flex flex-col justify-between group shadow-xl hover:-translate-y-1">
+          <div>
+            <div class="relative aspect-[4/3] bg-black overflow-hidden border-b border-white/10">
+              <img src="references/desain-web/13_Pin_1151936410989954145.jpg" alt="Pin 13" class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500">
+              <span class="absolute top-2 left-2 px-2.5 py-0.5 rounded bg-[#D4FF00] text-black text-[10px] font-black uppercase tracking-wider shadow">
+                PIN 13
+              </span>
+            </div>
+            <div class="p-5">
+              <span class="text-[11px] font-mono text-[#D4FF00] font-bold uppercase">Acid Street Brutalism</span>
+              <h3 class="font-extrabold text-lg text-white uppercase mt-0.5">Nachistotu</h3>
+              <p class="text-xs text-stone-400 mt-2 leading-relaxed">
+                Kontras tajam Toxic Acid Lime & Pitch Black, liquid melting waves, 3-pill switcher tabs, timeline roadmap agenda, & ticket tear-off cards.
+              </p>
+            </div>
+          </div>
+          <div class="p-5 pt-0">
+            <a href="pin-13-nachistotu.html" class="w-full inline-flex items-center justify-center gap-2 bg-[#D4FF00] hover:bg-[#b8de00] text-black font-extrabold text-xs uppercase py-2.5 px-4 rounded-xl transition-colors shadow-md">
+              <span>Buka Mockup Pin 13</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- CARD 4: PIN 14 KHAIPOVYE KEPKI -->
+        <div class="bg-[#18181D] rounded-2xl border border-white/10 hover:border-[#FF007A] transition-all overflow-hidden flex flex-col justify-between group shadow-xl hover:-translate-y-1">
+          <div>
+            <div class="relative aspect-[4/3] bg-black overflow-hidden border-b border-white/10">
+              <img src="references/desain-web/14_Pin_1151936410989954203.jpg" alt="Pin 14" class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500">
+              <span class="absolute top-2 left-2 px-2.5 py-0.5 rounded bg-[#FF007A] text-white text-[10px] font-black uppercase tracking-wider shadow">
+                PIN 14
+              </span>
+            </div>
+            <div class="p-5">
+              <span class="text-[11px] font-mono text-[#FF007A] font-bold uppercase">Ripped Collage Streetwear</span>
+              <h3 class="font-extrabold text-lg text-white uppercase mt-0.5">Hype Collage</h3>
+              <p class="text-xs text-stone-400 mt-2 leading-relaxed">
+                Zine paper grain, ripped pink halftone comic frame, tipografi spidol hand-drawn & doodle, clear packaging tape, dan story transformasi.
+              </p>
+            </div>
+          </div>
+          <div class="p-5 pt-0">
+            <a href="pin-14-hypecollage.html" class="w-full inline-flex items-center justify-center gap-2 bg-[#FF007A] hover:bg-[#e0006c] text-white font-extrabold text-xs uppercase py-2.5 px-4 rounded-xl transition-colors shadow-md">
+              <span>Buka Mockup Pin 14</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+      <div class="absolute -right-16 -top-16 w-64 h-64 bg-[#FF007A]/15 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -left-16 -bottom-16 w-64 h-64 bg-[#00F0FF]/15 rounded-full blur-3xl pointer-events-none"></div>
+      
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FF6E00] text-black text-xs font-black uppercase tracking-wider shadow-lg border-2 border-black">
+          <i data-lucide="zap" class="w-4 h-4 fill-black"></i>
+          SHOWDOWN ARENA // HYPER-CHROMATIC Y2K
+        </span>
+        <span class="text-xs font-mono text-[#D4FF00] bg-[#D4FF00]/10 border border-[#D4FF00]/40 px-3 py-1 rounded-full font-black">
+          Fourjective Orange &bull; Toxic Lime &bull; Cyber Pink &bull; Neon Cyan
+        </span>
+      </div>
+
+      <div class="max-w-3xl">
+        <h2 class="font-extrabold text-3xl md:text-5xl uppercase tracking-tight text-white mb-4">
+          Interactive Component Showdown &amp; Y2K Art Arena
+        </h2>
+        <p class="text-sm md:text-base text-stone-300 leading-relaxed mb-6">
+          Karya seni visual Y2K pop-comic jalanan penuh warna: <strong>Multi-Chromatic 3D Verlet Mesh (120 FPS)</strong> dengan pendaran neon Toxic Lime, Cyber Cyan, dan Hot Magenta, <strong>3D Comic Extrusion Headline</strong>, <strong>Karakter Maskot dalam Panel Komik</strong>, serta <strong>Skate Deck 3D Fanning Layanan</strong>.
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-semibold text-stone-300 mb-8">
+          <div class="flex items-center gap-2">
+            <i data-lucide="check-circle-2" class="w-4 h-4 text-[#FF6E00]"></i> <strong>Navbars:</strong> Neo-Y2K Brutal Capsule vs Floating Glass
+          </div>
+          <div class="flex items-center gap-2">
+            <i data-lucide="check-circle-2" class="w-4 h-4 text-[#FF6E00]"></i> <strong>Hero:</strong> 21st.dev Verlet Cloth (120 FPS) + Mascots
+          </div>
+          <div class="flex items-center gap-2">
+            <i data-lucide="check-circle-2" class="w-4 h-4 text-[#FF6E00]"></i> <strong>Manifesto:</strong> Word Scrubbing Slider Simulator
+          </div>
+          <div class="flex items-center gap-2">
+            <i data-lucide="check-circle-2" class="w-4 h-4 text-[#FF6E00]"></i> <strong>Themes:</strong> 5 Interactive Expanding Accordions
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-4">
+          <a href="component-showdown.html" class="inline-flex items-center justify-center gap-2.5 bg-[#FF6E00] hover:bg-[#E66300] text-white font-black text-sm md:text-base uppercase py-4 px-8 rounded-full shadow-[0_8px_25px_rgba(255,110,0,0.45)] transition-all transform hover:-translate-y-0.5">
+            <i data-lucide="play" class="w-5 h-5 fill-white"></i> Buka Component Showdown Arena <i data-lucide="arrow-right" class="w-5 h-5"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEATURED FLAGSHIP: Fourjective Sleek Modern Minimalist Studio -->
+    <div class="bg-gradient-to-br from-white to-stone-100 text-[#111113] rounded-3xl p-8 md:p-12 border border-stone-300 shadow-xl relative overflow-hidden group">
+      
+      <div class="absolute top-6 right-6">
+        <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-stone-900 text-white text-xs font-bold uppercase tracking-wider">
+          <i data-lucide="code-2" class="w-3.5 h-3.5 text-[#FF6E00]"></i>
+          Studio Megabuild Prototype
+        </span>
+      </div>
+
+      <div class="max-w-3xl">
+        <span class="text-xs font-mono font-bold uppercase tracking-widest text-[#FF6E00] block mb-2">
+          OFFICIAL PROTOTYPE // 02
+        </span>
+        <h2 class="font-extrabold text-3xl md:text-4xl uppercase tracking-tight text-dark mb-4">
+          Fourjective Complete Studio Page
+        </h2>
+        <p class="text-sm md:text-base text-stone-600 leading-relaxed mb-6">
+          Halaman lengkap dengan 100vh Stacking Service Cards, Three.js 3D Torus, interactive budget estimator kalkulator, portfolio filter dengan Flip, dan full process timeline.
+        </p>
+
+        <a href="fourjective-studio.html" class="inline-flex items-center justify-center gap-2.5 bg-[#111113] hover:bg-black text-white font-bold text-sm uppercase py-3.5 px-6 rounded-full transition-all">
+          Buka Prototype Studio <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- COMPARISON REFERENCES SECTION -->
+    <div>
+      <h3 class="text-sm font-bold uppercase tracking-widest text-stone-400 mb-4 flex items-center gap-2">
+        <i data-lucide="layers" class="w-4 h-4 text-stone-400"></i>
+        Referensi Analisis Awal (Duplikasi Langsung):
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+        
+        <!-- Loon Art Reference -->
+        <div class="bg-[#FAF6F0] text-[#18181B] rounded-2xl p-6 border border-white/20 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-2.5 py-0.5 rounded-full bg-[#DDD6FE] text-black text-[11px] font-bold uppercase tracking-wider border border-black">
+                loonart.id Aesthetic
+              </span>
+              <span class="text-xs text-stone-500 font-medium">Warm & Tactile</span>
+            </div>
+            <h4 class="text-xl font-bold uppercase tracking-tight mb-2">Loon Art Adaptation</h4>
+            <p class="text-xs text-stone-600 leading-relaxed mb-4">
+              Palet thistle paper cream, floating nostalgic audio player dengan visualizer equalizer, dan stiker pastel.
+            </p>
+          </div>
+          <a href="fourjective-loonart.html" class="inline-flex items-center justify-center gap-2 bg-[#18181B] text-white text-xs font-bold uppercase py-2.5 px-4 rounded-xl border border-black hover:bg-stone-800 transition-colors">
+            Lihat Varian Loon Art <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          </a>
+        </div>
+
+        <!-- Abank Irenk Reference -->
+        <div class="bg-[#F5E4DE] text-[#1E1233] rounded-2xl p-6 border border-white/20 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-2.5 py-0.5 rounded-full bg-[#FAC443] text-black text-[11px] font-bold uppercase tracking-wider border border-[#1E1233]">
+                abankirenk.com Aesthetic
+              </span>
+              <span class="text-xs text-purple-900 font-medium">Y2K Brutalist</span>
+            </div>
+            <h4 class="text-xl font-bold uppercase tracking-tight mb-2">Abank Irenk Adaptation</h4>
+            <p class="text-xs text-stone-700 leading-relaxed mb-4">
+              Palet deep plum & marigold yellow, stempel berputar, bento grid warna-warni kontras, dan garis border 3px tebal.
+            </p>
+          </div>
+          <a href="fourjective-abankirenk.html" class="inline-flex items-center justify-center gap-2 bg-[#1E1233] text-[#FAC443] text-xs font-bold uppercase py-2.5 px-4 rounded-xl border border-[#1E1233] hover:bg-stone-900 transition-colors">
+            Lihat Varian Abank Irenk <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- GPT-TASTE AWWWARDS EDITION -->
+    <div class="bg-gradient-to-br from-[#121215] to-[#09090B] text-white rounded-3xl p-8 border border-brand-orange/40 shadow-2xl relative overflow-hidden group">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div class="max-w-2xl">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="px-3 py-1 rounded-full bg-[#FF6E00]/20 text-[#FF6E00] text-[11px] font-bold uppercase tracking-wider border border-[#FF6E00]/40">
+              gpt-taste Directive &bull; Awwwards Standard
+            </span>
+          </div>
+          <h3 class="text-2xl md:text-3xl font-black font-display tracking-tight text-white mb-2">
+            Fourjective Haute-Couture Edition (GPT-Taste)
+          </h3>
+          <p class="text-xs md:text-sm text-stone-400 leading-relaxed">
+            Versi editorial mewah dengan aturan ketat: Headline 2 baris ultra-wide, gapless interlocking bento grid, inline typography image, GSAP split pinning, dan horizontal accordion slices.
+          </p>
+        </div>
+        <a href="fourjective-gpt-taste.html" class="inline-flex items-center justify-center gap-2 bg-[#FF6E00] hover:bg-white hover:text-black text-black font-bold text-xs uppercase py-3 px-6 rounded-full transition-all flex-shrink-0">
+          Buka Versi GPT-Taste <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/10 py-6 text-center text-xs text-stone-500">
+    Fourjective Creative Lab &bull; Dibuat untuk evaluasi dan presentasi tim
+  </footer>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

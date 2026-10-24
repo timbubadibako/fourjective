@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fourjective — Acid Street Brutalism (Pin 13 Reference)</title>
+  
+  <!-- Fonts: Syne & Unbounded for high-voltage brutalist typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Syne:wght@700;800;900&family=Unbounded:wght@700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            acid: {
+              lime: '#D4FF00',
+              chartreuse: '#CDF22B',
+              black: '#0A0A0C',
+              pitch: '#000000',
+              card: '#141418',
+              border: '#27272E',
+              gray: '#8E8E93'
+            }
+          },
+          fontFamily: {
+            unbounded: ['Unbounded', 'sans-serif'],
+            syne: ['Syne', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <style>
+    /* Fluid Organic Wave Divider (Lime / Black) */
+    .wave-acid-top {
+      width: 100%;
+      height: 60px;
+      fill: #D4FF00;
+    }
+    
+    /* Scotch tape on photos */
+    .tape-strip {
+      position: absolute;
+      width: 50px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(2px);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%) rotate(-2deg);
+      z-index: 20;
+    }
+
+    /* Ticket Coupon Perforated Cutout Notches */
+    .ticket-card {
+      position: relative;
+      background: #FFFFFF;
+      color: #0A0A0C;
+    }
+    .ticket-card::before, .ticket-card::after {
+      content: "";
+      position: absolute;
+      top: 60%;
+      width: 24px;
+      height: 24px;
+      background-color: #0A0A0C;
+      border-radius: 50%;
+      z-index: 10;
+    }
+    .ticket-card::before {
+      left: -12px;
+    }
+    .ticket-card::after {
+      right: -12px;
+    }
+
+    /* Dashed line inside ticket */
+    .ticket-divider {
+      border-bottom: 2px dashed #D1D5DB;
+    }
+
+    /* Running Marquee */
+    @keyframes marquee {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-50%); }
+    }
+    .animate-ticker {
+      display: flex;
+      width: max-content;
+      animation: marquee 20s linear infinite;
+    }
+    .animate-ticker:hover {
+      animation-play-state: paused;
+    }
+  </style>
+</head>
+<body class="bg-acid-pitch text-white font-sans antialiased selection:bg-acid-lime selection:text-black overflow-x-hidden">
+
+  <!-- Top Floating Switcher / Reference Inspector -->
+  <aside aria-label="Reference Panel" class="fixed bottom-5 right-5 z-50 flex items-center gap-2 bg-acid-card/95 backdrop-blur-md p-2 rounded-full border border-white/20 shadow-2xl">
+    <button onclick="toggleRefModal()" class="flex items-center gap-2 px-4 py-2 bg-acid-lime text-black font-unbounded text-xs font-black rounded-full hover:scale-105 transition-transform shadow-lg">
+      <i data-lucide="eye" class="w-4 h-4"></i>
+      <span>Bandingkan Pin 13</span>
+    </button>
+    <a href="index.html" class="px-3 py-2 text-white/80 hover:text-white text-xs font-bold rounded-full hover:bg-white/10 transition-colors">
+      Hub Mockup
+    </a>
+  </aside>
+
+  <!-- Modal Reference Comparison -->
+  <div id="ref-modal" class="fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-acid-card border border-white/20 rounded-2xl max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl w-full">
+      <div class="p-4 border-b border-white/10 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="px-2.5 py-1 bg-acid-lime text-black text-xs font-black rounded">PIN 13</span>
+          <h3 class="text-white font-syne font-bold text-sm">Referensi: Nachistotu / Acid Street Brutalism (2731x4096 px)</h3>
+        </div>
+        <button onclick="toggleRefModal()" class="text-white/70 hover:text-white p-1 rounded-lg hover:bg-white/10">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="p-4 overflow-y-auto flex justify-center bg-black/60">
+        <img src="references/desain-web/13_Pin_1151936410989954145.jpg" alt="Pin 13 Reference" class="max-w-full h-auto rounded-lg shadow-2xl border border-white/10">
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TOP HEADER (EXACT PIN 13 PILL STYLE) ================= -->
+  <header class="w-full bg-acid-pitch py-4 px-6 border-b border-acid-border sticky top-0 z-40">
+    <div class="max-w-5xl mx-auto flex items-center justify-between">
+      
+      <!-- Date Pill Badge (Exact 15 - 16 MAPTA Style) -->
+      <div class="flex items-center gap-2 px-5 py-2 rounded-full border border-white/30 text-white font-unbounded text-xs font-bold">
+        <span>BOOKING MUSIM ANGKATAN 2024 / 2025</span>
+        <span class="text-acid-lime text-sm">✱</span>
+      </div>
+
+      <nav class="hidden md:flex items-center gap-6 text-xs font-bold uppercase tracking-wider text-white/60">
+        <a href="#peran" class="hover:text-acid-lime transition-colors">Manifesto</a>
+        <a href="#squad" class="hover:text-acid-lime transition-colors">Crew</a>
+        <a href="#jadwal" class="hover:text-acid-lime transition-colors">Roadmap</a>
+        <a href="#paket" class="hover:text-acid-lime transition-colors">Tiket Paket</a>
+      </nav>
+
+      <a href="https://wa.me/6281234567890" target="_blank" class="px-5 py-2 bg-transparent hover:bg-acid-lime hover:text-black text-white font-unbounded text-xs font-black uppercase rounded-full border border-white transition-all">
+        KONSULTASI →
+      </a>
+    </div>
+  </header>
+
+  <!-- ================= HERO SECTION (LIME BLOCK + BOLD SLOGAN) ================= -->
+  <section class="py-10 px-6 max-w-5xl mx-auto">
+    
+    <!-- Hero Block Card in Toxic Acid Lime -->
+    <div class="bg-acid-lime text-black rounded-3xl p-8 sm:p-12 relative overflow-hidden shadow-2xl">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-xs font-mono font-black uppercase tracking-widest text-black/70">
+          STUDIO PRODUKSI BUKU TAHUNAN & KONTEN SINEMATIK
+        </span>
+        <div class="w-8 h-8 rounded-full border border-black flex items-center justify-center">
+          <i data-lucide="arrow-down-right" class="w-4 h-4"></i>
+        </div>
+      </div>
+
+      <h1 class="font-unbounded font-black text-4xl sm:text-6xl md:text-7xl leading-none uppercase tracking-tight text-black my-4">
+        FOURJECTIVE
+      </h1>
+
+      <div class="max-w-xl">
+        <p class="font-unbounded font-extrabold text-sm sm:text-base uppercase tracking-tight text-black/90">
+          KAMI WUJUDKAN SEMUA AMBISI VISUAL KELAS KALIAN TANPA BATASAN KAKU.
+        </p>
+      </div>
+
+      <div class="mt-8 pt-6 border-t border-black/20 flex flex-wrap items-center justify-between gap-4">
+        <a href="#paket" class="px-8 py-3.5 bg-black hover:bg-white hover:text-black text-white font-unbounded font-black text-xs sm:text-sm uppercase tracking-wider rounded-full transition-all flex items-center gap-3">
+          <span>AMBIL TANGGAL PRODUKSI</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
+        <div class="text-xs font-mono font-bold text-black/70">
+          ● 100% GARANSI TEMA UNIK & CETAKAN MEWAH
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ACID LIME TICKER TAPE ================= -->
+  <div class="bg-acid-lime text-black py-3 overflow-hidden font-unbounded font-black text-xs md:text-sm tracking-wider uppercase border-y border-black">
+    <div class="animate-ticker whitespace-nowrap">
+      <span class="mx-4">★ BEBAS BERKREASI ★ TANPA POSE KAKU ★ AUDIOVISUAL 4K ULTRA HD ★ AR INTERAKTIF SCAN ★ HARDCOVER FOIL STAMP ★ BTS EXCLUSIVE ★</span>
+      <span class="mx-4">★ BEBAS BERKREASI ★ TANPA POSE KAKU ★ AUDIOVISUAL 4K ULTRA HD ★ AR INTERAKTIF SCAN ★ HARDCOVER FOIL STAMP ★ BTS EXCLUSIVE ★</span>
+    </div>
+  </div>
+
+  <!-- ================= SECTION 2: 3 PILL SWITCHER TABS (EXACT PIN 13) ================= -->
+  <section id="peran" class="py-20 px-6 max-w-5xl mx-auto">
+    <div class="max-w-2xl mb-12">
+      <span class="text-xs font-mono uppercase tracking-widest text-acid-lime font-bold">«FOURJECTIVE PHILOSOPHY»</span>
+      <h2 class="font-unbounded font-black text-2xl sm:text-4xl text-white uppercase mt-2 leading-tight">
+        KAMI MENDENGAR DAN TIDAK MENGHAKIMI KONSEP GILA KALIAN
+      </h2>
+      <p class="text-xs sm:text-sm text-white/60 mt-3 leading-relaxed">
+        Dari tema anime, cyberpunk, retro vintage, hingga editorial majalah internasional—semua ide liar siswa kami ramu jadi mahakarya visual.
+      </p>
+    </div>
+
+    <!-- 3 Pill Tabs -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+      <button onclick="switchTab(0)" id="tab-btn-0" class="py-3 px-4 rounded-full border-2 border-acid-lime bg-acid-lime text-black font-unbounded font-black text-xs uppercase tracking-wider transition-all">
+        EKSPERTIS SUTRADARA
+      </button>
+      <button onclick="switchTab(1)" id="tab-btn-1" class="py-3 px-4 rounded-full border border-white/30 hover:border-acid-lime text-white font-unbounded font-bold text-xs uppercase tracking-wider transition-all">
+        SUARA SISWA & KELAS
+      </button>
+      <button onclick="switchTab(2)" id="tab-btn-2" class="py-3 px-4 rounded-full border border-white/30 hover:border-acid-lime text-white font-unbounded font-bold text-xs uppercase tracking-wider transition-all">
+        ARSIP SEUMUR HIDUP
+      </button>
+    </div>
+
+    <!-- Tab Content Cards -->
+    <div id="tab-content" class="bg-acid-card p-8 rounded-3xl border border-acid-border relative">
+      <div id="tab-panel-0" class="space-y-4">
+        <h3 class="font-unbounded font-bold text-xl text-acid-lime">TIM SUTRADARA & ART DIRECTOR BERDEDIKASI</h3>
+        <p class="text-sm text-white/80 leading-relaxed">
+          Kalian tidak ditinggal sendirian saat bingung pose atau konsep. Sutradara kami langsung terjun mengarahkan gaya, lighting, color grading, dan storytelling agar setiap siswa tampil maksimal tanpa canggung di depan kamera.
+        </p>
+        <div class="flex items-center gap-3 pt-2 text-xs font-mono text-white/50">
+          <span>✓ Lighting Cinema Standard</span>
+          <span>✓ Moodboard Khusus Per Kelas</span>
+          <span>✓ Directing Pose Natural</span>
+        </div>
+      </div>
+
+      <div id="tab-panel-1" class="hidden space-y-4">
+        <h3 class="font-unbounded font-bold text-xl text-acid-lime">DEMOKRASI KREATIF BERSAMA SISWA</h3>
+        <p class="text-sm text-white/80 leading-relaxed">
+          Bukan template pabrikan yang sama tiap tahun. Kami adakan sesi brainstorming mendalam dengan panitia angkatan untuk menggali memori otentik, jokes internal, dan identitas unik sekolah kalian.
+        </p>
+        <div class="flex items-center gap-3 pt-2 text-xs font-mono text-white/50">
+          <span>✓ Custom Mascot Angkatan</span>
+          <span>✓ Halaman Zine Bebas</span>
+          <span>✓ Playlist Musik Spotify Scan</span>
+        </div>
+      </div>
+
+      <div id="tab-panel-2" class="hidden space-y-4">
+        <h3 class="font-unbounded font-bold text-xl text-acid-lime">BUKU CETAK SENI & DIGITAL AR CLOUD</h3>
+        <p class="text-sm text-white/80 leading-relaxed">
+          Kualitas cetak kertas bersertifikasi FSC, jilid jahit benang anti-rontok, dan cover hardbound anti-air. Ditambah aplikasi Augmented Reality yang memutar video saat cover buku diarahkan ke kamera smartphone.
+        </p>
+        <div class="flex items-center gap-3 pt-2 text-xs font-mono text-white/50">
+          <span>✓ Garansi Rusak Ganti Baru</span>
+          <span>✓ Cloud Video Hosting Selamanya</span>
+          <span>✓ Hardbox Eksklusif</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SECTION 3: SQUAD DIRECTORS (СПИКЕРЫ) ================= -->
+  <section id="squad" class="py-16 px-6 max-w-5xl mx-auto border-t border-acid-border">
+    <div class="flex items-center justify-between mb-10">
+      <h2 class="font-unbounded font-black text-2xl sm:text-3xl text-white uppercase tracking-tight">
+        LEAD DIRECTORS
+      </h2>
+      <span class="text-xs font-mono text-acid-lime">04 CREATIVE LEADS</span>
+    </div>
+
+    <!-- Spotlight Lead Card (Kirill style) -->
+    <div class="bg-acid-card p-6 rounded-3xl border border-acid-border mb-6 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+      <div class="md:col-span-5 aspect-square rounded-2xl overflow-hidden bg-black relative">
+        <div class="tape-strip"></div>
+        <img src="images/about/model1.png" alt="Rama Lead Director" class="w-full h-full object-cover">
+      </div>
+      <div class="md:col-span-7">
+        <span class="text-xs font-mono uppercase tracking-widest text-acid-lime font-bold">EXECUTIVE DIRECTOR</span>
+        <h3 class="font-unbounded font-black text-2xl sm:text-3xl text-white uppercase mt-1">
+          RAMA SYAHPUTRA
+        </h3>
+        <p class="text-xs text-white/70 mt-2 leading-relaxed">
+          Alumnus perfilman dengan 6+ tahun pengalaman menyutradarai aftermovie dan editorial buku tahunan sekolah-sekolah unggulan di seluruh Indonesia.
+        </p>
+        <div class="mt-4 flex items-center gap-4 text-xs font-mono text-white/50">
+          <span>● 150+ Judul Aftermovie</span>
+          <span>● Nomine Festival Film Pendek</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 Small Director Cards (Exact Pin 13 4-card row) -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      
+      <div class="bg-acid-card p-3 rounded-2xl border border-acid-border text-center group hover:border-acid-lime transition-colors">
+        <div class="aspect-square rounded-xl overflow-hidden bg-black mb-3">
+          <img src="images/about/model2.png" alt="Sarah" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+        </div>
+        <p class="font-unbounded font-bold text-xs text-white">SARAH</p>
+        <p class="text-[10px] text-acid-lime font-mono">ART & COLORIST</p>
+      </div>
+
+      <div class="bg-acid-card p-3 rounded-2xl border border-acid-border text-center group hover:border-acid-lime transition-colors">
+        <div class="aspect-square rounded-xl overflow-hidden bg-black mb-3">
+          <img src="images/about/model3.png" alt="Dion" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+        </div>
+        <p class="font-unbounded font-bold text-xs text-white">DION</p>
+        <p class="text-[10px] text-acid-lime font-mono">CHIEF 4K CINEMA</p>
+      </div>
+
+      <div class="bg-acid-card p-3 rounded-2xl border border-acid-border text-center group hover:border-acid-lime transition-colors">
+        <div class="aspect-square rounded-xl overflow-hidden bg-black mb-3">
+          <img src="images/about/model4.png" alt="Maya" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+        </div>
+        <p class="font-unbounded font-bold text-xs text-white">MAYA</p>
+        <p class="text-[10px] text-acid-lime font-mono">EDITORIAL DESIGN</p>
+      </div>
+
+      <div class="bg-acid-card p-3 rounded-2xl border border-acid-border text-center group hover:border-acid-lime transition-colors">
+        <div class="aspect-square rounded-xl overflow-hidden bg-black mb-3 flex items-center justify-center p-2">
+          <img src="images/landing-page/hero/mascot-left.svg" alt="Baron" class="w-4/5 h-4/5 object-contain">
+        </div>
+        <p class="font-unbounded font-bold text-xs text-white">BARON</p>
+        <p class="text-[10px] text-acid-lime font-mono">MASCOT SQUAD</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= SECTION 4: ROADMAP JADWAL PRODUKSI (ПРОГРАММА ИВЕНТА) ================= -->
+  <section id="jadwal" class="bg-acid-lime text-black py-20 px-6 mt-12 rounded-t-[40px]">
+    <div class="max-w-5xl mx-auto">
+      
+      <div class="flex items-center justify-between mb-8">
+        <h2 class="font-unbounded font-black text-3xl sm:text-5xl uppercase tracking-tight text-black">
+          ROADMAP PRODUKSI
+        </h2>
+        <span class="text-2xl font-black">✱</span>
+      </div>
+
+      <!-- 2 Phase Pill Switcher (15 MAPTA / 16 MAPTA) -->
+      <div class="grid grid-cols-2 gap-4 max-w-md mb-8">
+        <button onclick="switchPhase(1)" id="phase-btn-1" class="py-2.5 px-6 rounded-full bg-white text-black font-unbounded font-black text-xs uppercase shadow-md transition-all">
+          FASE 1: PRE-PROD
+        </button>
+        <button onclick="switchPhase(2)" id="phase-btn-2" class="py-2.5 px-6 rounded-full bg-black/10 hover:bg-white text-black font-unbounded font-bold text-xs uppercase transition-all">
+          FASE 2: SHOOT & CETAK
+        </button>
+      </div>
+
+      <!-- Schedule Table (Exact Pin 13 Schedule Format) -->
+      <div id="phase-table-1" class="divide-y-2 divide-black/20 font-mono text-xs sm:text-sm">
+        <div class="py-4 grid grid-cols-12 gap-4 items-center">
+          <div class="col-span-4 sm:col-span-3 font-bold font-unbounded text-black">
+            MINGGU 1 - 2
+          </div>
+          <div class="col-span-8 sm:col-span-9 font-sans text-black/80 font-medium">
+            <span class="font-bold text-black block">Konsultasi Konsep & Moodboard Kelas</span>
+            Penetapan tema per kelas (Cyberpunk, Retro, Gatsby, dll), pemilihan palet warna, dan casting wardrobe.
+          </div>
+        </div>
+
+        <div class="py-4 grid grid-cols-12 gap-4 items-center">
+          <div class="col-span-4 sm:col-span-3 font-bold font-unbounded text-black">
+            MINGGU 3 - 4
+          </div>
+          <div class="col-span-8 sm:col-span-9 font-sans text-black/80 font-medium">
+            <span class="font-bold text-black block">Survey Lokasi & Storyboard Sinematik</span>
+            Tim teknis memeriksa izin lokasi outdoor/studio dan merancang script sinematik 4K teaser angkatan.
+          </div>
+        </div>
+
+        <div class="py-4 grid grid-cols-12 gap-4 items-center">
+          <div class="col-span-4 sm:col-span-3 font-bold font-unbounded text-black">
+            MINGGU 5 - 6
+          </div>
+          <div class="col-span-8 sm:col-span-9 font-sans text-black/80 font-medium">
+            <span class="font-bold text-black block">Pembuatan Karakter Maskot & Stiker</span>
+            Illustrator Fourjective menggambar maskot unik khas sekolah dan set stiker pack.
+          </div>
+        </div>
+      </div>
+
+      <div id="phase-table-2" class="hidden divide-y-2 divide-black/20 font-mono text-xs sm:text-sm">
+        <div class="py-4 grid grid-cols-12 gap-4 items-center">
+          <div class="col-span-4 sm:col-span-3 font-bold font-unbounded text-black">
+            MINGGU 7 - 8
+          </div>
+          <div class="col-span-8 sm:col-span-9 font-sans text-black/80 font-medium">
+            <span class="font-bold text-black block">Eksekusi Photoshoot & Video Shooting 4K</span>
+            Sesi pemotretan profesional bersama kru lengkap, lighting cinema, makeup artist, dan drone camera.
+          </div>
+        </div>
+
+        <div class="py-4 grid grid-cols-12 gap-4 items-center">
+          <div class="col-span-4 sm:col-span-3 font-bold font-unbounded text-black">
+            MINGGU 9 - 10
+          </div>
+          <div class="col-span-8 sm:col-span-9 font-sans text-black/80 font-medium">
+            <span class="font-bold text-black block">Layout Editorial & Proofreading OSIS</span>
+            Penyusunan tata letak buku majalah, pemilihan foto terbaik, dan asistensi revisi bersama panitia.
+          </div>
+        </div>
+
+        <div class="py-4 grid grid-cols-12 gap-4 items-center">
+          <div class="col-span-4 sm:col-span-3 font-bold font-unbounded text-black">
+            MINGGU 11 - 12
+          </div>
+          <div class="col-span-8 sm:col-span-9 font-sans text-black/80 font-medium">
+            <span class="font-bold text-black block">Produksi Cetak Hardcover & Distribusi</span>
+            Proses cetak offset, foil stamping, packaging box individual, dan pengiriman aman ke sekolah.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= SECTION 5: AFTERMOVIE / BTS GALLERY ================= -->
+  <section class="py-20 px-6 max-w-5xl mx-auto">
+    <div class="mb-10">
+      <span class="text-xs font-mono uppercase tracking-widest text-acid-lime font-bold">SNAPSHOTS</span>
+      <h2 class="font-unbounded font-black text-3xl sm:text-4xl text-white uppercase mt-1">
+        AFTERPARTY & BTS
+      </h2>
+    </div>
+
+    <!-- Taped Polaroids Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div class="bg-acid-card p-4 rounded-2xl border border-acid-border relative group hover:-translate-y-2 transition-transform">
+        <div class="tape-strip"></div>
+        <div class="aspect-[4/3] rounded-xl overflow-hidden mb-3 bg-black">
+          <img src="images/landing-page/portfolio/dark.png" alt="BTS 1" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+        </div>
+        <p class="font-unbounded font-bold text-sm text-white">4K CINEMA NIGHT</p>
+        <p class="text-xs text-white/50 font-mono">SMA Taruna Nusantara</p>
+      </div>
+
+      <div class="bg-acid-card p-4 rounded-2xl border border-acid-border relative group hover:-translate-y-2 transition-transform">
+        <div class="tape-strip"></div>
+        <div class="aspect-[4/3] rounded-xl overflow-hidden mb-3 bg-black">
+          <img src="images/landing-page/portfolio/colorfull.png" alt="BTS 2" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+        </div>
+        <p class="font-unbounded font-bold text-sm text-white">CYBER NEON RUN</p>
+        <p class="text-xs text-white/50 font-mono">SMAN 1 Bandung</p>
+      </div>
+
+      <div class="bg-acid-card p-4 rounded-2xl border border-acid-border relative group hover:-translate-y-2 transition-transform">
+        <div class="tape-strip"></div>
+        <div class="aspect-[4/3] rounded-xl overflow-hidden mb-3 bg-black">
+          <img src="images/landing-page/portfolio/jumanji.png" alt="BTS 3" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+        </div>
+        <p class="font-unbounded font-bold text-sm text-white">JUNGLE EXPEDITION</p>
+        <p class="text-xs text-white/50 font-mono">SMAN 8 Yogyakarta</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SECTION 6: TICKET COUPON PRICING (БИЛЕТЫ) ================= -->
+  <section id="paket" class="py-20 px-6 max-w-5xl mx-auto border-t border-acid-border relative overflow-hidden">
+    
+    <!-- Background repeating marquee outline -->
+    <div class="text-white/10 font-unbounded font-black text-6xl md:text-8xl tracking-widest whitespace-nowrap select-none pointer-events-none mb-8">
+      PAKET KELAS ★ TIKET PRODUKSI ★ PAKET KELAS ★
+    </div>
+
+    <div class="text-center mb-14">
+      <span class="text-xs font-mono uppercase tracking-widest text-acid-lime font-bold">PILIHAN TIKET ANGKATAN</span>
+      <h2 class="font-unbounded font-black text-3xl sm:text-5xl text-white uppercase mt-2">
+        PILIHAN PAKET RESMI
+      </h2>
+      <p class="text-xs sm:text-sm text-white/60 mt-2">Pilih paket investasi kenangan yang paling pas untuk sekolah kalian.</p>
+    </div>
+
+    <!-- 3 Perforated Ticket Cards (Exact Pin 13 Notch Cards) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      
+      <!-- TICKET 1: STANDARD -->
+      <div class="ticket-card rounded-2xl p-6 shadow-2xl border-2 border-black flex flex-col justify-between hover:-translate-y-2 transition-transform">
+        <div>
+          <div class="flex items-center justify-between pb-3 ticket-divider mb-4">
+            <span class="font-unbounded font-extrabold text-xs tracking-wider uppercase">TIKET KELAS</span>
+            <span class="text-xs font-mono font-bold text-black/50">#01</span>
+          </div>
+
+          <h3 class="font-unbounded font-black text-xl text-black">REGULER BTS</h3>
+          <p class="text-[11px] text-black/60 font-sans mb-4">Buku tahunan cetak esensial dengan kualitas editorial rapi.</p>
+
+          <div class="py-4 ticket-divider">
+            <span class="text-xs text-black/50 line-through font-mono">Rp 350.000</span>
+            <div class="font-unbounded font-black text-3xl text-black">
+              Rp 290.000
+              <span class="text-xs font-sans font-normal text-black/60">/ siswa</span>
+            </div>
+          </div>
+
+          <ul class="space-y-2 py-4 text-xs font-medium text-black/80 font-sans">
+            <li class="flex items-center gap-2">✓ Hardcover laminasi doff premium</li>
+            <li class="flex items-center gap-2">✓ Photoshoot 1 hari (1 lokasi)</li>
+            <li class="flex items-center gap-2">✓ File foto high-resolution Google Drive</li>
+            <li class="flex items-center gap-2">✓ Garansi cetakan 100%</li>
+          </ul>
+        </div>
+
+        <a href="https://wa.me/6281234567890?text=Halo%20Fourjective,%20saya%20tertarik%20Tiket%20Reguler" target="_blank" class="w-full py-3 bg-acid-lime hover:bg-black hover:text-white text-black font-unbounded font-black text-xs uppercase tracking-wider rounded-xl transition-colors text-center border-2 border-black shadow-[3px_3px_0px_#000]">
+          PILIH TIKET →
+        </a>
+      </div>
+
+      <!-- TICKET 2: ULTIMATE (Featured) -->
+      <div class="ticket-card rounded-2xl p-6 shadow-2xl border-4 border-acid-lime flex flex-col justify-between transform md:-translate-y-4 hover:-translate-y-6 transition-transform relative">
+        <span class="absolute -top-3.5 right-6 bg-acid-lime text-black font-unbounded font-black text-[10px] px-3 py-1 rounded-full uppercase border-2 border-black">
+          ★ PALING BANYAK DIPILIH
+        </span>
+
+        <div>
+          <div class="flex items-center justify-between pb-3 ticket-divider mb-4">
+            <span class="font-unbounded font-extrabold text-xs tracking-wider uppercase text-black">TIKET ANGKATAN</span>
+            <span class="text-xs font-mono font-bold text-black/50">#02</span>
+          </div>
+
+          <h3 class="font-unbounded font-black text-xl text-black">HYBRID 4K + AR</h3>
+          <p class="text-[11px] text-black/60 font-sans mb-4">Paket all-in-one sinematografi, Augmented Reality, & zine cetak.</p>
+
+          <div class="py-4 ticket-divider">
+            <span class="text-xs text-black/50 line-through font-mono">Rp 520.000</span>
+            <div class="font-unbounded font-black text-3xl text-black">
+              Rp 420.000
+              <span class="text-xs font-sans font-normal text-black/60">/ siswa</span>
+            </div>
+          </div>
+
+          <ul class="space-y-2 py-4 text-xs font-semibold text-black font-sans">
+            <li class="flex items-center gap-2 text-black font-bold">★ Video Teaser & Aftermovie 4K Sinematik</li>
+            <li class="flex items-center gap-2 text-black font-bold">★ AR Interactive Scan di Smartphone</li>
+            <li class="flex items-center gap-2">✓ Hardcover Emboss Foil Emas / Perak</li>
+            <li class="flex items-center gap-2">✓ Photoshoot 3 hari (Studio + Outdoor)</li>
+            <li class="flex items-center gap-2">✓ Bonus Custom Mascot & Sticker Pack</li>
+          </ul>
+        </div>
+
+        <a href="https://wa.me/6281234567890?text=Halo%20Fourjective,%20saya%20tertarik%20Tiket%20Hybrid" target="_blank" class="w-full py-3.5 bg-black hover:bg-acid-lime hover:text-black text-white font-unbounded font-black text-xs uppercase tracking-wider rounded-xl transition-colors text-center shadow-lg">
+          AMBIL TIKET INI →
+        </a>
+      </div>
+
+      <!-- TICKET 3: DELUXE -->
+      <div class="ticket-card rounded-2xl p-6 shadow-2xl border-2 border-black flex flex-col justify-between hover:-translate-y-2 transition-transform">
+        <div>
+          <div class="flex items-center justify-between pb-3 ticket-divider mb-4">
+            <span class="font-unbounded font-extrabold text-xs tracking-wider uppercase">TIKET KOMUNITAS</span>
+            <span class="text-xs font-mono font-bold text-black/50">#03</span>
+          </div>
+
+          <h3 class="font-unbounded font-black text-xl text-black">EDITORIAL PRO</h3>
+          <p class="text-[11px] text-black/60 font-sans mb-4">Desain majalah avant-garde dengan box set mewah.</p>
+
+          <div class="py-4 ticket-divider">
+            <span class="text-xs text-black/50 line-through font-mono">Rp 450.000</span>
+            <div class="font-unbounded font-black text-3xl text-black">
+              Rp 360.000
+              <span class="text-xs font-sans font-normal text-black/60">/ siswa</span>
+            </div>
+          </div>
+
+          <ul class="space-y-2 py-4 text-xs font-medium text-black/80 font-sans">
+            <li class="flex items-center gap-2">✓ Hardcover Spot UV & Tekstur Linen</li>
+            <li class="flex items-center gap-2">✓ Photoshoot 2 hari tematik</li>
+            <li class="flex items-center gap-2">✓ 1-Minute Reel Cinematic Instagram</li>
+            <li class="flex items-center gap-2">✓ Box packaging eksklusif per siswa</li>
+          </ul>
+        </div>
+
+        <a href="https://wa.me/6281234567890?text=Halo%20Fourjective,%20saya%20tertarik%20Tiket%20Editorial" target="_blank" class="w-full py-3 bg-acid-lime hover:bg-black hover:text-white text-black font-unbounded font-black text-xs uppercase tracking-wider rounded-xl transition-colors text-center border-2 border-black shadow-[3px_3px_0px_#000]">
+          PILIH TIKET →
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= FOOTER WITH ACID LIME CAPSULE (EXACT PIN 13 FOOTER) ================= -->
+  <footer class="py-16 px-6 max-w-5xl mx-auto">
+    <div class="bg-acid-lime text-black rounded-3xl p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xl">
+      <div>
+        <h3 class="font-unbounded font-black text-2xl uppercase">FOURJECTIVE</h3>
+        <p class="text-xs font-mono font-bold text-black/70 mt-1">DO THE BEST FOR THE BEST MOMENT.</p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="https://instagram.com" target="_blank" class="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center hover:scale-110 transition-transform" title="Instagram">
+          <i data-lucide="instagram" class="w-5 h-5"></i>
+        </a>
+        <a href="https://tiktok.com" target="_blank" class="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center hover:scale-110 transition-transform" title="TikTok">
+          <i data-lucide="music-2" class="w-5 h-5"></i>
+        </a>
+        <a href="https://wa.me/6281234567890" target="_blank" class="px-5 py-2.5 rounded-full bg-white text-black font-unbounded text-xs font-black uppercase hover:bg-black hover:text-white transition-colors">
+          CHAT WHATSAPP
+        </a>
+      </div>
+    </div>
+
+    <div class="mt-8 text-center text-xs font-mono text-white/40">
+      © 2024 FOURJECTIVE STUDIO • INSPIRASI: PIN 13 NACHISTOTU
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    function toggleRefModal() {
+      const modal = document.getElementById('ref-modal');
+      modal.classList.toggle('hidden');
+      modal.classList.toggle('flex');
+    }
+
+    // 3-Pill Switcher logic
+    function switchTab(index) {
+      for (let i = 0; i < 3; i++) {
+        const btn = document.getElementById(`tab-btn-${i}`);
+        const panel = document.getElementById(`tab-panel-${i}`);
+        if (i === index) {
+          btn.className = "py-3 px-4 rounded-full border-2 border-acid-lime bg-acid-lime text-black font-unbounded font-black text-xs uppercase tracking-wider transition-all";
+          panel.classList.remove('hidden');
+        } else {
+          btn.className = "py-3 px-4 rounded-full border border-white/30 hover:border-acid-lime text-white font-unbounded font-bold text-xs uppercase tracking-wider transition-all";
+          panel.classList.add('hidden');
+        }
+      }
+    }
+
+    // Roadmap Phase switcher logic
+    function switchPhase(phase) {
+      const btn1 = document.getElementById('phase-btn-1');
+      const btn2 = document.getElementById('phase-btn-2');
+      const table1 = document.getElementById('phase-table-1');
+      const table2 = document.getElementById('phase-table-2');
+
+      if (phase === 1) {
+        btn1.className = "py-2.5 px-6 rounded-full bg-white text-black font-unbounded font-black text-xs uppercase shadow-md transition-all";
+        btn2.className = "py-2.5 px-6 rounded-full bg-black/10 hover:bg-white text-black font-unbounded font-bold text-xs uppercase transition-all";
+        table1.classList.remove('hidden');
+        table2.classList.add('hidden');
+      } else {
+        btn2.className = "py-2.5 px-6 rounded-full bg-white text-black font-unbounded font-black text-xs uppercase shadow-md transition-all";
+        btn1.className = "py-2.5 px-6 rounded-full bg-black/10 hover:bg-white text-black font-unbounded font-bold text-xs uppercase transition-all";
+        table2.classList.remove('hidden');
+        table1.classList.add('hidden');
+      }
+    }
+  </script>
+</body>
+</html>
