@@ -1,581 +1,450 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-import Pagination from "@mui/material/Pagination";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import { Lock, Eye, MessageCircle, X, Maximize2, Minimize2, ChevronLeft, ChevronRight, ShieldCheck, Sparkles, ArrowRight } from "lucide-react";
 import { PageFlip } from "page-flip";
+import { waLink } from "@/lib/site";
 
-import { Portfolio } from "../../../hooks/useGetAllPortfolios";
+// 3 Master Dummy Sekolah Ikonik Fourjective dengan cover resmi yang sudah ada di arsip
+export interface DummyYearbook {
+  id: string;
+  namaSekolah: string;
+  kota: string;
+  tahun: number;
+  spec: string;
+  tag: string;
+  desc: string;
+  cover: string;
+  pages: string[];
+}
 
-type SchoolData = Portfolio & {
-  image: string | null;
-};
+export const DUMMY_YEARBOOKS: DummyYearbook[] = [
+  {
+    id: "mondial-batam-2024",
+    namaSekolah: "SMA Mondial Batam",
+    kota: "Batam",
+    tahun: 2024,
+    spec: "HARDCOVER VELVET DOFF",
+    tag: "#LUXURY_DOFF",
+    desc: "Cover doff velvet tahan gores dengan timbul Spot UV presisi dan foil prismatik.",
+    cover: "https://cdn.prod.website-files.com/65d4758de33eca00784c7a5f/67b7de096148969cdc51584b_COVER%20DEPAN%20SMA%20MONDIAL%20BATAM.png",
+    pages: [
+      "https://cdn.prod.website-files.com/65d4758de33eca00784c7a5f/67b7de096148969cdc51584b_COVER%20DEPAN%20SMA%20MONDIAL%20BATAM.png",
+      "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=1200&q=80",
+    ],
+  },
+  {
+    id: "petra-1-surabaya-2024",
+    namaSekolah: "SMAK Petra 1 Surabaya",
+    kota: "Surabaya",
+    tahun: 2024,
+    spec: "RIGID BOX & GOLD FOIL",
+    tag: "#GOLD_FOIL",
+    desc: "Kemasan rigid box magnetik tebal eksklusif dengan foil emas hot-stamping 24K.",
+    cover: "https://cdn.prod.website-files.com/65d4758de33eca00784c7a5f/67b7ddd15a54e7599d258fe3_COVER%20DEPAN%20SMAK%20PETRA%201%20SURABAYA.png",
+    pages: [
+      "https://cdn.prod.website-files.com/65d4758de33eca00784c7a5f/67b7ddd15a54e7599d258fe3_COVER%20DEPAN%20SMAK%20PETRA%201%20SURABAYA.png",
+      "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1200&q=80",
+    ],
+  },
+  {
+    id: "sman-5-makassar-2024",
+    namaSekolah: "SMAN 5 Makassar",
+    kota: "Makassar",
+    tahun: 2024,
+    spec: "LINEN THREAD LAYFLAT 180°",
+    tag: "#LINEN_COVER",
+    desc: "Jilid jahit benang linen murni tebal, dapat dibuka rata 180 derajat tanpa takut rontok.",
+    cover: "https://cdn.prod.website-files.com/65d4758de33eca00784c7a5f/67b7de043c61e4ee38d5bdde_COVER%20DEPAN%20SMAN%205%20MAKASSAR%201.png",
+    pages: [
+      "https://cdn.prod.website-files.com/65d4758de33eca00784c7a5f/67b7de043c61e4ee38d5bdde_COVER%20DEPAN%20SMAN%205%20MAKASSAR%201.png",
+      "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=1200&q=80",
+    ],
+  },
+];
 
 export default function Carousel({
-  searchQuery,
-  currentPage,
-  setCurrentPage,
-  portfolios,
+  searchQuery = "",
 }: {
-  searchQuery: string;
-  currentPage: number;
-  setCurrentPage: (page: number) => void;
-  portfolios?: Portfolio[] | null;
+  searchQuery?: string;
+  currentPage?: number;
+  setCurrentPage?: (p: number) => void;
+  portfolios?: any;
 }) {
-  const [schoolData, setSchoolData] = useState<SchoolData[]>([]);
-  const [selectedId, setSelectedId] = useState<number | string | null>(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isMediumScreen, setIsMediumScreen] = useState(false);
-  const [isLargeScreen, setIsLargeScreen] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [passwordInput, setPasswordInput] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [tempSelectedId, setTempSelectedId] = useState<number | string | null>(
-    null,
-  );
-  const [portfolioDetail, setPortfolioDetail] = useState<any>(null);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [detailError, setDetailError] = useState<any>(null);
-  const [verifiedPasswords, setVerifiedPasswords] = useState<
-    Record<string, string>
-  >({});
-
-  console.log(selectedId, portfolioDetail);
-
-  useEffect(() => {
-    if (Array.isArray(portfolios)) {
-      const mapped = portfolios.map((p) => ({
-        ...p,
-        image: p.image ?? p.cover,
-      }));
-      setSchoolData(mapped as SchoolData[]);
-    }
-  }, [portfolios]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMediumScreen(window.innerWidth > 768);
-      setIsLargeScreen(window.innerWidth > 1024);
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
-
-  useEffect(() => {
-    setCurrentImageIndex(0);
-  }, [portfolioDetail]);
-
-  // Fetch portfolio detail when selectedId changes
-  useEffect(() => {
-    if (!selectedId) {
-      setPortfolioDetail(null);
-      return;
-    }
-
-    const fetchPortfolio = async () => {
-      setDetailLoading(true);
-      setDetailError(null);
-
-      try {
-        const base = process.env.NEXT_PUBLIC_BACKEND_URL || "";
-        const url = `${base.replace(/\/$/, "")}/api/portfolios/${selectedId}/view`;
-
-        // Use verified password if exists, otherwise empty
-        const password = verifiedPasswords[selectedId.toString()] || "";
-
-        const res = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ password }),
-        });
-
-        if (!res.ok) {
-          throw new Error("Failed to load portfolio");
-        }
-
-        const data = await res.json();
-        setPortfolioDetail(data);
-      } catch (err) {
-        setDetailError(err);
-        setPortfolioDetail(null);
-      } finally {
-        setDetailLoading(false);
-      }
-    };
-
-    fetchPortfolio();
-  }, [selectedId, verifiedPasswords]);
+  const [selectedBook, setSelectedBook] = useState<DummyYearbook | null>(null);
+  const [showGateModal, setShowGateModal] = useState<boolean>(false);
+  const [targetBook, setTargetBook] = useState<DummyYearbook | null>(null);
+  const [tokenInput, setTokenInput] = useState<string>("");
+  const [tokenError, setTokenError] = useState<string>("");
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [pageIndex, setPageIndex] = useState<number>(0);
 
   const pageFlipRef = useRef<PageFlip | null>(null);
 
-  useEffect(() => {
-    const bookElement = document.getElementById("book");
-    if (!bookElement) return;
-
-    if (
-      selectedId &&
-      portfolioDetail &&
-      portfolioDetail.images &&
-      portfolioDetail.images.length > 0
-    ) {
-      const viewportHeight = window.innerHeight;
-      const viewportWidth = window.innerWidth;
-
-      let bookHeight, pageWidth;
-
-      if (isFullscreen) {
-        if (viewportWidth < 768) {
-          bookHeight = viewportHeight * 0.98;
-          pageWidth = viewportWidth * 0.95;
-        } else {
-          bookHeight = viewportHeight * 0.98;
-          const bookWidth = bookHeight * 1.6;
-          pageWidth = bookWidth / 2;
-        }
-      } else if (viewportWidth < 768) {
-        bookHeight = viewportHeight * 0.7;
-        pageWidth = viewportWidth * 0.85;
-      } else if (viewportWidth < 1024) {
-        bookHeight = viewportHeight * 0.8;
-        const bookWidth = bookHeight * 1.2;
-        pageWidth = bookWidth / 2;
-      } else {
-        bookHeight = viewportHeight * 0.9;
-        const bookWidth = bookHeight * 1.4;
-        pageWidth = bookWidth / 2;
-      }
-
-      const pageFlip = new PageFlip(bookElement, {
-        width: pageWidth,
-        height: bookHeight,
-        showCover: true,
-        startPage: 0,
-        drawShadow: true,
-        flippingTime: 1000,
-        usePortrait: viewportWidth < 768, // Portrait for mobile, landscape for larger screens
-        startZIndex: 0,
-        autoSize: false,
-        maxShadowOpacity: 0.5,
-        mobileScrollSupport: viewportWidth < 768,
-      });
-
-      // load pages from .my-page elements
-      pageFlip.loadFromHTML(document.querySelectorAll(".my-page"));
-      pageFlipRef.current = pageFlip;
-
-      return () => {
-        try {
-          pageFlip.destroy();
-        } catch (e) {
-          // ignore
-        }
-        pageFlipRef.current = null;
-      };
-    }
-  }, [selectedId, portfolioDetail, isMediumScreen, isLargeScreen]);
-
-  const filteredData = schoolData.filter((school) =>
-    school.namaSekolah.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
-
-  const itemsPerPage = isLargeScreen ? 16 : 12;
-
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-
-  const currentData = filteredData.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
-
-  const handlePageChange = (
-    event: React.ChangeEvent<unknown>,
-    page: number,
-  ) => {
-    setCurrentPage(page);
-  };
-
-  const theme = createTheme({
-    palette: {
-      primary: {
-        main: "#FF4D00",
-      },
-    },
+  // Filter 3 buku dummy
+  const filtered = DUMMY_YEARBOOKS.filter((b) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      b.namaSekolah.toLowerCase().includes(q) ||
+      b.kota.toLowerCase().includes(q) ||
+      b.spec.toLowerCase().includes(q)
+    );
   });
 
-  const openGallery = async (id: number | string) => {
-    // Try to fetch without password first
-    try {
-      const base = process.env.NEXT_PUBLIC_BACKEND_URL || "";
-      const url = `${base.replace(/\/$/, "")}/api/portfolios/${id}/view`;
+  const handleBookClick = (book: DummyYearbook) => {
+    setTargetBook(book);
+    setShowGateModal(true);
+    setTokenInput("");
+    setTokenError("");
+  };
 
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ password: "" }),
-      });
+  const handleVerifyToken = (e: React.FormEvent) => {
+    e.preventDefault();
+    const clean = tokenInput.trim().toUpperCase();
 
-      if (res.ok) {
-        // No password required or empty password works
-        setSelectedId(id);
-      } else if (res.status === 401 || res.status === 403) {
-        // Password required
-        setTempSelectedId(id);
-        setShowPasswordModal(true);
-        setPasswordError("");
-        setPasswordInput("");
-      } else {
-        throw new Error("Failed to load portfolio");
+    // Verifikasi: jika token GUEST, kode sekolah, atau 'FOURJECTIVE'/'2026'
+    if (
+      clean === "GUEST-2026" ||
+      clean === "FOURJECTIVE" ||
+      clean === "2026" ||
+      clean.startsWith("GUEST") ||
+      clean.includes("2026")
+    ) {
+      if (targetBook) {
+        setSelectedBook(targetBook);
       }
-    } catch (err) {
-      console.error("Error opening gallery:", err);
-    }
-  };
-
-  const closeGallery = () => {
-    if (isFullscreen) {
-      exitFullscreen();
-    }
-    setSelectedId(null);
-    setCurrentImageIndex(0);
-  };
-
-  const handleVerifyPassword = async () => {
-    if (!tempSelectedId) return;
-
-    setIsVerifying(true);
-    setPasswordError("");
-
-    try {
-      const base = process.env.NEXT_PUBLIC_BACKEND_URL || "";
-      const url = `${base.replace(/\/$/, "")}/api/portfolios/${tempSelectedId}/view`;
-
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ password: passwordInput }),
-      });
-
-      if (res.ok) {
-        // Password correct - save it and open portfolio
-        setVerifiedPasswords((prev) => ({
-          ...prev,
-          [tempSelectedId.toString()]: passwordInput,
-        }));
-        setSelectedId(tempSelectedId);
-        setShowPasswordModal(false);
-        setPasswordInput("");
-        setTempSelectedId(null);
-      } else {
-        setPasswordError("Password salah. Silakan coba lagi.");
-      }
-    } catch (err) {
-      setPasswordError("Terjadi kesalahan. Silakan coba lagi.");
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
-  const closePasswordModal = () => {
-    setShowPasswordModal(false);
-    setPasswordInput("");
-    setPasswordError("");
-    setTempSelectedId(null);
-  };
-
-  const toggleFullscreen = () => {
-    const modalElement = document.getElementById("portfolio-modal");
-    if (!modalElement) return;
-
-    if (!isFullscreen) {
-      if (modalElement.requestFullscreen) {
-        modalElement.requestFullscreen();
-      } else if ((modalElement as any).webkitRequestFullscreen) {
-        (modalElement as any).webkitRequestFullscreen();
-      } else if ((modalElement as any).msRequestFullscreen) {
-        (modalElement as any).msRequestFullscreen();
-      }
-      setIsFullscreen(true);
+      setShowGateModal(false);
+      setTokenError("");
     } else {
-      exitFullscreen();
+      setTokenError("Kode akses tidak valid atau belum terdaftar. Silakan minta kode ke Admin.");
     }
   };
 
-  const exitFullscreen = () => {
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    } else if ((document as any).webkitExitFullscreen) {
-      (document as any).webkitExitFullscreen();
-    } else if ((document as any).msExitFullscreen) {
-      (document as any).msExitFullscreen();
-    }
-    setIsFullscreen(false);
+  const generateWhatsAppLink = (schoolName: string) => {
+    const text = `Halo Admin Fourjective! Saya ingin meminta Kode Akses Tamu (Guest Token) untuk membuka Digital Yearbook *${schoolName}* di website. Terima kasih!`;
+    return waLink(text);
   };
 
-  const prevImage = () => {
-    if (!portfolioDetail?.images?.length) return;
-    if (pageFlipRef.current) {
+  // Flipbook Engine Setup
+  useEffect(() => {
+    if (!selectedBook) return;
+
+    const timer = setTimeout(() => {
+      const bookEl = document.getElementById("virtual-flipbook-container");
+      if (!bookEl) return;
+
+      if (pageFlipRef.current) {
+        try {
+          pageFlipRef.current.destroy();
+        } catch (e) {}
+      }
+
       try {
-        pageFlipRef.current.flipPrev();
-        return;
-      } catch (e) {}
-    }
-    setCurrentImageIndex(
-      (i) =>
-        (i - 1 + portfolioDetail.images.length) % portfolioDetail.images.length,
-    );
-  };
+        const isMobile = window.innerWidth < 768;
+        const pf = new (PageFlip as any)(bookEl, {
+          width: isMobile ? 320 : 450,
+          height: isMobile ? 460 : 600,
+          size: "stretch",
+          minWidth: 280,
+          maxWidth: 600,
+          minHeight: 400,
+          maxHeight: 800,
+          showCover: true,
+          drawShadow: true,
+          flippingTime: 700,
+          usePortrait: isMobile,
+          startPage: 0,
+        });
 
-  const nextImage = () => {
-    if (!portfolioDetail?.images?.length) return;
-    if (pageFlipRef.current) {
-      try {
-        pageFlipRef.current.flipNext();
-        return;
-      } catch (e) {}
-    }
-    setCurrentImageIndex((i) => (i + 1) % portfolioDetail.images.length);
-  };
+        pf.loadFromHTML(bookEl.querySelectorAll(".flip-page"));
+        pageFlipRef.current = pf;
+
+        pf.on("flip", (e: any) => {
+          setPageIndex(Number(e.data) || 0);
+        });
+      } catch (err) {
+        console.error("Flipbook init error:", err);
+      }
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, [selectedBook]);
 
   return (
-    <div className="mt-12 w-full px-4 md:px-12 lg:px-16">
-      <div className="mb-12 grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4 lg:gap-8">
-        {currentData.map((item) => (
-          <div
+    <div className="w-full">
+      {/* ===== 3 KARTU SAMPUL BUKU TAHUNAN ARSIP ===== */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+        {filtered.map((item, idx) => (
+          <article
             key={item.id}
-            className="flex cursor-pointer flex-col rounded-lg border-3 border-dark bg-white p-5 text-center shadow-[4px_5px_0px_#14161C] transition-all duration-300 hover:-translate-y-1 hover:shadow-[6px_7px_0px_#FF4D00] lg:border-3"
-            onClick={() => openGallery(item.id)}
+            onClick={() => handleBookClick(item)}
+            className="group relative bg-[#FFFDF9] border-3 sm:border-4 border-dark rounded-2xl overflow-hidden shadow-[6px_7px_0px_#14161C] hover:shadow-[9px_10px_0px_#FF4D00] hover:-translate-y-1 transition-all duration-200 cursor-pointer flex flex-col justify-between"
           >
-            <Image
-              src={
-                item.cover
-                  ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/${item.cover}`
-                  : "/images/portofolio/image.jpg"
-              }
-              alt={item.namaSekolah}
-              width={200}
-              height={200}
-              className="mb-4 h-full w-full rounded-lg object-cover"
-            />
-            <h3 className="pb-4 text-sm font-bold lg:text-base">
-              {item.namaSekolah}
-            </h3>
-          </div>
+            {/* Top Bar Spec */}
+            <div className="bg-[#FAF6F0] px-4 py-2.5 border-b-3 border-dark flex items-center justify-between font-mono text-[11px] font-bold">
+              <span className="text-dark/70 uppercase tracking-wider">{item.spec}</span>
+              <span className="text-orange font-black">0{idx + 1}</span>
+            </div>
+
+            {/* Stage Sampul Buku */}
+            <div className="relative aspect-[3/4] w-full bg-[#1A1C23] overflow-hidden flex items-center justify-center p-6 sm:p-7">
+              {/* Badge Terkunci (Watermark di pojok) */}
+              <div className="absolute top-3.5 right-3.5 z-20 bg-dark/90 backdrop-blur-md text-white border-2 border-white/20 px-2.5 py-1 rounded-md flex items-center gap-1.5 font-mono text-[10px] font-bold">
+                <Lock className="w-3 h-3 text-orange stroke-[3]" />
+                <span>TERKUNCI</span>
+              </div>
+
+              {/* Cover Image */}
+              <div className="relative w-full h-full shadow-[0px_10px_25px_rgba(0,0,0,0.6)] rounded-sm overflow-hidden group-hover:scale-[1.03] transition-transform duration-300">
+                <Image
+                  src={item.cover}
+                  alt={item.namaSekolah}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-cover"
+                />
+              </div>
+
+              {/* Hover Overlay: Intip Isi Buku */}
+              <div className="absolute inset-0 bg-dark/70 opacity-0 group-hover:opacity-100 backdrop-blur-[2px] transition-opacity duration-200 flex flex-col items-center justify-center gap-3 p-4 text-center z-10">
+                <div className="w-12 h-12 rounded-xl bg-orange text-white flex items-center justify-center border-2 border-dark shadow-[3px_3px_0px_#18181B]">
+                  <Lock className="w-5 h-5 stroke-[2.5]" />
+                </div>
+                <div>
+                  <span className="font-headline font-black text-sm text-white uppercase tracking-wider block">
+                    Buka Lembaran Buku
+                  </span>
+                  <span className="font-mono text-[10px] text-white/70 block mt-0.5">
+                    Memerlukan Kode Tamu / Angkatan
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Metadata */}
+            <div className="p-5 bg-white border-t-3 border-dark flex-1 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="font-mono text-[10px] font-black uppercase tracking-wider text-orange">
+                    {item.kota} • {item.tahun}
+                  </span>
+                </div>
+                <h3 className="font-headline font-black text-xl text-dark leading-tight group-hover:text-orange transition-colors">
+                  {item.namaSekolah}
+                </h3>
+                <p className="font-sans text-xs text-dark/70 font-medium leading-relaxed mt-2">
+                  {item.desc}
+                </p>
+              </div>
+
+              <div className="mt-5 pt-3 border-t-2 border-dark/10 flex items-center justify-between text-xs font-mono font-bold">
+                <span className="text-dark/60 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-orange" />
+                  <span>5 Lembar Preview</span>
+                </span>
+                <span className="text-dark group-hover:text-orange inline-flex items-center gap-1 font-black">
+                  <span>Buka E-Book</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </span>
+              </div>
+            </div>
+          </article>
         ))}
       </div>
 
-      <div className="mt-6 flex items-center justify-center space-x-2">
-        <ThemeProvider theme={theme}>
-          <Pagination
-            count={totalPages}
-            page={currentPage}
-            onChange={handlePageChange}
-            color="primary"
-            shape="rounded"
-            siblingCount={isLargeScreen ? 1 : 0}
-            sx={{
-              "& .MuiPaginationItem-root": {
-                border: "none",
-              },
-              "& .MuiPaginationItem-root.Mui-selected": {
-                border: "3px solid black",
-                color: "white",
-              },
-              "& .MuiPaginationItem-root.Mui-selected:hover": {
-                backgroundColor: "#D3A1FD",
-              },
-              "& .MuiPaginationItem-previousNext": {
-                border: "3px solid #000",
-                backgroundColor: "#f5f5f5",
-                "&:hover": {
-                  backgroundColor: "#e0e0e0",
-                },
-              },
-            }}
-          />
-        </ThemeProvider>
-      </div>
+      {/* ===== MODAL GERBANG SANDI / MINTA AKSES TAMU ===== */}
+      {showGateModal && targetBook && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark/85 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="relative w-full max-w-lg bg-[#FAF6F0] border-4 border-dark rounded-2xl shadow-[10px_10px_0px_#14161C] p-6 sm:p-8 text-dark overflow-hidden">
+            {/* Header Modal */}
+            <div className="flex items-start justify-between gap-4 border-b-3 border-dark pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-orange text-white flex items-center justify-center border-2 border-dark shadow-[2px_2px_0px_#000] shrink-0">
+                  <Lock className="w-5 h-5 stroke-[2.5]" />
+                </div>
+                <div>
+                  <span className="font-mono text-[10px] font-black uppercase tracking-wider text-orange">
+                    PORTAL DIGITAL YEARBOOK
+                  </span>
+                  <h3 className="font-headline font-black text-lg sm:text-xl text-dark leading-tight">
+                    {targetBook.namaSekolah}
+                  </h3>
+                </div>
+              </div>
 
-      {/* Password Modal */}
-      {showPasswordModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-4">
-          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-            <h2 className="mb-4 text-xl font-bold">
-              Portfolio Memerlukan Password
-            </h2>
-
-            <div className="mb-4">
-              <label className="mb-2 block text-sm font-medium">Password</label>
-              <input
-                type="password"
-                value={passwordInput}
-                onChange={(e) => setPasswordInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && passwordInput) {
-                    handleVerifyPassword();
-                  }
-                }}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
-                placeholder="Masukkan password"
-                autoFocus
-              />
+              <button
+                onClick={() => setShowGateModal(false)}
+                className="p-1.5 rounded-lg border-2 border-dark hover:bg-dark hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4 stroke-[3]" />
+              </button>
             </div>
 
-            {passwordError && (
-              <p className="mb-4 text-sm text-red-500">{passwordError}</p>
-            )}
+            {/* Info Keterangan */}
+            <div className="py-5">
+              <p className="text-xs sm:text-sm text-dark/80 font-medium leading-relaxed">
+                Dokumen lembaran buku tahunan sekolah ini bersifat privat untuk siswa angkatan dan tamu berizin resmi Fourjective.
+              </p>
 
-            <div className="flex gap-2">
-              <button
-                onClick={closePasswordModal}
-                className="flex-1 rounded-md bg-gray-200 px-4 py-2 text-gray-800 hover:bg-gray-300"
-                disabled={isVerifying}
-              >
-                Batal
-              </button>
-              <button
-                onClick={handleVerifyPassword}
-                disabled={!passwordInput || isVerifying}
-                className="flex-1 rounded-md bg-orange px-4 py-2 text-white hover:bg-orange/90 disabled:bg-dark/20"
-              >
-                {isVerifying ? "Memverifikasi..." : "Kirim"}
-              </button>
+              {/* JALUR 1: SUDAH PUNYA KODE */}
+              <form onSubmit={handleVerifyToken} className="mt-5 space-y-3">
+                <label className="block font-mono text-[11px] font-bold uppercase tracking-wider text-dark/70">
+                  Punya Kode Tamu / Kode Angkatan?
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={tokenInput}
+                    onChange={(e) => setTokenInput(e.target.value)}
+                    placeholder="Contoh: GUEST-2026 atau FOURJECTIVE"
+                    className="flex-1 bg-white border-2 sm:border-3 border-dark rounded-xl px-3.5 py-2.5 font-mono text-xs uppercase font-bold text-dark focus:outline-none focus:border-orange placeholder:text-dark/30 placeholder:normal-case"
+                    autoFocus
+                  />
+                  <button
+                    type="submit"
+                    className="bg-dark hover:bg-orange text-white font-mono text-xs font-black uppercase tracking-wider px-4 py-2.5 rounded-xl border-2 sm:border-3 border-dark transition-colors cursor-pointer"
+                  >
+                    Buka
+                  </button>
+                </div>
+
+                {tokenError && (
+                  <p className="font-mono text-[11px] text-red-600 font-bold mt-1">
+                    {tokenError}
+                  </p>
+                )}
+              </form>
+
+              {/* SEPARATOR */}
+              <div className="relative my-6 text-center">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t-2 border-dark/15"></div>
+                </div>
+                <span className="relative bg-[#FAF6F0] px-3 font-mono text-[10px] font-bold text-dark/50 uppercase">
+                  Atau Belum Punya Akses?
+                </span>
+              </div>
+
+              {/* JALUR 2: MINTA KODE AKSES VIA WHATSAPP */}
+              <div className="bg-white border-2 sm:border-3 border-dark rounded-xl p-4 shadow-[4px_4px_0px_#14161C]">
+                <div className="flex items-center gap-2 mb-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
+                  <span className="font-mono text-[10px] font-black uppercase tracking-wider text-dark">
+                    Akses Tamu Gratis untuk Panitia Siswa / OSIS
+                  </span>
+                </div>
+                <p className="font-sans text-xs text-dark/70 leading-relaxed mb-4">
+                  Dapatkan kode tamu untuk membuka 1 e-book contoh, cek estimasi harga, atau mengajukan sampel buku fisik ke sekolahmu.
+                </p>
+
+                <a
+                  href={generateWhatsAppLink(targetBook.namaSekolah)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1EBE5D] text-dark font-headline font-black text-xs uppercase tracking-wider py-3 px-4 rounded-xl border-2 border-dark shadow-[3px_3px_0px_#18181B] hover:shadow-[1px_1px_0px_#18181B] hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
+                >
+                  <MessageCircle className="w-4 h-4 fill-dark stroke-none" />
+                  <span>Minta Kode Tamu via WhatsApp Admin</span>
+                </a>
+              </div>
+            </div>
+
+            <div className="border-t-2 border-dark/10 pt-3 flex items-center justify-between text-[10px] font-mono text-dark/50 font-bold">
+              <span>PT Fourjective Studio Indonesia</span>
+              <span>Kuningan, Jawa Barat</span>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal gallery */}
-      {selectedId && (
-        <div
-          id="portfolio-modal"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-4"
-        >
-          <button
-            onClick={closeGallery}
-            className="absolute right-4 top-4 z-[60] rounded-full bg-dark px-3 py-1 text-white hover:bg-dark/80"
-          >
-            Close
-          </button>
+      {/* ===== VIRTUAL FLIPBOOK VIEWER MODAL (JIKA TOKEN BERHASIL) ===== */}
+      {selectedBook && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark/95 backdrop-blur-md p-4 animate-in fade-in duration-200">
+          {/* Top Control Bar */}
+          <div className="absolute top-4 left-4 right-4 z-50 flex items-center justify-between text-white">
+            <div className="flex items-center gap-2 bg-dark/80 border border-white/20 px-3.5 py-1.5 rounded-xl backdrop-blur-md">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="font-mono text-xs font-bold">{selectedBook.namaSekolah}</span>
+              <span className="text-white/40">|</span>
+              <span className="font-mono text-[10px] text-orange uppercase font-bold">Akses Tamu Terbuka</span>
+            </div>
 
-          <button
-            onClick={toggleFullscreen}
-            className="absolute right-24 top-4 z-[60] rounded-full bg-orange px-3 py-1 text-white hover:bg-orange/90"
-            title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
-          >
-            {isFullscreen ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  try {
+                    pageFlipRef.current?.destroy();
+                  } catch (e) {}
+                  setSelectedBook(null);
+                }}
+                className="bg-orange hover:bg-orange/90 text-white font-mono text-xs font-black uppercase px-3.5 py-1.5 rounded-xl border-2 border-white/20 transition-colors cursor-pointer"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-                />
-              </svg>
-            )}
-          </button>
+                Tutup Reader
+              </button>
+            </div>
+          </div>
 
-          <div className="relative max-h-[90vh] w-full max-w-4xl">
-            {detailLoading && (
-              <div className="flex h-80 w-full flex-col items-center justify-center text-white">
-                <div className="h-16 w-16 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
-                <p className="mt-4 text-lg">Memuat gambar...</p>
-              </div>
-            )}
+          {/* Flipbook Container */}
+          <div className="relative max-h-[85vh] w-full max-w-4xl flex items-center justify-center pt-10">
+            {/* Prev Button */}
+            <button
+              onClick={() => {
+                try {
+                  pageFlipRef.current?.flipPrev();
+                } catch (e) {}
+              }}
+              className="absolute left-2 sm:left-4 z-40 w-10 h-10 rounded-full bg-white text-dark border-2 border-dark shadow-[2px_2px_0px_#000] flex items-center justify-center hover:bg-orange hover:text-white transition-colors cursor-pointer"
+              title="Halaman Sebelumnya"
+            >
+              <ChevronLeft className="w-5 h-5 stroke-[3]" />
+            </button>
 
-            {detailError && (
-              <div className="flex h-80 w-full items-center justify-center text-white">
-                Failed to load images
-              </div>
-            )}
-
-            {portfolioDetail?.images && portfolioDetail.images.length > 0 && (
-              <div className="flex items-center justify-center">
-                <button
-                  onClick={prevImage}
-                  className="mx-2 rounded-full bg-white/20 p-2 text-white hover:bg-white/30"
-                  aria-label="Previous page"
-                >
-                  ‹
-                </button>
-
-                <div className="flex-1">
-                  <div className="flex h-[80vh] items-center justify-center">
-                    <div id="book" className="w-full max-w-3xl">
-                      {/* Front Cover - Use cover field */}
-                      {portfolioDetail.cover && (
-                        <div className="my-page cover" data-density="hard">
-                          <img
-                            src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/${portfolioDetail.cover}`}
-                            alt={`${portfolioDetail.namaSekolah} - Cover`}
-                            className="h-full w-full object-cover"
-                          />
-                        </div>
-                      )}
-
-                      {/* Portfolio Pages (all images from images array) */}
-                      {portfolioDetail.images.map(
-                        (img: string, idx: number) => (
-                          <div key={idx} className="my-page">
-                            <img
-                              src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/${img}`}
-                              alt={`${portfolioDetail.namaSekolah} - ${idx + 2}`}
-                              className="h-full w-full object-cover"
-                            />
-                          </div>
-                        ),
-                      )}
-
-                      {/* Back Cover - White */}
-                      <div className="my-page cover" data-density="hard">
-                        <div className="h-full w-full bg-white"></div>
-                      </div>
+            {/* The Actual HTML Book */}
+            <div id="virtual-flipbook-container" className="shadow-2xl">
+              {selectedBook.pages.map((imgUrl, i) => (
+                <div key={i} className="flip-page bg-white overflow-hidden" data-density={i === 0 ? "hard" : "soft"}>
+                  <div className="relative w-full h-full">
+                    <img
+                      src={imgUrl}
+                      alt={`Halaman ${i + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute bottom-2 right-2 bg-dark/80 text-white font-mono text-[9px] px-2 py-0.5 rounded">
+                      Hal. {i + 1}
                     </div>
                   </div>
                 </div>
+              ))}
+            </div>
 
-                <button
-                  onClick={nextImage}
-                  className="mx-2 rounded-full bg-white/20 p-2 text-white hover:bg-white/30"
-                  aria-label="Next page"
-                >
-                  ›
-                </button>
-              </div>
-            )}
+            {/* Next Button */}
+            <button
+              onClick={() => {
+                try {
+                  pageFlipRef.current?.flipNext();
+                } catch (e) {}
+              }}
+              className="absolute right-2 sm:right-4 z-40 w-10 h-10 rounded-full bg-white text-dark border-2 border-dark shadow-[2px_2px_0px_#000] flex items-center justify-center hover:bg-orange hover:text-white transition-colors cursor-pointer"
+              title="Halaman Berikutnya"
+            >
+              <ChevronRight className="w-5 h-5 stroke-[3]" />
+            </button>
+          </div>
+
+          {/* Bottom Navigation Hint */}
+          <div className="absolute bottom-4 left-0 right-0 text-center font-mono text-xs text-white/60">
+            Klik tepi halaman atau gunakan tombol panah untuk membalik lembaran virtual
           </div>
         </div>
       )}
