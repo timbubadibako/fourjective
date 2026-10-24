@@ -46,3 +46,6 @@ yarn-error.log*
 .tokensave/
 SECRETS*.md
 *.local.md
+
+.vercel
+.env*
