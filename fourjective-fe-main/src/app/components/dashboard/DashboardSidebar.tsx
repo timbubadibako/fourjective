@@ -62,7 +62,7 @@ export function DashboardSidebar() {
     },
     {
       key: "portfolios",
-      title: "Katalog & Tambah Buku",
+      title: "Tambah Buku",
       icon: BookOpen,
       badge: "Master",
     },
@@ -136,17 +136,6 @@ export function DashboardSidebar() {
             Tindakan Cepat
           </p>
           <nav className="space-y-1">
-            <a
-              href="/dashboard/create-portfolio"
-              className={`flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold transition-colors ${
-                pathname === "/dashboard/create-portfolio"
-                  ? "bg-white/10 text-white"
-                  : "text-white/70 hover:bg-white/5 hover:text-white"
-              }`}
-            >
-              <PlusCircle className="h-4 w-4 shrink-0 text-orange" />
-              <span className="font-headline">Tambah Buku Baru</span>
-            </a>
             <a
               href="/portofolio"
               target="_blank"

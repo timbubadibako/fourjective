@@ -206,31 +206,6 @@ function PortalGateInner() {
                     maxLength={16}
                   />
 
-                  {/* Preset Quick Links: Tamu Guest & Demo Sekolah */}
-                  <div className="mt-3 flex items-center justify-center gap-2">
-                    <span className="text-[10px] font-mono text-dark/40 font-semibold">Coba demo:</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setKode("GUEST-2026");
-                        setHasErrorInvalid(false);
-                      }}
-                      className="px-2 py-0.5 rounded bg-orange/10 hover:bg-orange text-orange hover:text-white border border-orange/30 font-mono text-[10px] font-bold transition-colors cursor-pointer"
-                    >
-                      GUEST-2026
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setKode("SMAN1-2026");
-                        setHasErrorInvalid(false);
-                      }}
-                      className="px-2 py-0.5 rounded bg-dark/10 hover:bg-dark text-dark hover:text-white border border-dark/20 font-mono text-[10px] font-bold transition-colors cursor-pointer"
-                    >
-                      SMAN1-2026
-                    </button>
-                  </div>
-
                   <button
                     type="submit"
                     disabled={!kode.trim()}

@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { MessageCircle, Clock, Users, BookOpen, Layers, CheckCircle2 } from "lucide-react";
+import { MessageCircle, CheckCircle2, ArrowRight, Clock, FileCheck } from "lucide-react";
 import { waLink } from "@/lib/site";
 
-interface ProspectOrder {
+export interface ProspectOrder {
   id: string;
   project_id?: string;
+  school_name?: string;
   pic_name: string;
   pic_whatsapp: string;
   student_count: number;
@@ -16,10 +17,15 @@ interface ProspectOrder {
   estimated_price_per_student: number;
   total_estimated_price: number;
   target_graduation?: string;
+  status?: string;
   created_at?: string;
 }
 
-export function ProspectOrdersManager() {
+interface ProspectOrdersManagerProps {
+  onConvertToMOU?: (order: ProspectOrder) => void;
+}
+
+export function ProspectOrdersManager({ onConvertToMOU }: ProspectOrdersManagerProps) {
   const [orders, setOrders] = useState<ProspectOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -86,21 +92,23 @@ export function ProspectOrdersManager() {
                 <th className="pb-3 font-bold uppercase tracking-wider">Spesifikasi</th>
                 <th className="pb-3 font-bold uppercase tracking-wider">Estimasi Kas</th>
                 <th className="pb-3 font-bold uppercase tracking-wider">Target Wisuda</th>
+                <th className="pb-3 font-bold uppercase tracking-wider">Status</th>
                 <th className="pb-3 font-bold uppercase tracking-wider text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-dark/5 font-sans">
               {orders.map((o) => {
-                const addonsList = Array.isArray(o.addons)
-                  ? o.addons
-                  : typeof o.addons === "string"
-                  ? [o.addons]
-                  : [];
+                const isConverted = o.status === "converted";
 
                 return (
                   <tr key={o.id} className="hover:bg-[#FAF6F0] transition-colors">
                     <td className="py-3.5 pr-4">
-                      <div className="font-sans font-bold text-dark">{o.pic_name}</div>
+                      <div className="font-sans font-bold text-dark">
+                        {o.school_name ? o.school_name : o.pic_name}
+                      </div>
+                      {o.school_name && (
+                        <div className="font-sans text-[11px] text-dark/70">PIC: {o.pic_name}</div>
+                      )}
                       <div className="font-mono text-[10px] font-bold text-dark/50">
                         {o.created_at ? new Date(o.created_at).toLocaleDateString("id-ID") : "Baru saja"}
                       </div>
@@ -127,18 +135,52 @@ export function ProspectOrdersManager() {
                     <td className="py-3.5 font-mono font-bold text-dark">
                       {o.target_graduation || "Mei 2026"}
                     </td>
-                    <td className="py-3.5 text-right">
-                      <a
-                        href={waLink(
-                          `Halo Kak ${o.pic_name}, kami dari Fourjective Studio menindaklanjuti permohonan estimasi buku tahunan (${o.student_count} siswa, cover ${o.cover_type}). Apakah jadwal meeting panitia bisa diatur minggu ini?`
-                        )}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange hover:bg-orange/90 text-white font-mono text-xs font-bold transition-colors cursor-pointer"
+                    <td className="py-3.5 font-mono">
+                      <span
+                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                          isConverted
+                            ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                            : "bg-amber-100 text-amber-800 border border-amber-300"
+                        }`}
                       >
-                        <MessageCircle className="w-3.5 h-3.5" />
-                        <span>Follow Up WA</span>
-                      </a>
+                        {isConverted ? (
+                          <>
+                            <CheckCircle2 className="w-3 h-3" />
+                            <span>Converted</span>
+                          </>
+                        ) : (
+                          <>
+                            <Clock className="w-3 h-3" />
+                            <span>Pending MOU</span>
+                          </>
+                        )}
+                      </span>
+                    </td>
+                    <td className="py-3.5 text-right">
+                      <div className="inline-flex items-center gap-1.5">
+                        {onConvertToMOU && !isConverted && (
+                          <button
+                            onClick={() => onConvertToMOU(o)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-dark hover:bg-orange text-white font-mono text-xs font-bold transition-colors cursor-pointer"
+                            title="Konversi jadi MOU Resmi"
+                          >
+                            <FileCheck className="w-3.5 h-3.5" />
+                            <span>Konversi MOU</span>
+                          </button>
+                        )}
+
+                        <a
+                          href={waLink(
+                            `Halo Kak ${o.pic_name}, kami dari Fourjective Studio menindaklanjuti permohonan estimasi buku tahunan (${o.student_count} siswa, cover ${o.cover_type}). Apakah jadwal meeting panitia bisa diatur minggu ini?`
+                          )}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-orange hover:bg-orange/90 text-white font-mono text-xs font-bold transition-colors cursor-pointer"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          <span>WA</span>
+                        </a>
+                      </div>
                     </td>
                   </tr>
                 );

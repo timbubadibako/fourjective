@@ -134,12 +134,13 @@ Sesuai arahan manajemen proyek, pembagian fase pengerjaan dibagi menjadi 4 pilar
   3. UI Dock Klien: Menampilkan identitas sekolah, foto cover angkatan, persentase progres, dan status kontrak secara rapi.
   4. Penanganan status loading & error state anti-crash.
 
-### [ ] TKT-18: Dual-Track Mode (Guest Demo vs Client MOU Resmi)
-* **Status**: `[IN_PROGRESS]`
+### [x] TKT-18: Dual-Track Mode (Guest Demo vs Client MOU Resmi)
+* **Status**: `[COMPLETED]`
 * **Target Audit & Pengerjaan**:
-  1. Mode `GUEST-2026` (Sekolah Demo): Menampilkan contoh alur produksi, simulasi kalkulator kas, dan pratinjau terbatas (1 yearbook pratinjau).
-  2. Mode MOU Resmi (`SMAN1-2026`): Menampilkan berkas riil, link unduh Cloudflare R2 langsung, rincian termin invoice kas, dan kontak langsung PIC tim Fourjective.
-  3. Pemisahan data ketat agar dokumen rahasia sekolah resmi tidak bisa diakses lewat token demo.
+  1. Mode `GUEST-2026` (Sekolah Demo): Menampilkan contoh alur produksi (SOP Standar 6 Tahap), simulasi kalkulator kas, E-Book Flipbook 3D Sampel (1 kuota klaim), banner neobrutal "MODE TAMU / PRATINJAU ANGKATAN" dengan CTA Ajukan MOU.
+  2. Mode MOU Resmi (`SMAN1-2026`): Header menampilkan nama sekolah resmi + tahun kelulusan + badge "KONTRAK RESMI AKTIF". Loker berkas R2 aktif dengan tombol download presigned SigV4, Live Production Radar jadwal produksi, termin kas & kuitansi final, navigasi 5 menu bersih.
+  3. Guard Neobrutal: Guest yang mencoba akses tab berkas R2 (`catalog`) atau kas (`payments`) via direct state / query langsung dihadang card Neobrutal terkunci "Fitur ini hanya terbuka untuk sekolah yang telah menandatangani kontrak MOU resmi." beserta tombol "Ajukan MOU".
+  4. Pemisahan data ketat: Berkas unduhan dan histori kas nyata sekolah resmi tidak pernah diexpose ke token guest.
 
 ### [ ] TKT-19: Admin Master Control Panel (`/dashboard`)
 * **Status**: `[IN_PROGRESS]`

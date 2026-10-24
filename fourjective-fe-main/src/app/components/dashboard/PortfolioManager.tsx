@@ -18,6 +18,8 @@ import {
   Search,
   ExternalLink,
   Sparkles,
+  AlertCircle,
+  Loader2,
 } from "lucide-react";
 
 interface PortfolioManagerProps {
@@ -95,7 +97,7 @@ const DUMMY_YEARBOOKS = [
 ];
 
 export function PortfolioManager({ portfolios, onRefresh }: PortfolioManagerProps) {
-  // Mode ekspansi form Tambah Buku Baru (bisa diciutkan/dimekarkan)
+  // Mode ekspansi form Tambah Buku Baru
   const [isFormExpanded, setIsFormExpanded] = useState(true);
   const [viewStyle, setViewStyle] = useState<"grid" | "table">("grid");
   const [searchQuery, setSearchQuery] = useState("");
@@ -110,8 +112,9 @@ export function PortfolioManager({ portfolios, onRefresh }: PortfolioManagerProp
   });
   const [cover, setCover] = useState<File | null>(null);
   const [pdf, setPdf] = useState<File | null>(null);
-  const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -123,7 +126,6 @@ export function PortfolioManager({ portfolios, onRefresh }: PortfolioManagerProp
     const file = e.target.files?.[0];
     if (file && file.type.startsWith("image/")) {
       setCover(file);
-      setCoverPreview(URL.createObjectURL(file));
     }
   };
 
@@ -134,16 +136,73 @@ export function PortfolioManager({ portfolios, onRefresh }: PortfolioManagerProp
     }
   };
 
+  // Upload langsung ke Cloudflare R2 via Presigned PUT
+  const uploadToR2 = async (file: File, key: string): Promise<string> => {
+    // 1. Minta Presigned PUT URL dari API
+    const presignRes = await fetch("/api/storage/presign", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key }),
+    });
+
+    if (!presignRes.ok) {
+      const errJson = await presignRes.json().catch(() => ({}));
+      throw new Error(errJson.error || "Gagal mendapatkan izin upload R2.");
+    }
+
+    const { uploadUrl, downloadUrl } = await presignRes.json();
+
+    // 2. Direct PUT ke Cloudflare R2 (Bypass Vercel payload limit)
+    const putRes = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type,
+      },
+      body: file,
+    });
+
+    if (!putRes.ok) {
+      throw new Error(`Upload ${file.name} ke Cloudflare R2 gagal (${putRes.status})`);
+    }
+
+    return downloadUrl || key;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.namaSekolah) return;
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    try {
+      const slug = formData.namaSekolah
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "-")
+        .replace(/-+/g, "-")
+        .slice(0, 30);
+
+      // 1. Upload Cover jika ada
+      if (cover) {
+        setUploadProgress("Mengunggah sampul cover ke Cloudflare R2...");
+        const coverKey = `yearbooks/${formData.tahun}/${slug}/cover-${Date.now()}.${cover.name.split(".").pop() || "png"}`;
+        await uploadToR2(cover, coverKey);
+      }
+
+      // 2. Upload Master PDF jika ada
+      if (pdf) {
+        setUploadProgress(`Mengunggah master PDF (${(pdf.size / (1024 * 1024)).toFixed(1)} MB) langsung ke R2...`);
+        const pdfKey = `yearbooks/${formData.tahun}/${slug}/master-yearbook-${Date.now()}.pdf`;
+        await uploadToR2(pdf, pdfKey);
+      }
+
+      setUploadProgress(null);
       setSuccessMessage(
-        `Buku "${formData.namaSekolah}" berhasil diterbitkan! Sampul masuk ke saku arsip folder dan file PDF siap dirender di Flipbook & Handoff R2.`
+        `Buku "${formData.namaSekolah}" berhasil dipublish ke Cloudflare R2! Siap dibagikan ke siswa dan dibuka di Flipbook 3D.`
       );
+
+      // Reset form
       setFormData({
         namaSekolah: "",
         tahun: new Date().getFullYear().toString(),
@@ -153,10 +212,16 @@ export function PortfolioManager({ portfolios, onRefresh }: PortfolioManagerProp
       });
       setCover(null);
       setPdf(null);
-      setCoverPreview(null);
+
       if (onRefresh) onRefresh();
-      setTimeout(() => setSuccessMessage(null), 5000);
-    }, 1200);
+      setTimeout(() => setSuccessMessage(null), 6000);
+    } catch (err: any) {
+      console.error("Gagal upload buku:", err);
+      setErrorMessage(err.message || "Gagal mengunggah buku ke Cloudflare R2.");
+      setUploadProgress(null);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const activePortfolios = portfolios.length > 0 ? portfolios : (DUMMY_YEARBOOKS as any);
@@ -170,7 +235,7 @@ export function PortfolioManager({ portfolios, onRefresh }: PortfolioManagerProp
   return (
     <div className="space-y-6">
       {/* ======================================================== */}
-      {/* 1. FORM EKSPANSI: INPUT BUKU BARU (PDF MASTER & COVER) */}
+      {/* 1. FORM EKSPANSI: INPUT BUKU BARU (DIRECT TO CLOUDFLARE R2) */}
       {/* ======================================================== */}
       <div className="rounded-2xl border border-dark/15 bg-white shadow-sm overflow-hidden transition-all">
         {/* Toggle Bar Form */}
@@ -185,10 +250,10 @@ export function PortfolioManager({ portfolios, onRefresh }: PortfolioManagerProp
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-orange">
-                  Single Source Input
+                  Cloudflare R2 Direct Upload
                 </span>
                 <span className="font-mono text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-zinc-900 text-white">
-                  Flipbook & R2 Handoff
+                  $0 Egress • Bypass Vercel Limit
                 </span>
               </div>
               <h3 className="font-headline font-black text-lg text-dark mt-0.5">
@@ -218,6 +283,13 @@ export function PortfolioManager({ portfolios, onRefresh }: PortfolioManagerProp
               <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-300 flex items-center gap-3 text-emerald-900 font-sans font-semibold text-xs animate-in fade-in">
                 <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
                 <span>{successMessage}</span>
+              </div>
+            )}
+
+            {errorMessage && (
+              <div className="p-4 rounded-xl bg-red-50 border border-red-300 flex items-center gap-3 text-red-900 font-sans font-semibold text-xs animate-in fade-in">
+                <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
+                <span>{errorMessage}</span>
               </div>
             )}
 
@@ -307,15 +379,15 @@ export function PortfolioManager({ portfolios, onRefresh }: PortfolioManagerProp
                 {/* Upload File PDF Master Yearbook */}
                 <div>
                   <label className="block font-mono text-[11px] font-bold uppercase tracking-wider text-dark/70 mb-1.5">
-                    File Master PDF Yearbook (Flipbook Engine) *
+                    File Master PDF Yearbook (Flipbook Engine)
                   </label>
                   <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-dark/25 hover:border-orange rounded-xl bg-[#FAF6F0] cursor-pointer transition-colors group">
                     <FileText className="w-6 h-6 text-dark/40 group-hover:text-orange mb-1.5 transition-colors" />
                     <span className="font-mono text-xs font-bold text-dark group-hover:text-orange text-center">
-                      {pdf ? pdf.name : "Pilih File PDF Buku Tahunan"}
+                      {pdf ? `${pdf.name} (${(pdf.size / (1024 * 1024)).toFixed(1)} MB)` : "Pilih File PDF Buku Tahunan"}
                     </span>
                     <span className="font-mono text-[10px] text-dark/50 mt-0.5">
-                      Maksimal 250 MB • Langsung dirender ke 3D Virtual Flipbook
+                      Bisa sampai 500 MB+ • Langsung streaming ke Cloudflare R2
                     </span>
                     <input
                       type="file"
@@ -329,7 +401,7 @@ export function PortfolioManager({ portfolios, onRefresh }: PortfolioManagerProp
                 {/* Upload Gambar Cover */}
                 <div>
                   <label className="block font-mono text-[11px] font-bold uppercase tracking-wider text-dark/70 mb-1.5">
-                    File Gambar Sampul Cover Depan *
+                    File Gambar Sampul Cover Depan
                   </label>
                   <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-dark/25 hover:border-orange rounded-xl bg-[#FAF6F0] cursor-pointer transition-colors group">
                     <ImageIcon className="w-6 h-6 text-dark/40 group-hover:text-orange mb-1.5 transition-colors" />
@@ -353,15 +425,31 @@ export function PortfolioManager({ portfolios, onRefresh }: PortfolioManagerProp
             {/* Footer Form Button */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-dark/10">
               <p className="font-sans text-xs text-dark/60 font-semibold">
-                Buku yang diterbitkan otomatis tersimpan ke <strong>Arsip Folder File Manager</strong> di bawah ini dan siap dikirim di Kirim Berkas Akhir.
+                {uploadProgress ? (
+                  <span className="inline-flex items-center gap-2 text-orange font-mono">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    {uploadProgress}
+                  </span>
+                ) : (
+                  "Buku yang diterbitkan otomatis tersimpan ke Cloudflare R2 dan siap dibagikan ke siswa."
+                )}
               </p>
               <button
                 type="submit"
                 disabled={isSubmitting}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-orange hover:bg-orange/90 text-white font-headline font-black text-xs uppercase tracking-wider px-6 py-3 rounded-xl transition-all cursor-pointer shadow-sm disabled:opacity-50"
               >
-                <UploadCloud className="w-4 h-4" />
-                <span>{isSubmitting ? "Menerbitkan Buku..." : "Terbitkan Buku ke Portofolio"}</span>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Mengunggah ke R2...</span>
+                  </>
+                ) : (
+                  <>
+                    <UploadCloud className="w-4 h-4" />
+                    <span>Terbitkan Buku ke R2</span>
+                  </>
+                )}
               </button>
             </div>
           </form>
@@ -431,21 +519,10 @@ export function PortfolioManager({ portfolios, onRefresh }: PortfolioManagerProp
           </div>
         </div>
 
-        {/* ======================================================== */}
-        {/* TAMPILAN 1: FOLDER CARDS DENGAN 10% SAMPUL NONGOL HOVER */}
-        {/* ======================================================== */}
+        {/* TAMPILAN 1: FOLDER CARDS */}
         {viewStyle === "grid" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
             {filteredPortfolios.map((item: any, idx: number) => {
-              // Variasi tema saku folder
-              const themes: Array<"orange-liquid" | "dark-marble" | "frosted-glass" | "amber-fire"> = [
-                "orange-liquid",
-                "dark-marble",
-                "frosted-glass",
-                "amber-fire",
-              ];
-              const theme = item.theme || themes[idx % themes.length];
-
               return (
                 <SchoolFolderCard
                   key={item.id}
@@ -463,9 +540,7 @@ export function PortfolioManager({ portfolios, onRefresh }: PortfolioManagerProp
           </div>
         )}
 
-        {/* ======================================================== */}
         {/* TAMPILAN 2: TABEL FILE MANAGER */}
-        {/* ======================================================== */}
         {viewStyle === "table" && (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">

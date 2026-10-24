@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ProductionTimeline } from "./ProductionTimeline";
+import { LiveProductionRadar } from "./LiveProductionRadar";
 import {
   Search,
   BookOpen,
@@ -43,6 +44,8 @@ import {
   Receipt,
   Info,
   CalendarCheck2,
+  Menu,
+  X,
 } from "lucide-react";
 import { WA_MESSAGES, waLink } from "@/lib/site";
 import { ProjectData, submitProspectOrder } from "@/lib/supabase";
@@ -76,6 +79,7 @@ export function ClientPortalView({ kode, initialProject }: ClientPortalViewProps
   const [unlockError, setUnlockError] = useState<string>("");
   const [showUnlockModal, setShowUnlockModal] = useState<boolean>(false);
   const [claimUsed, setClaimUsed] = useState<boolean>(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
   // === State Estimator Kas ===
   const [siswa, setSiswa] = useState<number>(initialProject?.student_count || 180);
@@ -94,6 +98,7 @@ export function ClientPortalView({ kode, initialProject }: ClientPortalViewProps
   const [targetGraduation, setTargetGraduation] = useState(
     initialProject?.target_graduation || "Mei 2026"
   );
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // === Perhitungan Harga Estimator ===
   const basePerPage = 1200;
@@ -264,7 +269,10 @@ export function ClientPortalView({ kode, initialProject }: ClientPortalViewProps
           },
         ];
 
+  const [downloadingKey, setDownloadingKey] = useState<string | null>(null);
+
   const handleDownload = async (fileKey: string, fileName: string) => {
+    setDownloadingKey(fileKey);
     try {
       const res = await fetch(`/api/storage/presign?key=${encodeURIComponent(fileKey)}`);
       if (!res.ok) throw new Error("Gagal mengambil link download");
@@ -274,6 +282,8 @@ export function ClientPortalView({ kode, initialProject }: ClientPortalViewProps
       }
     } catch (e) {
       alert(`Mempersiapkan unduhan berkas ${fileName}...`);
+    } finally {
+      setDownloadingKey(null);
     }
   };
 
@@ -332,25 +342,35 @@ Kirim rincian ini ke tim Fourjective untuk dibuatkan draf kontrak MOU resmi.
     }
   };
 
-  const handleSendOrder = (e: React.FormEvent) => {
+  const handleSendOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
 
-    submitProspectOrder({
-      projectId: initialProject?.id,
-      picName: picName || "Panitia",
-      picWhatsapp: picPhone || "-",
-      studentCount: siswa,
-      pageCount: halaman,
-      coverType,
-      addons: [
-        includeVideo && "Video Aftermovie 4K",
-        includeAR && "AR Scan Video",
-        includeMerch && "Merchandise Angkatan",
-      ].filter(Boolean) as string[],
-      estimatedPricePerStudent: pricePerStudent,
-      totalEstimatedPrice: totalProjectPrice,
-      targetGraduation,
-    }).catch((err) => console.error("Error saving prospect order:", err));
+    setIsSubmitting(true);
+    try {
+      await submitProspectOrder({
+        projectId: initialProject?.id,
+        schoolName: schoolName || initialProject?.school_name,
+        picName: picName || "Panitia",
+        picWhatsapp: picPhone || "-",
+        studentCount: siswa,
+        pageCount: halaman,
+        coverType,
+        addons: [
+          includeVideo && "Video Aftermovie 4K",
+          includeAR && "AR Scan Video",
+          includeMerch && "Merchandise Angkatan",
+        ].filter(Boolean) as string[],
+        estimatedPricePerStudent: pricePerStudent,
+        totalEstimatedPrice: totalProjectPrice,
+        targetGraduation,
+        status: "pending_mou",
+      });
+    } catch (err) {
+      console.error("Error saving prospect order:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
 
     const msg = `Halo Tim Fourjective! Saya ${picName || "Panitia"} dari ${schoolName} (${gradYear}) dengan kode akses *${kode}* ingin mengajukan penandatanganan KONTRAK MOU & kunci jadwal:
 - Jumlah Siswa: ${siswa} siswa
@@ -365,28 +385,28 @@ Mohon dibuatkan surat MOU resmi & kunci jadwal photoshoot. Terima kasih!`;
     window.open(waLink(msg), "_blank");
   };
 
-  // ================= MENU KHUSUS GUEST VS TELAH MOU =================
+  // === MENU KHUSUS GUEST VS TELAH MOU ===
   const guestNavItems = [
     {
       key: "quotation" as TabType,
-      title: "Kalkulator Kas & Paket",
+      title: "Kalkulator Simulasi Kas",
       icon: Calculator,
     },
     {
       key: "flipbook" as TabType,
-      title: "Klaim Pratinjau Yearbook",
+      title: "E-Book Flipbook 3D Sampel",
       icon: Layers,
       badge: claimUsed || unlockedYearbook ? "Terbuka" : "1 Kuota",
       badgeColor: claimUsed || unlockedYearbook ? "bg-white/20 text-white" : "bg-orange text-white",
     },
     {
       key: "pipeline" as TabType,
-      title: "Alur & Standar 6 Tahap",
+      title: "SOP Standar 6 Tahap",
       icon: Clock,
     },
     {
       key: "contact" as TabType,
-      title: "Ajukan MOU & Jadwal",
+      title: "Form Ajukan MOU",
       icon: PhoneCall,
     },
   ];
@@ -394,13 +414,13 @@ Mohon dibuatkan surat MOU resmi & kunci jadwal photoshoot. Terima kasih!`;
   const mouNavItems = [
     {
       key: "catalog" as TabType,
-      title: "Berkas & Unduh Hasil",
+      title: "Berkas Akhir (Loker R2)",
       icon: BookOpen,
       badge: `${deliverables.filter((d) => d.is_ready).length} Siap`,
     },
     {
       key: "pipeline" as TabType,
-      title: "Alur Produksi Real-Time",
+      title: "Alur & Live Radar",
       icon: Clock,
       badge: `${currentStage}/6`,
     },
@@ -412,17 +432,12 @@ Mohon dibuatkan surat MOU resmi & kunci jadwal photoshoot. Terima kasih!`;
     },
     {
       key: "flipbook" as TabType,
-      title: "E-Book Flipbook 3D",
+      title: "E-Book Flipbook 3D Angkatan",
       icon: Layers,
     },
     {
-      key: "quotation" as TabType,
-      title: "Simulasi Kas Tambahan",
-      icon: Calculator,
-    },
-    {
       key: "contact" as TabType,
-      title: "Dedicated PM & Panduan",
+      title: "Hubungi PM",
       icon: PhoneCall,
     },
   ];
@@ -431,10 +446,22 @@ Mohon dibuatkan surat MOU resmi & kunci jadwal photoshoot. Terima kasih!`;
 
   return (
     <div className="flex min-h-screen w-full bg-[#F5F3EF]">
+      {/* Mobile Drawer Backdrop */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-dark/70 backdrop-blur-xs md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
       {/* ================= FIXED-WIDTH SIDEBAR (MATCHING DASHBOARD 1:1) ================= */}
-      <aside className="w-64 shrink-0 border-r border-[#222530] bg-[#121318] text-white flex flex-col h-screen sticky top-0 select-none">
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 w-64 shrink-0 border-r border-[#222530] bg-[#121318] text-white flex flex-col h-screen select-none transition-transform duration-200 md:static md:translate-x-0 ${
+          mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
         {/* Brand Header */}
-        <div className="border-b border-white/10 p-4">
+        <div className="border-b border-white/10 p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange text-white font-headline font-black text-base shadow-[2px_2px_0px_#000] border border-white/20">
               4J
@@ -448,6 +475,13 @@ Mohon dibuatkan surat MOU resmi & kunci jadwal photoshoot. Terima kasih!`;
               </p>
             </div>
           </div>
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(false)}
+            className="md:hidden p-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Scrollable Navigation Body */}
@@ -467,7 +501,10 @@ Mohon dibuatkan surat MOU resmi & kunci jadwal photoshoot. Terima kasih!`;
                 return (
                   <button
                     key={item.key}
-                    onClick={() => setActiveTab(item.key)}
+                    onClick={() => {
+                      setActiveTab(item.key);
+                      setMobileMenuOpen(false);
+                    }}
                     className={`w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-bold transition-all cursor-pointer ${
                       isActive
                         ? "bg-orange text-white shadow-md shadow-orange/20"
@@ -561,23 +598,31 @@ Mohon dibuatkan surat MOU resmi & kunci jadwal photoshoot. Terima kasih!`;
       {/* ================= MAIN CONTENT CANVAS ================= */}
       <main className="flex-1 min-w-0 flex flex-col min-h-screen overflow-x-hidden">
         {/* Top Header Bar */}
-        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-dark/10 bg-[#FAF6F0]/90 px-6 backdrop-blur-md">
-          {/* Left: Breadcrumb & Title */}
-          <div className="flex items-center gap-3">
+        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-dark/10 bg-[#FAF6F0]/90 px-4 sm:px-6 backdrop-blur-md">
+          {/* Left: Hamburger (mobile) + Breadcrumb & Title */}
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(true)}
+              className="md:hidden p-2 rounded-lg border border-dark/15 bg-white text-dark hover:bg-dark hover:text-white transition-colors cursor-pointer shrink-0"
+              aria-label="Buka Menu"
+            >
+              <Menu className="w-4 h-4" />
+            </button>
             <span
-              className={`h-2.5 w-2.5 rounded-full ${
-                isGuest ? "bg-amber-500" : "bg-orange"
+              className={`h-2.5 w-2.5 rounded-full shrink-0 ${
+                isGuest ? "bg-amber-500" : "bg-emerald-500"
               }`}
             />
-            <div>
-              <div className="flex items-center gap-2 text-[11px] font-mono text-dark/50 font-bold uppercase tracking-wider">
-                <span>Portal</span>
-                <span>/</span>
-                <span className="text-dark font-black">
+            <div className="min-w-0 truncate">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] font-mono text-dark/50 font-bold uppercase tracking-wider truncate">
+                <span className="hidden sm:inline">Portal</span>
+                <span className="hidden sm:inline">/</span>
+                <span className="text-dark font-black truncate">
                   {schoolName} ({kode})
                 </span>
                 <span>/</span>
-                <span className="text-orange">
+                <span className="text-orange truncate">
                   {activeNavItems.find((m) => m.key === activeTab)?.title}
                 </span>
               </div>
@@ -586,13 +631,24 @@ Mohon dibuatkan surat MOU resmi & kunci jadwal photoshoot. Terima kasih!`;
 
           {/* Right: Status Badges */}
           <div className="flex items-center gap-3">
-            <span className="hidden sm:inline-block text-[11px] font-mono font-bold text-dark/60 border border-dark/15 px-3 py-1 rounded-full bg-white">
-              {isGuest ? "Mode Tamu" : "Kontrak Aktif"}
+            <span
+              className={`hidden sm:inline-flex items-center gap-1.5 text-[11px] font-mono font-bold px-3 py-1 rounded-full border ${
+                isGuest
+                  ? "text-amber-800 bg-amber-50 border-amber-300"
+                  : "text-emerald-800 bg-emerald-50 border-emerald-300"
+              }`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  isGuest ? "bg-amber-500" : "bg-emerald-500 animate-pulse"
+                }`}
+              />
+              {isGuest ? "MODE TAMU / PRATINJAU ANGKATAN" : "KONTRAK RESMI AKTIF"}
             </span>
 
             {isGuest ? (
               <button
-                onClick={() => setActiveTab("quotation")}
+                onClick={() => setActiveTab("contact")}
                 className="inline-flex items-center gap-1.5 bg-orange text-white px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold hover:bg-orange/90 transition-all cursor-pointer"
               >
                 <span>Ajukan MOU</span>
@@ -618,26 +674,27 @@ Mohon dibuatkan surat MOU resmi & kunci jadwal photoshoot. Terima kasih!`;
         <div className="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
           {/* ================= SPECIAL BANNER: KONDISI GUEST (PRA-MOU) ================= */}
           {isGuest && (
-            <div className="rounded-xl border border-dark/15 bg-white p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="rounded-xl border-3 border-dark bg-amber-400/15 p-5 shadow-[4px_4px_0px_#14161C] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div className="max-w-2xl">
-                <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-orange">
-                  Pratinjau Simulasi Angkatan
-                </span>
-                <h3 className="font-headline font-bold text-base text-dark mt-0.5">
-                  Kunci Kontrak MOU &amp; Jadwal Photoshoot Sekolahmu
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-orange text-white font-mono text-[10px] font-black uppercase tracking-wider mb-1">
+                  <span>MODE TAMU / PRATINJAU ANGKATAN</span>
+                </div>
+                <h3 className="font-headline font-black text-lg text-dark mt-0.5">
+                  Pratinjau Terbatas Angkatan 2026
                 </h3>
-                <p className="font-sans text-xs text-dark/70 mt-1">
-                  Anda sedang melihat mode demo angkatan. Kunci draf kontrak MOU &amp; DP 30% untuk membuka slot studio foto dan antrean mesin cetak prioritas.
+                <p className="font-sans text-xs text-dark/80 mt-1 leading-relaxed">
+                  Loker berkas Cloudflare R2 dan histori kas resmi sekolah terkunci. Anda dapat mencoba kalkulator kas, klaim sampel flipbook 3D, atau ajukan penandatanganan MOU untuk aktivasi penuh.
                 </p>
               </div>
 
               <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
                 <button
-                  onClick={() => setActiveTab("quotation")}
-                  className="w-full md:w-auto inline-flex items-center justify-center gap-2 bg-orange hover:bg-orange/90 text-white font-mono font-bold text-xs px-4 py-2.5 rounded-lg transition-colors cursor-pointer"
+                  onClick={() => setActiveTab("contact")}
+                  className="w-full md:w-auto inline-flex items-center justify-center gap-2 bg-orange hover:bg-orange/90 text-white font-headline font-black text-xs uppercase px-5 py-3 border-2 border-dark rounded-lg shadow-[3px_3px_0px_#14161C] active:scale-95 transition-all cursor-pointer"
                 >
-                  <Calculator className="w-3.5 h-3.5" />
-                  <span>Kalkulasi &amp; Ajukan MOU</span>
+                  <PhoneCall className="w-4 h-4" />
+                  <span>Ajukan MOU Resmi</span>
+                  <ArrowUpRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
@@ -715,6 +772,34 @@ Mohon dibuatkan surat MOU resmi & kunci jadwal photoshoot. Terima kasih!`;
 
           {/* ================= 3. TAB 1: BERKAS & UNDUH HASIL (POST-MOU ONLY) ================= */}
           {activeTab === "catalog" && (
+            isGuest ? (
+              <div className="rounded-xl border-3 border-dark bg-white p-8 md:p-12 text-center shadow-[6px_6px_0px_#14161C] space-y-5">
+                <div className="w-14 h-14 rounded-2xl bg-amber-100 border-2 border-dark text-amber-700 flex items-center justify-center mx-auto shadow-[2px_2px_0px_#14161C]">
+                  <Lock className="w-7 h-7" />
+                </div>
+                <div className="max-w-md mx-auto space-y-2">
+                  <span className="inline-block font-mono text-[10px] font-black uppercase tracking-widest text-orange bg-orange/10 px-3 py-1 rounded-full border border-orange/30">
+                    Akses Berkas Terkunci
+                  </span>
+                  <h3 className="font-headline font-black text-2xl text-dark">
+                    Loker Berkas R2 Terproteksi
+                  </h3>
+                  <p className="font-sans text-xs sm:text-sm text-dark/75 leading-relaxed">
+                    Fitur ini hanya terbuka untuk sekolah yang telah menandatangani kontrak MOU resmi.
+                  </p>
+                </div>
+                <div className="pt-2 flex items-center justify-center gap-3">
+                  <button
+                    onClick={() => setActiveTab("contact")}
+                    className="inline-flex items-center gap-2 bg-orange hover:bg-orange/90 text-white font-headline font-black text-xs uppercase px-6 py-3.5 border-2 border-dark rounded-lg shadow-[3px_3px_0px_#14161C] active:scale-95 transition-all cursor-pointer"
+                  >
+                    <PhoneCall className="w-4 h-4" />
+                    <span>Ajukan MOU</span>
+                    <ArrowUpRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ) : (
             <div className="space-y-6">
               <div className="rounded-2xl border border-dark/10 bg-white p-6 shadow-sm space-y-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-dark/10 pb-4">
@@ -786,10 +871,11 @@ Mohon dibuatkan surat MOU resmi & kunci jadwal photoshoot. Terima kasih!`;
                             {row.is_ready ? (
                               <button
                                 onClick={() => handleDownload(row.r2_key, row.file_name)}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-dark hover:bg-orange text-white font-mono text-xs font-bold transition-all cursor-pointer"
+                                disabled={downloadingKey === row.r2_key}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-dark hover:bg-orange disabled:opacity-50 text-white font-mono text-xs font-bold transition-all cursor-pointer"
                               >
                                 <Download className="w-3.5 h-3.5" />
-                                <span>Unduh</span>
+                                <span>{downloadingKey === row.r2_key ? "Mengambil..." : "Unduh"}</span>
                               </button>
                             ) : (
                               <span className="font-mono text-[10px] text-dark/40">
@@ -804,99 +890,110 @@ Mohon dibuatkan surat MOU resmi & kunci jadwal photoshoot. Terima kasih!`;
                 </div>
               </div>
             </div>
+            )
           )}
 
           {/* ================= 4. TAB 2: ALUR & PIPELINE PRODUKSI ================= */}
           {activeTab === "pipeline" && (
             <div className="space-y-6">
-              {/* Standar 6 Tahap Ringkas */}
-              <div className="rounded-xl border border-dark/10 bg-white p-6 shadow-sm">
-                <div className="flex items-center justify-between border-b border-dark/10 pb-4 mb-6">
+              {/* Stepper 6 Tahap Ringkas Horizontal (Single Line) */}
+              <div className="rounded-2xl border border-dark/15 bg-white p-5 shadow-sm">
+                <div className="flex items-center justify-between border-b border-dark/10 pb-3 mb-4">
                   <div>
                     <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-orange">
-                      {isGuest
-                        ? "Standar Alur Produksi"
-                        : "Timeline Pengerjaan Resmi"}
+                      Tahapan Produksi
                     </span>
-                    <h3 className="font-headline font-bold text-lg text-dark mt-0.5">
-                      {isGuest
-                        ? "Tahapan Kerja dari MOU Hingga Kelulusan"
-                        : "Progress Produksi Buku Tahunan"}
+                    <h3 className="font-headline font-black text-base text-dark">
+                      Status Tahap {currentStage} dari 6
                     </h3>
                   </div>
-                  <span className="font-mono text-xs font-bold text-dark/70 bg-[#FAF6F0] px-3 py-1 rounded-lg border border-dark/10">
-                    Target Wisuda: {targetGraduation}
+                  <span className="font-mono text-xs font-bold text-orange bg-[#FAF6F0] px-2.5 py-1 rounded-md border border-dark/15">
+                    Target: {targetGraduation}
                   </span>
                 </div>
 
-                <div className="space-y-3">
-                  {milestones.map((s) => (
-                    <div
-                      key={s.step_number}
-                      className={`p-4 rounded-lg border flex items-start gap-3.5 transition-colors ${
-                        s.status === "active"
-                          ? "bg-orange/5 border-orange/30"
-                          : s.status === "done"
-                          ? "bg-[#FAF6F0] border-dark/10"
-                          : "bg-white border-dark/10 opacity-60"
-                      }`}
-                    >
-                      <div className="mt-0.5 shrink-0">
-                        {s.status === "done" && (
-                          <div className="w-6 h-6 rounded-md bg-dark text-white flex items-center justify-center">
-                            <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-                          </div>
-                        )}
-                        {s.status === "active" && (
-                          <div className="w-6 h-6 rounded-md bg-orange text-white flex items-center justify-center font-mono text-xs font-bold">
-                            {s.step_number}
-                          </div>
-                        )}
-                        {s.status === "pending" && (
-                          <div className="w-6 h-6 rounded-md border border-dark/20 flex items-center justify-center text-xs font-mono text-dark/40">
-                            {s.step_number}
-                          </div>
-                        )}
-                      </div>
+                {/* 6 Steps Horizontal Bar */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                  {milestones.map((s) => {
+                    const isPassed = s.step_number < currentStage || s.status === "done";
+                    const isCurrent = s.step_number === currentStage;
 
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <h4 className="font-headline font-bold text-sm text-dark">
-                            {s.step_number}. {s.title}
-                          </h4>
-                          <span className="font-mono text-[10px] text-dark/50 uppercase">
-                            {s.status === "done"
-                              ? "Selesai"
-                              : s.status === "active"
-                              ? "Berjalan"
-                              : "Menunggu"}
+                    return (
+                      <div
+                        key={s.step_number}
+                        className={`p-2.5 rounded-xl border transition-all ${
+                          isCurrent
+                            ? "bg-dark text-white border-dark shadow-xs"
+                            : isPassed
+                            ? "bg-[#FAF6F0] text-dark/70 border-dark/15"
+                            : "bg-white text-dark/40 border-dark/10 opacity-60"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-1.5 font-mono text-[10px]">
+                          <span
+                            className={`font-black ${
+                              isCurrent ? "text-orange" : ""
+                            }`}
+                          >
+                            0{s.step_number}
                           </span>
+                          {isPassed ? (
+                            <Check className="w-3.5 h-3.5 text-emerald-500 stroke-[3]" />
+                          ) : isCurrent ? (
+                            <span className="w-2 h-2 rounded-full bg-orange animate-ping" />
+                          ) : null}
                         </div>
-                        <p className="font-sans text-xs text-dark/70 mt-0.5">
-                          {s.description}
-                        </p>
-                        {s.target_date && (
-                          <div className="font-mono text-[10px] text-dark/40 mt-1">
-                            Jadwal: {s.target_date}
-                          </div>
-                        )}
+                        <h5
+                          className={`font-headline font-bold text-xs truncate ${
+                            isCurrent ? "text-white" : "text-dark"
+                          }`}
+                        >
+                          {s.title.replace(/^Sesi |^Penandatanganan |^Penyusunan /i, "")}
+                        </h5>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Kalender & Checklist Detail 22 Task dari Master Timeline */}
-              <ProductionTimeline
+              {/* LIVE PRODUCTION RADAR: Kegiatan Berjalan Hari Ini (Paralel) & Kalender Bulanan */}
+              <LiveProductionRadar
                 schoolName={schoolName}
                 targetGraduation={targetGraduation}
-                isGuest={isGuest}
               />
             </div>
           )}
 
           {/* ================= 5. TAB 3: TERMIN KAS & KUITANSI (DEDICATED PAYMENTS) ================= */}
           {activeTab === "payments" && (
+            isGuest ? (
+              <div className="rounded-xl border-3 border-dark bg-white p-8 md:p-12 text-center shadow-[6px_6px_0px_#14161C] space-y-5">
+                <div className="w-14 h-14 rounded-2xl bg-amber-100 border-2 border-dark text-amber-700 flex items-center justify-center mx-auto shadow-[2px_2px_0px_#14161C]">
+                  <Receipt className="w-7 h-7" />
+                </div>
+                <div className="max-w-md mx-auto space-y-2">
+                  <span className="inline-block font-mono text-[10px] font-black uppercase tracking-widest text-orange bg-orange/10 px-3 py-1 rounded-full border border-orange/30">
+                    Histori Invoice Terkunci
+                  </span>
+                  <h3 className="font-headline font-black text-2xl text-dark">
+                    Termin Kas &amp; Kuitansi Resmi
+                  </h3>
+                  <p className="font-sans text-xs sm:text-sm text-dark/75 leading-relaxed">
+                    Fitur ini hanya terbuka untuk sekolah yang telah menandatangani kontrak MOU resmi.
+                  </p>
+                </div>
+                <div className="pt-2 flex items-center justify-center gap-3">
+                  <button
+                    onClick={() => setActiveTab("contact")}
+                    className="inline-flex items-center gap-2 bg-orange hover:bg-orange/90 text-white font-headline font-black text-xs uppercase px-6 py-3.5 border-2 border-dark rounded-lg shadow-[3px_3px_0px_#14161C] active:scale-95 transition-all cursor-pointer"
+                  >
+                    <PhoneCall className="w-4 h-4" />
+                    <span>Ajukan MOU</span>
+                    <ArrowUpRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ) : (
             <div className="space-y-6">
               <div className="rounded-xl border border-dark/10 bg-white p-6 shadow-sm">
                 <div className="border-b border-dark/10 pb-4 mb-6">
@@ -996,7 +1093,7 @@ Mohon dibuatkan surat MOU resmi & kunci jadwal photoshoot. Terima kasih!`;
                         </span>
                         {item.status === "paid" ? (
                           <span className="font-mono text-[10px] font-bold text-dark flex items-center gap-1">
-                            <Check className="w-3 h-3 text-orange" /> Terverifikasi
+                            <Check className="w-3.5 h-3.5 text-orange" /> Terverifikasi
                           </span>
                         ) : (
                           <a
@@ -1016,6 +1113,7 @@ Mohon dibuatkan surat MOU resmi & kunci jadwal photoshoot. Terima kasih!`;
                 </div>
               </div>
             </div>
+            )
           )}
 
           {/* ================= 6. TAB 4: KALKULATOR & ESTIMATOR KAS ================= */}
@@ -1256,10 +1354,13 @@ Mohon dibuatkan surat MOU resmi & kunci jadwal photoshoot. Terima kasih!`;
                   <div className="pt-2">
                     <button
                       type="submit"
-                      className="w-full inline-flex items-center justify-center gap-2 bg-orange hover:bg-orange/90 text-white font-mono font-bold text-xs uppercase px-4 py-3 rounded-lg shadow-sm transition-colors cursor-pointer"
+                      disabled={isSubmitting}
+                      className="w-full inline-flex items-center justify-center gap-2 bg-orange hover:bg-orange/90 disabled:opacity-60 disabled:cursor-not-allowed text-white font-mono font-bold text-xs uppercase px-4 py-3 rounded-lg shadow-sm transition-colors cursor-pointer"
                     >
                       <span>
-                        {isGuest
+                        {isSubmitting
+                          ? "Menyimpan ke antrean..."
+                          : isGuest
                           ? "Kirim ke WA & Ajukan MOU"
                           : "Simpan & Kirim ke PM"}
                       </span>

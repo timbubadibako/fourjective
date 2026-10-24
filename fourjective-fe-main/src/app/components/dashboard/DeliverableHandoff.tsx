@@ -105,8 +105,22 @@ export function DeliverableHandoff({ projects, onRefresh }: DeliverableHandoffPr
     }
   };
 
-  const copyPresignCommand = (key: string) => {
-    navigator.clipboard.writeText(`/api/storage/presign?key=${encodeURIComponent(key)}`);
+  const copyPresignCommand = async (key: string) => {
+    try {
+      const res = await fetch(`/api/storage/presign?key=${encodeURIComponent(key)}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.downloadUrl) {
+          navigator.clipboard.writeText(json.downloadUrl);
+          setCopiedKey(key);
+          setTimeout(() => setCopiedKey(null), 2000);
+          return;
+        }
+      }
+    } catch (e) {
+      console.error("Gagal generate downloadUrl:", e);
+    }
+    navigator.clipboard.writeText(key);
     setCopiedKey(key);
     setTimeout(() => setCopiedKey(null), 2000);
   };
@@ -314,16 +328,41 @@ export function DeliverableHandoff({ projects, onRefresh }: DeliverableHandoffPr
               </h3>
             </div>
 
-            <a
-              href={`/track/${activeProject?.access_code}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 font-headline font-black text-xs uppercase tracking-wider text-orange hover:underline self-start sm:self-auto"
-            >
-              <span>Buka Portal Siswa</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
+            <div className="flex items-center gap-2">
+              <a
+                href={`/track/${activeProject?.access_code}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 font-headline font-black text-xs uppercase tracking-wider text-orange hover:underline self-start sm:self-auto"
+              >
+                <span>Buka Portal Siswa</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
           </div>
+
+          {/* Banner Proteksi Status Kas Proyek */}
+          {activeProject && (
+            <div
+              className={`p-3.5 rounded-xl border flex items-center justify-between text-xs font-mono ${
+                activeProject.payment_installments?.every((i) => i.status === "paid")
+                  ? "bg-emerald-50 border-emerald-200 text-emerald-900"
+                  : "bg-amber-50 border-amber-200 text-amber-900"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <span className="font-bold uppercase">Status Gembok Kas:</span>
+                <span>
+                  {activeProject.payment_installments?.every((i) => i.status === "paid")
+                    ? "✓ Seluruh Termin Lunas — Unduhan siswa terbuka penuh"
+                    : "⚠️ Kas Belum Lunas — Port unduh otomatis terkunci di portal siswa sampai termin diselesaikan"}
+                </span>
+              </div>
+              <span className="font-bold text-[10px] uppercase px-2 py-0.5 rounded bg-white border border-dark/10">
+                Tahap {activeProject.current_stage}/6
+              </span>
+            </div>
+          )}
 
           {/* List Berkas Tersedia */}
           <div className="space-y-3">

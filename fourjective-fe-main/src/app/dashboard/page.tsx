@@ -256,7 +256,11 @@ function DashboardContent() {
       )}
 
       {/* Tab 4: Permohonan Masuk (Live Supabase) */}
-      {activeTab === "prospects" && <ProspectOrdersManager />}
+      {activeTab === "prospects" && (
+        <ProspectOrdersManager
+          onConvertToMOU={() => router.push("/dashboard?tab=mou")}
+        />
+      )}
 
       {/* Tab 5: Jadwal Produksi 2026 (Live Gantt/Checklist) */}
       {activeTab === "timeline" && <AdminTimelineScheduler />}
@@ -266,10 +270,7 @@ function DashboardContent() {
         <PortfolioManager portfolios={data} onRefresh={loadPortfolios} />
       )}
 
-      {/* Tab 3: Permohonan Penawaran Masuk (Live Supabase) */}
-      {activeTab === "prospects" && <ProspectOrdersManager />}
-
-      {/* Tab 4: Quotation Price Estimator HPP */}
+      {/* Tab 7: Quotation Price Estimator HPP */}
       {activeTab === "quotation" && <QuotationEstimator />}
     </div>
   );

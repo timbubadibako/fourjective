@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   CheckCircle2,
   AlertTriangle,
@@ -19,6 +19,24 @@ interface ExecutiveCockpitProps {
 }
 
 export function ExecutiveCockpit({ projects, onNavigateTab }: ExecutiveCockpitProps) {
+  const [prospectCount, setProspectCount] = useState<number>(0);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetch("/api/admin/prospects")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (isMounted && json?.data) {
+          const pending = json.data.filter((item: any) => item.status !== "converted");
+          setProspectCount(pending.length);
+        }
+      })
+      .catch((err) => console.error("Gagal load prospek di ExecutiveCockpit:", err));
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const totalProjects = projects.length;
 
   const criticalProjects = projects.filter((p) => {
@@ -96,17 +114,21 @@ export function ExecutiveCockpit({ projects, onNavigateTab }: ExecutiveCockpitPr
             </div>
             <div className="mt-4 flex items-baseline gap-2">
               <span className="font-headline font-black text-4xl text-dark">
-                {smoothProjects.length > 0 ? smoothProjects.length : 1}
+                {smoothProjects.length}
               </span>
               <span className="font-headline font-bold text-sm text-dark/60 uppercase">sekolah</span>
             </div>
             <p className="font-sans text-xs font-semibold text-dark/75 mt-2 leading-relaxed">
-              Tahap percetakan &amp; pengiriman berjalan sesuai target wisuda.
+              {smoothProjects.length > 0
+                ? "Tahap percetakan & pengiriman berjalan sesuai target wisuda."
+                : "Belum ada proyek yang memasuki tahap cetak akhir."}
             </p>
           </div>
           <div className="mt-5 pt-3.5 border-t border-dark/10 flex items-center justify-between font-mono text-[11px] text-dark/70 font-black">
             <span>Status Jadwal</span>
-            <span className="font-mono text-[10px] font-bold text-dark/70 bg-[#FAF6F0] px-2 py-0.5 rounded border border-dark/10">Tepat Waktu</span>
+            <span className="font-mono text-[10px] font-bold text-dark/70 bg-[#FAF6F0] px-2 py-0.5 rounded border border-dark/10">
+              {smoothProjects.length > 0 ? "Tepat Waktu" : "Standby"}
+            </span>
           </div>
         </div>
 
@@ -122,17 +144,21 @@ export function ExecutiveCockpit({ projects, onNavigateTab }: ExecutiveCockpitPr
             </div>
             <div className="mt-4 flex items-baseline gap-2">
               <span className="font-headline font-black text-4xl text-dark">
-                {attentionProjects.length > 0 ? attentionProjects.length : 2}
+                {attentionProjects.length}
               </span>
               <span className="font-headline font-bold text-sm text-dark/60 uppercase">sekolah</span>
             </div>
             <p className="font-sans text-xs font-semibold text-dark/75 mt-2 leading-relaxed">
-              Tahap layouting &amp; menunggu acc dummy dari panitia/sekolah.
+              {attentionProjects.length > 0
+                ? "Tahap layouting & menunggu acc dummy dari panitia/sekolah."
+                : "Tidak ada proyek tertunda di tahap desain & dummy."}
             </p>
           </div>
           <div className="mt-5 pt-3.5 border-t border-dark/10 flex items-center justify-between font-mono text-[11px] text-dark/70 font-black">
             <span>Status Proses</span>
-            <span className="text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Menunggu ACC</span>
+            <span className="text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+              {attentionProjects.length > 0 ? "Menunggu ACC" : "Aman"}
+            </span>
           </div>
         </div>
 
@@ -188,7 +214,7 @@ export function ExecutiveCockpit({ projects, onNavigateTab }: ExecutiveCockpitPr
               <div className="p-4 rounded-xl bg-[#FAF6F0] border border-dark/15">
                 <span className="font-mono text-[11px] font-black uppercase tracking-wider text-dark/60">Total Kontrak</span>
                 <div className="font-headline font-black text-2xl text-dark mt-1">
-                  Rp {(totalContractValue > 0 ? totalContractValue : 95000000).toLocaleString("id-ID")}
+                  Rp {totalContractValue.toLocaleString("id-ID")}
                 </div>
                 <span className="font-sans text-xs font-semibold text-dark/60">Nilai kontrak MOU</span>
               </div>
@@ -199,7 +225,7 @@ export function ExecutiveCockpit({ projects, onNavigateTab }: ExecutiveCockpitPr
                   <span className="font-mono text-[11px] font-black uppercase tracking-wider text-dark/70">Sudah Diterima</span>
                 </div>
                 <div className="font-headline font-black text-2xl text-dark mt-1">
-                  Rp {(totalCashVerified > 0 ? totalCashVerified : 38500000).toLocaleString("id-ID")}
+                  Rp {totalCashVerified.toLocaleString("id-ID")}
                 </div>
                 <span className="font-sans text-xs font-semibold text-dark/60">DP &amp; termin lunas</span>
               </div>
@@ -207,7 +233,7 @@ export function ExecutiveCockpit({ projects, onNavigateTab }: ExecutiveCockpitPr
               <div className="p-4 rounded-xl bg-orange/10 border border-orange/30">
                 <span className="font-mono text-[11px] font-black uppercase tracking-wider text-orange">Sisa Piutang</span>
                 <div className="font-headline font-black text-2xl text-orange mt-1">
-                  Rp {(pendingCash > 0 ? pendingCash : 56500000).toLocaleString("id-ID")}
+                  Rp {pendingCash.toLocaleString("id-ID")}
                 </div>
                 <span className="font-sans text-xs font-semibold text-dark/60">Jadwal cetak/kirim</span>
               </div>
@@ -271,7 +297,7 @@ export function ExecutiveCockpit({ projects, onNavigateTab }: ExecutiveCockpitPr
                   </div>
                 </div>
                 <span className="font-headline font-black text-xs px-3 py-1.5 rounded-lg bg-orange text-white shadow-sm">
-                  3 baru
+                  {prospectCount > 0 ? `${prospectCount} baru` : "0 baru"}
                 </span>
               </div>
             </div>

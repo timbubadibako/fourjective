@@ -41,6 +41,9 @@ export async function POST(req: NextRequest) {
       pic_name,
       pic_whatsapp,
       pm_assigned,
+      estimated_price_per_student,
+      prospect_order_id,
+      installments,
     } = body;
 
     if (!school_name || !pic_name || !pic_whatsapp) {
@@ -63,6 +66,9 @@ export async function POST(req: NextRequest) {
       pic_name,
       pic_whatsapp,
       pm_assigned,
+      estimated_price_per_student: estimated_price_per_student ? Number(estimated_price_per_student) : undefined,
+      prospect_order_id,
+      installments,
     });
 
     return NextResponse.json(result);

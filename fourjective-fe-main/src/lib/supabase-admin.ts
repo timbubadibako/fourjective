@@ -24,6 +24,12 @@ interface CreateProjectMOUInput {
   pic_whatsapp: string;
   pm_assigned?: string;
   estimated_price_per_student?: number;
+  prospect_order_id?: string;
+  installments?: {
+    dp_amount?: number;
+    mid_amount?: number;
+    final_amount?: number;
+  };
 }
 
 export async function createProjectWithMOU(input: CreateProjectMOUInput) {
@@ -41,15 +47,33 @@ export async function createProjectWithMOU(input: CreateProjectMOUInput) {
     code = `${prefix || "4J"}-${gradYear}`;
   }
 
+  // Cek duplikasi access_code di database, tambahkan suffix acak jika sudah ada
+  let checkRes = await fetch(
+    `${SUPABASE_URL}/rest/v1/projects?access_code=eq.${encodeURIComponent(code)}&select=id`,
+    {
+      headers: {
+        apikey: SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      },
+    }
+  );
+
+  if (checkRes.ok) {
+    const existing = await checkRes.json();
+    if (Array.isArray(existing) && existing.length > 0) {
+      code = `${code}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
+    }
+  }
+
   const studentCount = input.student_count || 150;
   const pageCount = input.page_count || 80;
   const coverType = input.cover_type || "hardcover";
   const pricePerStudent = input.estimated_price_per_student || 165000;
   const totalPrice = studentCount * pricePerStudent;
 
-  const dpAmount = Math.round(totalPrice * 0.3);
-  const midAmount = Math.round(totalPrice * 0.4);
-  const finalAmount = totalPrice - dpAmount - midAmount;
+  const dpAmount = input.installments?.dp_amount ?? Math.round(totalPrice * 0.3);
+  const midAmount = input.installments?.mid_amount ?? Math.round(totalPrice * 0.4);
+  const finalAmount = input.installments?.final_amount ?? (totalPrice - dpAmount - midAmount);
 
   // Insert ke tabel projects via REST API dengan Service Role Key
   const projectPayload = {
@@ -141,7 +165,7 @@ export async function createProjectWithMOU(input: CreateProjectMOUInput) {
     },
   ];
 
-  await fetch(`${SUPABASE_URL}/rest/v1/project_milestones`, {
+  const milestonesRes = await fetch(`${SUPABASE_URL}/rest/v1/project_milestones`, {
     method: "POST",
     headers: {
       apikey: SUPABASE_SERVICE_ROLE_KEY,
@@ -150,6 +174,11 @@ export async function createProjectWithMOU(input: CreateProjectMOUInput) {
     },
     body: JSON.stringify(milestonesPayload),
   });
+
+  if (!milestonesRes.ok) {
+    const errText = await milestonesRes.text();
+    throw new Error(`Gagal menyimpan project milestones: ${errText}`);
+  }
 
   // 3. Insert 3 Termin Kas Otomatis
   const installmentsPayload = [
@@ -185,7 +214,7 @@ export async function createProjectWithMOU(input: CreateProjectMOUInput) {
     },
   ];
 
-  await fetch(`${SUPABASE_URL}/rest/v1/payment_installments`, {
+  const installmentsRes = await fetch(`${SUPABASE_URL}/rest/v1/payment_installments`, {
     method: "POST",
     headers: {
       apikey: SUPABASE_SERVICE_ROLE_KEY,
@@ -195,12 +224,49 @@ export async function createProjectWithMOU(input: CreateProjectMOUInput) {
     body: JSON.stringify(installmentsPayload),
   });
 
+  if (!installmentsRes.ok) {
+    const errText = await installmentsRes.text();
+    throw new Error(`Gagal menyimpan payment installments: ${errText}`);
+  }
+
+  // 4. Update status prospect_orders jika berasal dari konversi
+  if (input.prospect_order_id) {
+    const markSuccess = await markProspectOrderConverted(input.prospect_order_id, projectId);
+    if (!markSuccess) {
+      console.warn(`Gagal memperbarui prospect_order ${input.prospect_order_id}`);
+    }
+  }
+
   return {
     success: true,
     project: createdProject,
     access_code: code,
     shareUrl: `/track/${code}`,
   };
+}
+
+export async function markProspectOrderConverted(prospectOrderId: string, projectId?: string) {
+  const updatePayload: Record<string, any> = {
+    status: "converted",
+  };
+  if (projectId) {
+    updatePayload.project_id = projectId;
+  }
+
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/prospect_orders?id=eq.${encodeURIComponent(prospectOrderId)}`,
+    {
+      method: "PATCH",
+      headers: {
+        apikey: SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatePayload),
+    }
+  );
+
+  return res.ok;
 }
 
 /**

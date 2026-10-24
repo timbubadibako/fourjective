@@ -118,6 +118,7 @@ export async function getProjectByAccessCode(accessCode: string): Promise<Projec
  */
 export async function submitProspectOrder(payload: {
   projectId?: string;
+  schoolName?: string;
   picName: string;
   picWhatsapp: string;
   studentCount: number;
@@ -127,6 +128,7 @@ export async function submitProspectOrder(payload: {
   estimatedPricePerStudent: number;
   totalEstimatedPrice: number;
   targetGraduation?: string;
+  status?: string;
 }): Promise<boolean> {
   try {
     const endpoint = `${SUPABASE_URL}/rest/v1/prospect_orders`;
@@ -140,6 +142,7 @@ export async function submitProspectOrder(payload: {
       },
       body: JSON.stringify({
         project_id: payload.projectId || null,
+        school_name: payload.schoolName || null,
         pic_name: payload.picName,
         pic_whatsapp: payload.picWhatsapp,
         student_count: payload.studentCount,
@@ -149,6 +152,7 @@ export async function submitProspectOrder(payload: {
         estimated_price_per_student: payload.estimatedPricePerStudent,
         total_estimated_price: payload.totalEstimatedPrice,
         target_graduation: payload.targetGraduation || null,
+        status: payload.status || "pending_mou",
       }),
     });
 
