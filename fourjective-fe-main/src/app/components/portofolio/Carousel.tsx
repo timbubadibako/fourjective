@@ -140,12 +140,6 @@ export default function Carousel({
   useEffect(() => {
     if (!selectedBook) return;
 
-    // Scroll mulus ke area desk studio saat buku terbuka
-    const deskEl = document.getElementById("studio-desk-stage");
-    if (deskEl) {
-      deskEl.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-
     const timer = setTimeout(() => {
       const bookEl = document.getElementById("virtual-flipbook-container");
       if (!bookEl) return;
@@ -159,8 +153,8 @@ export default function Carousel({
       try {
         const isMobile = window.innerWidth < 768;
         const pf = new (PageFlip as any)(bookEl, {
-          width: isMobile ? 300 : 420,
-          height: isMobile ? 430 : 560,
+          width: isMobile ? 290 : 420,
+          height: isMobile ? 410 : 560,
           size: "fixed",
           minWidth: 260,
           maxWidth: 500,
@@ -189,120 +183,199 @@ export default function Carousel({
 
   return (
     <div className="w-full">
-      {/* ===== INLINE STUDIO DESK READER (MUNCUL DI HALAMAN LANGSUNG) ===== */}
-      {selectedBook && (
-        <section
-          id="studio-desk-stage"
-          className="mb-14 sm:mb-16 bg-[#FFFDF9] border-4 border-dark rounded-3xl p-5 sm:p-8 shadow-[10px_12px_0px_#14161C] relative overflow-hidden transition-all duration-300 animate-in fade-in zoom-in-95"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(24, 24, 27, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(24, 24, 27, 0.04) 1px, transparent 1px)",
-            backgroundSize: "28px 28px",
-          }}
-        >
-          {/* Desk Header Toolbar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b-3 border-dark">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-orange text-white flex items-center justify-center border-2 border-dark shadow-[2px_2px_0px_#000] shrink-0">
-                <Sparkles className="w-5 h-5 stroke-[2.5]" />
+      {/* ===== 3 KARTU SAMPUL BUKU TAHUNAN ARSIP ===== */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+        {filtered.map((item, idx) => (
+          <article
+            key={item.id}
+            onClick={() => handleBookClick(item)}
+            className="group relative bg-[#FFFDF9] border-3 sm:border-4 border-dark rounded-2xl overflow-hidden shadow-[6px_7px_0px_#14161C] hover:shadow-[9px_10px_0px_#FF4D00] hover:-translate-y-1 transition-all duration-200 cursor-pointer flex flex-col justify-between"
+          >
+            {/* Top Bar Spec */}
+            <div className="bg-[#FAF6F0] px-4 py-2.5 border-b-3 border-dark flex items-center justify-between font-mono text-[11px] font-bold">
+              <span className="text-dark/70 uppercase tracking-wider">{item.spec}</span>
+              <span className="text-orange font-black">0{idx + 1}</span>
+            </div>
+
+            {/* Stage Sampul Buku */}
+            <div className="relative aspect-[3/4] w-full bg-[#1A1C23] overflow-hidden flex items-center justify-center p-6 sm:p-7">
+              {/* Badge Terkunci (Watermark di pojok) */}
+              <div className="absolute top-3.5 right-3.5 z-20 bg-dark/90 backdrop-blur-md text-white border-2 border-white/20 px-2.5 py-1 rounded-md flex items-center gap-1.5 font-mono text-[10px] font-bold">
+                <Lock className="w-3 h-3 text-orange stroke-[3]" />
+                <span>TERKUNCI</span>
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-[10px] font-black uppercase tracking-wider text-orange">
-                    STUDIO DESK • VIRTUAL 3D READER
+
+              {/* Cover Image */}
+              <div className="relative w-full h-full shadow-[0px_10px_25px_rgba(0,0,0,0.6)] rounded-sm overflow-hidden group-hover:scale-[1.03] transition-transform duration-300">
+                <Image
+                  src={item.cover}
+                  alt={item.namaSekolah}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-cover"
+                />
+              </div>
+
+              {/* Hover Overlay: Intip Isi Buku */}
+              <div className="absolute inset-0 bg-dark/70 opacity-0 group-hover:opacity-100 backdrop-blur-[2px] transition-opacity duration-200 flex flex-col items-center justify-center gap-3 p-4 text-center z-10">
+                <div className="w-12 h-12 rounded-xl bg-orange text-white flex items-center justify-center border-2 border-dark shadow-[3px_3px_0px_#18181B]">
+                  <Lock className="w-5 h-5 stroke-[2.5]" />
+                </div>
+                <div>
+                  <span className="font-headline font-black text-sm text-white uppercase tracking-wider block">
+                    Buka Lembaran Buku
                   </span>
-                  <span className="inline-flex items-center gap-1 font-mono text-[9px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
-                    ● Akses Tamu Terbuka
+                  <span className="font-mono text-[10px] text-white/70 block mt-0.5">
+                    Memerlukan Kode Tamu / Angkatan
                   </span>
                 </div>
-                <h2 className="font-headline font-black text-xl sm:text-2xl text-dark leading-tight mt-0.5">
-                  {selectedBook.namaSekolah} ({selectedBook.tahun})
-                </h2>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 self-end sm:self-auto">
-              <span className="font-mono text-xs text-dark/60 font-bold hidden md:inline-block mr-2">
-                Hal. {pageIndex + 1} dari {selectedBook.pages.length}
-              </span>
+            {/* Footer Metadata */}
+            <div className="p-5 bg-white border-t-3 border-dark flex-1 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="font-mono text-[10px] font-black uppercase tracking-wider text-orange">
+                    {item.kota} • {item.tahun}
+                  </span>
+                </div>
+                <h3 className="font-headline font-black text-xl text-dark leading-tight group-hover:text-orange transition-colors">
+                  {item.namaSekolah}
+                </h3>
+                <p className="font-sans text-xs text-dark/70 font-medium leading-relaxed mt-2">
+                  {item.desc}
+                </p>
+              </div>
+
+              <div className="mt-5 pt-3 border-t-2 border-dark/10 flex items-center justify-between text-xs font-mono font-bold">
+                <span className="text-dark/60 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-orange" />
+                  <span>5 Lembar Preview</span>
+                </span>
+                <span className="text-dark group-hover:text-orange inline-flex items-center gap-1 font-black">
+                  <span>Buka E-Book</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </span>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      {/* ===== OVERLAY STUDIO DESK (MODAL MEJA BACA NEOBRUTAL) ===== */}
+      {selectedBook && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark/65 backdrop-blur-md p-3 sm:p-6 animate-in fade-in duration-200">
+          <div
+            id="studio-desk-overlay"
+            className="w-full max-w-5xl max-h-[92vh] flex flex-col bg-[#FAF6F0] border-4 border-dark rounded-3xl shadow-[12px_14px_0px_#14161C] relative overflow-hidden"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(24, 24, 27, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(24, 24, 27, 0.04) 1px, transparent 1px)",
+              backgroundSize: "24px 24px",
+            }}
+          >
+            {/* Header Toolbar Meja Baca */}
+            <div className="flex items-center justify-between gap-4 p-4 sm:p-5 border-b-3 border-dark bg-[#FFFDF9] shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-orange text-white flex items-center justify-center border-2 border-dark shadow-[2px_2px_0px_#000] shrink-0">
+                  <Sparkles className="w-5 h-5 stroke-[2.5]" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-[10px] font-black uppercase tracking-wider text-orange">
+                      STUDIO DESK READER
+                    </span>
+                    <span className="inline-flex items-center gap-1 font-mono text-[9px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                      ● Tamu Terbuka
+                    </span>
+                  </div>
+                  <h2 className="font-headline font-black text-lg sm:text-xl text-dark leading-tight mt-0.5 truncate max-w-xs sm:max-w-md">
+                    {selectedBook.namaSekolah} ({selectedBook.tahun})
+                  </h2>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs text-dark/60 font-bold hidden sm:inline-block mr-2">
+                  Hal. {pageIndex + 1} / {selectedBook.pages.length}
+                </span>
+                <button
+                  onClick={() => {
+                    try {
+                      pageFlipRef.current?.destroy();
+                    } catch (e) {}
+                    setSelectedBook(null);
+                  }}
+                  className="bg-dark hover:bg-orange text-white font-mono text-xs font-black uppercase tracking-wider px-3.5 py-2 rounded-xl border-2 border-dark shadow-[2px_2px_0px_#FF4D00] transition-colors cursor-pointer"
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
+
+            {/* Panggung Buku Flipbook (Scrollable jika layar kecil) */}
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-8 flex items-center justify-center min-h-[460px] sm:min-h-[560px] relative">
+              {/* Prev Button */}
               <button
                 onClick={() => {
                   try {
-                    pageFlipRef.current?.destroy();
+                    pageFlipRef.current?.flipPrev();
                   } catch (e) {}
-                  setSelectedBook(null);
                 }}
-                className="bg-dark hover:bg-orange text-white font-mono text-xs font-black uppercase tracking-wider px-4 py-2.5 rounded-xl border-2 border-dark shadow-[3px_3px_0px_#FF4D00] transition-colors cursor-pointer"
+                className="absolute left-2 sm:left-6 z-30 w-11 h-11 rounded-xl bg-white text-dark border-3 border-dark shadow-[3px_3px_0px_#18181B] hover:shadow-[1px_1px_0px_#18181B] hover:translate-x-0.5 hover:translate-y-0.5 hover:bg-orange hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                title="Halaman Sebelumnya"
               >
-                Tutup Meja Baca
+                <ChevronLeft className="w-6 h-6 stroke-[3]" />
               </button>
-            </div>
-          </div>
 
-          {/* Studio Stage Workspace */}
-          <div className="relative py-8 sm:py-12 flex items-center justify-center min-h-[500px] sm:min-h-[620px]">
-            {/* Prev Navigation Button */}
-            <button
-              onClick={() => {
-                try {
-                  pageFlipRef.current?.flipPrev();
-                } catch (e) {}
-              }}
-              className="absolute left-1 sm:left-4 z-20 w-11 h-11 rounded-xl bg-white text-dark border-3 border-dark shadow-[3px_3px_0px_#18181B] hover:shadow-[1px_1px_0px_#18181B] hover:translate-x-0.5 hover:translate-y-0.5 hover:bg-orange hover:text-white flex items-center justify-center transition-all cursor-pointer"
-              title="Halaman Sebelumnya"
-            >
-              <ChevronLeft className="w-6 h-6 stroke-[3]" />
-            </button>
-
-            {/* Book Flipbook Element */}
-            <div className="relative z-10 flex items-center justify-center">
-              <div
-                id="virtual-flipbook-container"
-                className="drop-shadow-[0_20px_35px_rgba(20,22,28,0.25)]"
-              >
-                {selectedBook.pages.map((imgUrl, i) => (
-                  <div
-                    key={i}
-                    className="flip-page bg-white overflow-hidden border border-dark/15"
-                    data-density={i === 0 ? "hard" : "soft"}
-                  >
-                    <div className="relative w-full h-full bg-[#FAF6F0]">
-                      <img
-                        src={imgUrl}
-                        alt={`Halaman ${i + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute bottom-2.5 right-2.5 bg-dark/85 text-white font-mono text-[9px] font-bold px-2 py-0.5 rounded border border-white/20">
-                        {i === 0 ? "COVER" : `HALAMAN 0${i}`}
+              {/* Book Container */}
+              <div className="relative z-10 flex items-center justify-center py-4">
+                <div
+                  id="virtual-flipbook-container"
+                  className="drop-shadow-[0_20px_40px_rgba(20,22,28,0.3)]"
+                >
+                  {selectedBook.pages.map((imgUrl, i) => (
+                    <div
+                      key={i}
+                      className="flip-page bg-white overflow-hidden border border-dark/15"
+                      data-density={i === 0 ? "hard" : "soft"}
+                    >
+                      <div className="relative w-full h-full bg-[#FAF6F0]">
+                        <img
+                          src={imgUrl}
+                          alt={`Halaman ${i + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute bottom-2.5 right-2.5 bg-dark/85 text-white font-mono text-[9px] font-bold px-2 py-0.5 rounded border border-white/20">
+                          {i === 0 ? "COVER" : `HALAMAN 0${i}`}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
+
+              {/* Next Button */}
+              <button
+                onClick={() => {
+                  try {
+                    pageFlipRef.current?.flipNext();
+                  } catch (e) {}
+                }}
+                className="absolute right-2 sm:right-6 z-30 w-11 h-11 rounded-xl bg-white text-dark border-3 border-dark shadow-[3px_3px_0px_#18181B] hover:shadow-[1px_1px_0px_#18181B] hover:translate-x-0.5 hover:translate-y-0.5 hover:bg-orange hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                title="Halaman Berikutnya"
+              >
+                <ChevronRight className="w-6 h-6 stroke-[3]" />
+              </button>
             </div>
 
-            {/* Next Navigation Button */}
-            <button
-              onClick={() => {
-                try {
-                  pageFlipRef.current?.flipNext();
-                } catch (e) {}
-              }}
-              className="absolute right-1 sm:right-4 z-20 w-11 h-11 rounded-xl bg-white text-dark border-3 border-dark shadow-[3px_3px_0px_#18181B] hover:shadow-[1px_1px_0px_#18181B] hover:translate-x-0.5 hover:translate-y-0.5 hover:bg-orange hover:text-white flex items-center justify-center transition-all cursor-pointer"
-              title="Halaman Berikutnya"
-            >
-              <ChevronRight className="w-6 h-6 stroke-[3]" />
-            </button>
-          </div>
-
-          {/* Studio Desk Footer Banner */}
-          <div className="border-t-3 border-dark pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono font-bold text-dark/70 bg-[#FAF6F0] p-4 rounded-xl border-2 border-dark/20">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-orange"></span>
-              <span>Spesifikasi Fisik Asli: {selectedBook.spec}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-dark/50">Tertarik cetak buku ini?</span>
+            {/* Footer Meja Baca */}
+            <div className="border-t-3 border-dark p-3.5 sm:p-4 bg-[#FFFDF9] flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs font-mono font-bold text-dark/75 shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-orange"></span>
+                <span>Spesifikasi Fisik: {selectedBook.spec}</span>
+              </div>
               <a
                 href={generateWhatsAppLink(selectedBook.namaSekolah)}
                 target="_blank"
@@ -314,10 +387,8 @@ export default function Carousel({
               </a>
             </div>
           </div>
-        </section>
+        </div>
       )}
-
-      {/* ===== 3 KARTU SAMPUL BUKU TAHUNAN ARSIP ===== */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
         {filtered.map((item, idx) => (
           <article
