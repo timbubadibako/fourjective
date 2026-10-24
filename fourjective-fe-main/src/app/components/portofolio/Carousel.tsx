@@ -161,7 +161,7 @@ export default function Carousel({
           minHeight: 380,
           maxHeight: 700,
           showCover: true,
-          drawShadow: true,
+          drawShadow: false,
           flippingTime: 700,
           usePortrait: isMobile,
           startPage: 0,
@@ -276,28 +276,18 @@ export default function Carousel({
             }}
           >
             {/* Header Toolbar Meja Baca */}
-            <div className="flex items-center justify-between gap-4 p-4 sm:p-5 border-b-3 border-dark bg-[#FFFDF9] shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-orange text-white flex items-center justify-center border-2 border-dark shadow-[2px_2px_0px_#000] shrink-0">
-                  <Sparkles className="w-5 h-5 stroke-[2.5]" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-[10px] font-black uppercase tracking-wider text-orange">
-                      STUDIO DESK READER
-                    </span>
-                    <span className="inline-flex items-center gap-1 font-mono text-[9px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
-                      ● Tamu Terbuka
-                    </span>
-                  </div>
-                  <h2 className="font-headline font-black text-lg sm:text-xl text-dark leading-tight mt-0.5 truncate max-w-xs sm:max-w-md">
-                    {selectedBook.namaSekolah} ({selectedBook.tahun})
-                  </h2>
-                </div>
+            <div className="flex items-center justify-between gap-4 px-5 py-4 border-b-3 border-dark bg-[#FFFDF9] shrink-0">
+              <div className="flex items-center gap-2">
+                <h2 className="font-headline font-black text-lg sm:text-xl text-dark leading-tight truncate max-w-xs sm:max-w-md">
+                  {selectedBook.namaSekolah}
+                </h2>
+                <span className="font-mono text-xs text-orange font-black">
+                  ({selectedBook.tahun})
+                </span>
               </div>
 
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-xs text-dark/60 font-bold hidden sm:inline-block mr-2">
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-xs text-dark/60 font-bold hidden sm:inline-block">
                   Hal. {pageIndex + 1} / {selectedBook.pages.length}
                 </span>
                 <button
@@ -307,15 +297,16 @@ export default function Carousel({
                     } catch (e) {}
                     setSelectedBook(null);
                   }}
-                  className="bg-dark hover:bg-orange text-white font-mono text-xs font-black uppercase tracking-wider px-3.5 py-2 rounded-xl border-2 border-dark shadow-[2px_2px_0px_#FF4D00] transition-colors cursor-pointer"
+                  className="w-9 h-9 rounded-xl bg-dark hover:bg-orange text-white flex items-center justify-center border-2 border-dark shadow-[2px_2px_0px_#18181B] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
+                  title="Tutup Reader"
                 >
-                  Tutup
+                  <X className="w-5 h-5 stroke-[2.5]" />
                 </button>
               </div>
             </div>
 
-            {/* Panggung Buku Flipbook (Scrollable jika layar kecil) */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-8 flex items-center justify-center min-h-[460px] sm:min-h-[560px] relative">
+            {/* Panggung Buku Flipbook (Scrollbar disembunyikan) */}
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-8 flex items-center justify-center min-h-[460px] sm:min-h-[560px] relative scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
               {/* Prev Button */}
               <button
                 onClick={() => {
@@ -347,9 +338,6 @@ export default function Carousel({
                           alt={`Halaman ${i + 1}`}
                           className="w-full h-full object-cover"
                         />
-                        <div className="absolute bottom-2.5 right-2.5 bg-dark/85 text-white font-mono text-[9px] font-bold px-2 py-0.5 rounded border border-white/20">
-                          {i === 0 ? "COVER" : `HALAMAN 0${i}`}
-                        </div>
                       </div>
                     </div>
                   ))}

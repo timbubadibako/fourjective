@@ -2,36 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CardTitle, Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ArrowLeft, X } from "lucide-react";
+import { ArrowLeft, BookPlus, UploadCloud, X, AlertCircle } from "lucide-react";
 
-const BASE_URL = (process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000").replace(/\/$/, "");
-
-async function createData(newData: FormData) {
-  const token = localStorage.getItem("jwtToken");
-
-  const response = await fetch(`${BASE_URL}/api/portfolios`, {
-    method: "POST",
-    body: newData,
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to create data");
-  }
-
-  return response.json();
-}
+const BASE_URL = (
+  process.env.NEXT_PUBLIC_BACKEND_URL || "https://api.fourjectiv.com"
+).replace(/\/$/, "");
 
 // File size limits in MB
 const FILE_SIZE_LIMITS = {
-  COVER: 250, // 250MB
-  PDF: 250, // 250MB
+  COVER: 250,
+  PDF: 250,
 };
 
 const formatFileSize = (bytes: number): string => {
@@ -68,19 +48,17 @@ export default function CreatePortfolio() {
     const file = e.target.files?.[0] || null;
 
     if (file) {
-      // Validasi tipe file
       if (type === "cover" && !file.type.startsWith("image/")) {
         setError("Cover harus berupa file gambar (PNG/JPG/JPEG)");
         setShowErrorModal(true);
         return;
       }
       if (type === "pdf" && file.type !== "application/pdf") {
-        setError("Image harus berupa file PDF");
+        setError("File image harus berupa file PDF");
         setShowErrorModal(true);
         return;
       }
 
-      // Validasi ukuran file
       const fileSizeMB = file.size / (1024 * 1024);
       const limit =
         type === "cover" ? FILE_SIZE_LIMITS.COVER : FILE_SIZE_LIMITS.PDF;
@@ -94,7 +72,7 @@ export default function CreatePortfolio() {
             `Silakan kompres atau pilih file yang lebih kecil.`,
         );
         setShowErrorModal(true);
-        e.target.value = ""; // Reset input
+        e.target.value = "";
         return;
       }
     }
@@ -123,7 +101,6 @@ export default function CreatePortfolio() {
     try {
       const token = localStorage.getItem("jwtToken");
 
-      // Menggunakan XMLHttpRequest untuk tracking progress
       await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
 
@@ -146,12 +123,14 @@ export default function CreatePortfolio() {
           reject(new Error("Terjadi kesalahan saat upload"));
         });
 
-        xhr.open("POST", "https://api.fourjectiv.com/api/portfolios");
-        xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+        xhr.open("POST", `${BASE_URL}/api/portfolios`);
+        if (token) {
+          xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+        }
         xhr.send(newData);
       });
 
-      router.push("/dashboard");
+      router.push("/dashboard?tab=portfolios");
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -166,143 +145,226 @@ export default function CreatePortfolio() {
   };
 
   return (
-    <div className="flex h-full flex-col p-6">
+    <div className="flex h-full flex-col space-y-6">
       {/* Modal Error */}
       {showErrorModal && error && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="relative w-[400px] rounded-lg bg-white p-6 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="relative w-full max-w-md rounded-2xl border-2 border-dark bg-white p-6 shadow-[4px_4px_0px_#14161C]">
             <button
               onClick={() => {
                 setShowErrorModal(false);
                 setError(null);
               }}
-              className="absolute right-4 top-4 text-gray-500 hover:text-gray-700"
+              className="absolute right-4 top-4 text-dark/50 hover:text-dark cursor-pointer transition-colors"
             >
               <X size={20} />
             </button>
             <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
-                <span className="text-xl text-red-600">✕</span>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 border border-red-300">
+                <AlertCircle className="h-5 w-5 text-red-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">Error</h3>
+              <div>
+                <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-red-600">
+                  Terjadi Kesalahan
+                </span>
+                <h3 className="font-headline font-black text-lg text-dark">
+                  Upload Gagal
+                </h3>
+              </div>
             </div>
-            <p className="mb-6 whitespace-pre-line text-gray-600">{error}</p>
-            <Button
+            <p className="mb-6 whitespace-pre-line font-mono text-xs text-dark/70 leading-relaxed">
+              {error}
+            </p>
+            <button
               onClick={() => {
                 setShowErrorModal(false);
                 setError(null);
               }}
-              className="w-full bg-red-600 hover:bg-red-700"
+              className="w-full bg-dark hover:bg-dark/90 text-white font-headline font-black text-xs uppercase tracking-wider py-2.5 rounded-xl transition-all cursor-pointer"
             >
               Tutup
-            </Button>
+            </button>
           </div>
         </div>
       )}
 
-      <Card className="flex-grow">
-        <CardContent className="w-full pb-0 pt-6">
-          <Button onClick={() => router.back()}>
-            <ArrowLeft />
-          </Button>
-        </CardContent>
-
-        <CardHeader className="w-full">
-          <CardTitle>Create New Portfolio</CardTitle>
-        </CardHeader>
-
-        <CardContent className="w-full">
-          {isLoading && (
-            <div className="mb-4 rounded-md bg-blue-50 p-4">
-              <div className="mb-2 flex items-center gap-2 text-blue-700">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-700 border-t-transparent"></div>
-                <span>Sedang mengupload file, mohon tunggu...</span>
-              </div>
-              {uploadProgress > 0 && (
-                <div className="mt-3">
-                  <div className="mb-1 flex justify-between text-sm text-blue-600">
-                    <span>Progress Upload</span>
-                    <span className="font-semibold">{uploadProgress}%</span>
-                  </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-blue-200">
-                    <div
-                      className="h-full bg-blue-600 transition-all duration-300"
-                      style={{ width: `${uploadProgress}%` }}
-                    ></div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSubmit();
-            }}
-            className="flex flex-col gap-4"
+      {/* Header Card Putih */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white border border-dark/15 rounded-2xl p-6 shadow-sm">
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-dark/15 bg-[#FAF6F0] text-dark hover:bg-dark hover:text-white transition-all cursor-pointer"
+            title="Kembali"
           >
-            <Label>
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <div>
+            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-orange">
+              Portofolio Buku
+            </span>
+            <h1 className="font-headline font-black text-2xl text-dark">
+              Tambah Buku Baru
+            </h1>
+            <p className="font-sans text-xs font-semibold text-dark/70 mt-0.5">
+              Daftarkan katalog buku tahunan baru ke direktori studio Fourjective.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Form Container */}
+      <div className="bg-white border border-dark/15 rounded-2xl p-6 shadow-sm">
+        {isLoading && (
+          <div className="mb-6 rounded-xl border border-orange/20 bg-orange/5 p-4">
+            <div className="mb-2 flex items-center gap-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-orange border-t-transparent" />
+              <span className="font-mono text-xs font-bold text-orange">
+                Sedang mengunggah file portofolio, mohon tunggu...
+              </span>
+            </div>
+            {uploadProgress > 0 && (
+              <div className="mt-3">
+                <div className="mb-1 flex justify-between font-mono text-xs text-dark/70">
+                  <span className="font-bold uppercase tracking-wider">
+                    Progress Upload
+                  </span>
+                  <span className="font-bold text-orange">{uploadProgress}%</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-dark/10">
+                  <div
+                    className="h-full bg-orange transition-all duration-300"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+          className="space-y-5"
+        >
+          {/* Field: Nama Sekolah */}
+          <div className="space-y-1.5">
+            <label className="block font-mono text-[11px] font-bold uppercase text-dark/70">
               Nama Sekolah <span className="text-red-500">*</span>
-            </Label>
-            <Input
+            </label>
+            <input
+              type="text"
               name="namaSekolah"
               value={formData.namaSekolah}
               onChange={handleInputChange}
               required
+              placeholder="Contoh: SMA Negeri 1 Jakarta"
+              className="w-full bg-[#FAF6F0] border-2 border-dark/20 focus:border-orange rounded-xl font-mono text-xs font-bold px-3.5 py-2.5 text-dark outline-none transition-colors"
             />
+          </div>
 
-            <Label>
+          {/* Field: Tahun */}
+          <div className="space-y-1.5">
+            <label className="block font-mono text-[11px] font-bold uppercase text-dark/70">
               Tahun <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              name="tahun"
+            </label>
+            <input
               type="number"
+              name="tahun"
               value={formData.tahun}
               onChange={handleInputChange}
               required
+              placeholder="Contoh: 2026"
+              className="w-full bg-[#FAF6F0] border-2 border-dark/20 focus:border-orange rounded-xl font-mono text-xs font-bold px-3.5 py-2.5 text-dark outline-none transition-colors"
             />
+          </div>
 
-            <Label>Password (Opsional)</Label>
-            <Input
-              name="password"
+          {/* Field: Password */}
+          <div className="space-y-1.5">
+            <label className="block font-mono text-[11px] font-bold uppercase text-dark/70">
+              Password Portofolio (Opsional)
+            </label>
+            <input
               type="password"
+              name="password"
               value={formData.password}
               onChange={handleInputChange}
-              placeholder="Kosongkan jika tidak ingin menggunakan password"
+              placeholder="Kosongkan jika buku bisa diakses bebas tanpa sandi"
+              className="w-full bg-[#FAF6F0] border-2 border-dark/20 focus:border-orange rounded-xl font-mono text-xs font-bold px-3.5 py-2.5 text-dark outline-none transition-colors"
             />
-
-            <Label>
-              Cover (PNG/JPG/JPEG) <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              type="file"
-              accept="image/png,image/jpg,image/jpeg"
-              onChange={(e) => handleFileChange(e, "cover")}
-              required
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              Maksimal ukuran file: {FILE_SIZE_LIMITS.COVER} MB
+            <p className="font-mono text-[10px] text-dark/50">
+              Jika diisi, tamu wajib memasukkan password ini untuk membuka PDF.
             </p>
+          </div>
 
-            <Label>
-              Image (pdf) <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              type="file"
-              accept="application/pdf"
-              onChange={(e) => handleFileChange(e, "pdf")}
-              required
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              Maksimal ukuran file: {FILE_SIZE_LIMITS.PDF} MB
-            </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+            {/* Field: Cover */}
+            <div className="space-y-1.5">
+              <label className="block font-mono text-[11px] font-bold uppercase text-dark/70">
+                Cover (PNG/JPG/JPEG) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="file"
+                accept="image/png,image/jpg,image/jpeg"
+                onChange={(e) => handleFileChange(e, "cover")}
+                required
+                className="w-full bg-[#FAF6F0] border-2 border-dark/20 focus:border-orange rounded-xl font-mono text-xs font-bold px-3.5 py-2 text-dark file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-dark file:text-white file:font-mono file:text-[10px] file:font-bold file:uppercase cursor-pointer"
+              />
+              <p className="font-mono text-[10px] text-dark/50">
+                Maksimal ukuran file: {FILE_SIZE_LIMITS.COVER} MB
+              </p>
+            </div>
 
-            <Button type="submit" className="mt-4" disabled={isLoading}>
-              {isLoading ? "Menyimpan..." : "Simpan"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+            {/* Field: PDF */}
+            <div className="space-y-1.5">
+              <label className="block font-mono text-[11px] font-bold uppercase text-dark/70">
+                File Buku PDF <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="file"
+                accept="application/pdf"
+                onChange={(e) => handleFileChange(e, "pdf")}
+                required
+                className="w-full bg-[#FAF6F0] border-2 border-dark/20 focus:border-orange rounded-xl font-mono text-xs font-bold px-3.5 py-2 text-dark file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-dark file:text-white file:font-mono file:text-[10px] file:font-bold file:uppercase cursor-pointer"
+              />
+              <p className="font-mono text-[10px] text-dark/50">
+                Maksimal ukuran file: {FILE_SIZE_LIMITS.PDF} MB
+              </p>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="pt-4 flex items-center justify-end gap-3 border-t border-dark/10">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              disabled={isLoading}
+              className="px-4 py-2.5 rounded-xl border border-dark/20 bg-white hover:bg-dark/5 text-dark font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="inline-flex items-center gap-2 bg-orange hover:bg-orange/90 text-white font-headline font-black text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all cursor-pointer disabled:opacity-50"
+            >
+              {isLoading ? (
+                <>
+                  <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  <span>Menyimpan...</span>
+                </>
+              ) : (
+                <>
+                  <BookPlus className="h-4 w-4" />
+                  <span>Simpan Portofolio</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

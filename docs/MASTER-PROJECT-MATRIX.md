@@ -40,7 +40,7 @@ Sesuai arahan manajemen proyek, pembagian fase pengerjaan dibagi menjadi 4 pilar
 * **Detail Status per Route**:
   1. `/` (Landing Page): **APPROVED**. Layout Hero, Traksi, Running Text, Kawalan Hari-H, Katalog 5 Paket Canva WebP, Showreel 15s Hover-Play, Galeri Masonry, Portfolio Orbit, FAQ, Footer.
   2. `/paket` (Detail Paket): **IN REVIEW**. Integrasi poster WebP resmi 5 lini Canva, deliverables, spesifikasi kertas/cetak mesin Heidelberg, dan bonus tim EO wisuda.
-  3. `/portofolio` (Arsip Karya): **IN REVIEW**. Grid buku sekolah se-Indonesia, filter kategori, dan antarmuka pembaca.
+  3. `/portofolio` (Arsip Karya): **DONE (READY FOR REVIEW)**. 3 sampul buku dummy ikonik resmi terkunci (Mondial Batam, Petra 1 Surabaya, SMAN 5 Makassar), modal gerbang sandi token / CTA WhatsApp admin, dan overlay meja baca Flipbook 3D hardcover bersih tanpa shadow patah.
   4. `/services` (Layanan): **IN REVIEW**. 7 pilar kapabilitas studio Fourjective.
   5. `/faq` (Tanya Jawab): **IN REVIEW**. Kebijakan termin, garansi tepat waktu wisuda, dan keamanan privasi foto.
   6. `/testimoni` (Ulasan Klien): **IN REVIEW**. Ulasan nyata sekolah mitra (Al-Azhar 5 Cirebon, SMAK 8 Penabur, SMAN 1 Serang, SMAK Petra 1 Surabaya).
@@ -53,9 +53,9 @@ Sesuai arahan manajemen proyek, pembagian fase pengerjaan dibagi menjadi 4 pilar
 * **Status**: `[IN_REVIEW]`
 * **Ruang Lingkup**: Hover angkat taktil pada kartu portofolio, transisi tombol neobrutal, running text 60 FPS di desktop.
 
-### [ ] TKT-05: Animasi Desktop 2 (Modal Sandi & 3D Flipbook Reader)
-* **Status**: `[IN_REVIEW]`
-* **Ruang Lingkup**: Pembaca 3D Virtual Flipbook lembaran realistis di `/portofolio` dengan kontrol tombol panah keyboard.
+### [x] TKT-05: Animasi Desktop 2 (Modal Sandi & 3D Flipbook Reader)
+* **Status**: `[DONE - READY FOR REVIEW]`
+* **Ruang Lingkup**: Pembaca 3D Virtual Flipbook lembaran realistis di `/portofolio` dengan mode hardcover, tanpa bayangan patah di tengah bukaan, dan modal overlay meja baca Neobrutal bersih.
 
 ### [ ] TKT-06: Animasi Menu & Interaksi Transisi Desktop
 * **Status**: `[IN_REVIEW]`

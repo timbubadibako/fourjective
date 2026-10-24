@@ -8,9 +8,12 @@ import { ProductionTracker } from "../components/dashboard/ProductionTracker";
 import { QuotationEstimator } from "../components/dashboard/QuotationEstimator";
 import { CmsSandbox } from "../components/dashboard/CmsSandbox";
 import { SchoolFolderCard } from "../components/dashboard/SchoolFolderCard";
-import { MOUProjectManager } from "../components/dashboard/MOUProjectManager";
+import { MOUProjectManager, AdminProject } from "../components/dashboard/MOUProjectManager";
 import { ProspectOrdersManager } from "../components/dashboard/ProspectOrdersManager";
 import { AdminTimelineScheduler } from "../components/dashboard/AdminTimelineScheduler";
+import { ExecutiveCockpit } from "../components/dashboard/ExecutiveCockpit";
+import { DeliverableHandoff } from "../components/dashboard/DeliverableHandoff";
+import { PortfolioManager } from "../components/dashboard/PortfolioManager";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import {
@@ -115,26 +118,68 @@ export default function DashboardPage() {
 function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tabParam = searchParams.get("tab") as "mou" | "timeline" | "portfolios" | "prospects" | "quotation" | null;
+  const tabParam = searchParams.get("tab") as
+    | "overview"
+    | "mou"
+    | "handoff"
+    | "prospects"
+    | "timeline"
+    | "portfolios"
+    | "quotation"
+    | null;
   const [data, setData] = useState<Portfolio[]>([]);
+  const [projects, setProjects] = useState<AdminProject[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredData, setFilteredData] = useState<Portfolio[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"mou" | "timeline" | "portfolios" | "prospects" | "quotation">("mou");
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "mou" | "handoff" | "prospects" | "timeline" | "portfolios" | "quotation"
+  >("overview");
   const [viewMode, setViewMode] = useState<"split" | "folders" | "table">("split");
 
+  const fetchAdminProjects = async () => {
+    try {
+      const res = await fetch("/api/admin/projects");
+      if (res.ok) {
+        const json = await res.json();
+        setProjects(json.projects || []);
+      }
+    } catch (e) {
+      console.error("Gagal load admin projects:", e);
+    }
+  };
+
   useEffect(() => {
-    if (tabParam && ["mou", "timeline", "portfolios", "prospects", "quotation"].includes(tabParam)) {
-      setActiveTab(tabParam);
+    fetchAdminProjects();
+  }, []);
+
+  useEffect(() => {
+    if (
+      tabParam &&
+      [
+        "overview",
+        "mou",
+        "handoff",
+        "prospects",
+        "timeline",
+        "portfolios",
+        "quotation",
+      ].includes(tabParam)
+    ) {
+      setActiveTab(tabParam as any);
     }
   }, [tabParam]);
 
-  useEffect(() => {
+  const loadPortfolios = () => {
     setIsLoading(true);
     getAllData()
       .then((data) => setData(data))
       .catch((err) => console.error(err.message))
       .finally(() => setIsLoading(false));
+  };
+
+  useEffect(() => {
+    loadPortfolios();
   }, []);
 
   useEffect(() => {
@@ -191,128 +236,34 @@ function DashboardContent() {
 
   return (
     <div className="flex h-full flex-col space-y-6">
-      {/* Overview Metric Cards with Fourjective Aesthetic */}
-      <OverviewCards portfolios={data} />
+      {/* Tab 1: Ringkasan Studio (Executive Overview) */}
+      {activeTab === "overview" && (
+        <ExecutiveCockpit
+          projects={projects}
+          onNavigateTab={(tab) => router.push(`/dashboard?tab=${tab}`)}
+        />
+      )}
 
-      {/* Tab 1: Angkatan MOU & Tracker (Supabase Live) */}
+      {/* Tab 2: Proyek Mitra & Kode Akses (Supabase Live) */}
       {activeTab === "mou" && <MOUProjectManager />}
 
-      {/* Tab 2: Master Jadwal Timeline 2026 (Live Gantt/Checklist) */}
+      {/* Tab 3: Input Berkas Handoff (Cloudflare R2) */}
+      {activeTab === "handoff" && (
+        <DeliverableHandoff
+          projects={projects}
+          onRefresh={fetchAdminProjects}
+        />
+      )}
+
+      {/* Tab 4: Permohonan Masuk (Live Supabase) */}
+      {activeTab === "prospects" && <ProspectOrdersManager />}
+
+      {/* Tab 5: Jadwal Produksi 2026 (Live Gantt/Checklist) */}
       {activeTab === "timeline" && <AdminTimelineScheduler />}
 
-      {/* Tab 3: Portfolios Management & Tactile Folder Dock */}
+      {/* Tab 6: Katalog Portofolio Buku & File Manager (Single Source + Form Ekspansi) */}
       {activeTab === "portfolios" && (
-        <div className="space-y-6">
-          {/* Top Control Bar: Search, View Mode & Add Button */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white border border-dark/10 p-4 rounded-xl shadow-sm">
-            {/* Search Input */}
-            <div className="relative w-full sm:max-w-md">
-              <Search className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-dark/40" />
-              <Input
-                type="text"
-                placeholder="Cari nama sekolah atau tahun..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 text-xs rounded-lg border-dark/15 focus:border-orange h-9 bg-[#FAF6F0]"
-              />
-            </div>
-
-            {/* Controls: View Switcher & Create Button */}
-            <div className="flex items-center gap-2.5 w-full sm:w-auto justify-between sm:justify-end">
-              {/* View Mode Switcher */}
-              <div className="flex items-center bg-[#FAF6F0] p-1 rounded-lg border border-dark/10 text-xs font-mono font-bold">
-                <button
-                  type="button"
-                  onClick={() => setViewMode("split")}
-                  className={`px-2.5 py-1 rounded transition-colors cursor-pointer ${
-                    viewMode === "split"
-                      ? "bg-white text-dark shadow-sm"
-                      : "text-dark/50 hover:text-dark"
-                  }`}
-                >
-                  Semua
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode("folders")}
-                  className={`px-2.5 py-1 rounded flex items-center gap-1 transition-colors cursor-pointer ${
-                    viewMode === "folders"
-                      ? "bg-white text-dark shadow-sm"
-                      : "text-dark/50 hover:text-dark"
-                  }`}
-                >
-                  <Folder className="w-3 h-3" />
-                  <span>Folder</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode("table")}
-                  className={`px-2.5 py-1 rounded flex items-center gap-1 transition-colors cursor-pointer ${
-                    viewMode === "table"
-                      ? "bg-white text-dark shadow-sm"
-                      : "text-dark/50 hover:text-dark"
-                  }`}
-                >
-                  <TableIcon className="w-3 h-3" />
-                  <span>Tabel</span>
-                </button>
-              </div>
-
-              {/* Add New Button */}
-              <Button
-                onClick={handleCreatePortfolio}
-                className="bg-orange hover:bg-orange/90 text-white font-mono font-bold text-xs h-9 px-3.5 rounded-lg cursor-pointer flex items-center gap-1.5 shrink-0"
-              >
-                <Plus size={14} />
-                <span>Tambah Buku</span>
-              </Button>
-            </div>
-          </div>
-
-          {/* FOLDER VIEW */}
-          {(viewMode === "split" || viewMode === "folders") && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-headline font-bold text-base text-dark tracking-tight uppercase flex items-center gap-2">
-                    <Folder className="w-4 h-4 text-orange" />
-                    <span>Direktori Folder ({filteredFolders.length})</span>
-                  </h3>
-                </div>
-              </div>
-
-              {/* Grid of Tactile Folder Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredFolders.map((folder, idx) => (
-                  <SchoolFolderCard
-                    key={folder.folderName + idx}
-                    folderName={folder.folderName}
-                    year={folder.year}
-                    studentCount={folder.studentCount}
-                    pageCount={folder.pageCount}
-                    fileSize={folder.fileSize}
-                    isLocked={folder.isLocked}
-                    theme={folder.theme}
-                    portfolio={folder.portfolio}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* TABLE VIEW */}
-          {(viewMode === "split" || viewMode === "table") && (
-            <div className="space-y-3 pt-2">
-              <h3 className="font-headline font-bold text-base text-dark tracking-tight uppercase flex items-center gap-2">
-                <TableIcon className="w-4 h-4 text-dark/70" />
-                <span>Tabel Data Lengkap</span>
-              </h3>
-              <div className="rounded-xl border border-dark/10 bg-white p-4 shadow-sm">
-                <DashboardTable columns={columns} data={filteredData} />
-              </div>
-            </div>
-          )}
-        </div>
+        <PortfolioManager portfolios={data} onRefresh={loadPortfolios} />
       )}
 
       {/* Tab 3: Permohonan Penawaran Masuk (Live Supabase) */}

@@ -49,10 +49,10 @@ export function ProspectOrdersManager() {
           <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-orange">
             Kalkulator Tamu / Guest
           </span>
-          <h3 className="font-headline font-bold text-xl text-dark mt-0.5">
+          <h3 className="font-headline font-black text-xl text-dark mt-0.5">
             Daftar Permohonan Penawaran Masuk
           </h3>
-          <p className="font-sans text-xs text-dark/60 mt-0.5">
+          <p className="font-sans text-xs text-dark/70 font-semibold mt-0.5">
             Data kalkulasi anggaran yang diajukan panitia sekolah melalui kalkulator kas portal.
           </p>
         </div>
@@ -80,13 +80,13 @@ export function ProspectOrdersManager() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-dark/10 font-mono text-[10px] text-dark/50 uppercase">
-                <th className="pb-3 font-bold">Nama PIC / Sekolah</th>
-                <th className="pb-3 font-bold">WhatsApp</th>
-                <th className="pb-3 font-bold">Spesifikasi</th>
-                <th className="pb-3 font-bold">Estimasi Kas</th>
-                <th className="pb-3 font-bold">Target Wisuda</th>
-                <th className="pb-3 font-bold text-right">Aksi</th>
+              <tr className="border-b border-dark/10 font-mono text-[10px] font-bold uppercase tracking-wider text-dark/70">
+                <th className="pb-3 font-bold uppercase tracking-wider">Nama PIC / Sekolah</th>
+                <th className="pb-3 font-bold uppercase tracking-wider">WhatsApp</th>
+                <th className="pb-3 font-bold uppercase tracking-wider">Spesifikasi</th>
+                <th className="pb-3 font-bold uppercase tracking-wider">Estimasi Kas</th>
+                <th className="pb-3 font-bold uppercase tracking-wider">Target Wisuda</th>
+                <th className="pb-3 font-bold uppercase tracking-wider text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-dark/5 font-sans">
@@ -100,8 +100,8 @@ export function ProspectOrdersManager() {
                 return (
                   <tr key={o.id} className="hover:bg-[#FAF6F0] transition-colors">
                     <td className="py-3.5 pr-4">
-                      <div className="font-bold text-dark">{o.pic_name}</div>
-                      <div className="font-mono text-[10px] text-dark/40">
+                      <div className="font-sans font-bold text-dark">{o.pic_name}</div>
+                      <div className="font-mono text-[10px] font-bold text-dark/50">
                         {o.created_at ? new Date(o.created_at).toLocaleDateString("id-ID") : "Baru saja"}
                       </div>
                     </td>
@@ -109,22 +109,22 @@ export function ProspectOrdersManager() {
                       {o.pic_whatsapp}
                     </td>
                     <td className="py-3.5">
-                      <div className="font-medium text-dark">
+                      <div className="font-sans font-bold text-dark">
                         {o.student_count} Siswa • {o.page_count} Hal
                       </div>
-                      <div className="font-mono text-[10px] text-dark/50 uppercase">
+                      <div className="font-mono text-[10px] font-bold text-dark/70 uppercase">
                         Cover: {o.cover_type}
                       </div>
                     </td>
                     <td className="py-3.5">
-                      <div className="font-bold text-dark">
+                      <div className="font-mono font-bold text-dark">
                         Rp {o.estimated_price_per_student?.toLocaleString("id-ID")}/siswa
                       </div>
                       <div className="font-mono text-[10px] text-orange font-bold">
                         Total: Rp {o.total_estimated_price?.toLocaleString("id-ID")}
                       </div>
                     </td>
-                    <td className="py-3.5 font-mono text-dark/70">
+                    <td className="py-3.5 font-mono font-bold text-dark">
                       {o.target_graduation || "Mei 2026"}
                     </td>
                     <td className="py-3.5 text-right">

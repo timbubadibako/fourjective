@@ -4,25 +4,22 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Plus,
-  KeyRound,
-  ShieldCheck,
-  CheckCircle2,
-  Clock,
-  ArrowUpRight,
-  Copy,
   Check,
+  Copy,
   MessageCircle,
   ExternalLink,
-  ChevronRight,
+  RefreshCw,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+  ArrowRight,
   School,
   Calendar,
   Users,
-  Layers,
-  FileCheck2,
-  Receipt,
+  ShieldCheck,
+  Coins,
+  ChevronRight,
   Sparkles,
-  AlertCircle,
-  RefreshCw,
 } from "lucide-react";
 
 export interface ProjectMilestone {
@@ -68,6 +65,7 @@ export interface AdminProject {
 
 export function MOUProjectManager() {
   const [projects, setProjects] = useState<AdminProject[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -100,7 +98,11 @@ export function MOUProjectManager() {
       const res = await fetch("/api/admin/projects");
       if (res.ok) {
         const data = await res.json();
-        setProjects(data.projects || []);
+        const list: AdminProject[] = data.projects || [];
+        setProjects(list);
+        if (list.length > 0 && !selectedProjectId) {
+          setSelectedProjectId(list[0].id);
+        }
       }
     } catch (e) {
       console.error("Gagal load projects:", e);
@@ -113,7 +115,6 @@ export function MOUProjectManager() {
     fetchProjects();
   }, []);
 
-  // Auto-generate access code saat nama sekolah diketik
   useEffect(() => {
     if (!customCode || customCode.startsWith("SMAN") || customCode.startsWith("4J")) {
       const clean = schoolName
@@ -138,42 +139,39 @@ export function MOUProjectManager() {
         body: JSON.stringify({
           school_name: schoolName,
           access_code: customCode.trim().toUpperCase(),
-          graduation_year: gradYear,
+          graduation_year: Number(gradYear),
           city,
-          package_name: "Yearbook Hardcover Exclusive",
-          student_count: studentCount,
-          page_count: pageCount,
-          cover_type: coverType,
-          target_graduation: targetGraduation,
           pic_name: picName,
           pic_whatsapp: picWhatsapp,
-          pm_assigned: "Venny Meilinda",
-          estimated_price_per_student: pricePerStudent,
+          student_count: Number(studentCount),
+          page_count: Number(pageCount),
+          cover_type: coverType,
+          price_per_student: Number(pricePerStudent),
+          target_graduation: targetGraduation,
         }),
       });
 
       const data = await res.json();
+
       if (!res.ok) {
-        setErrorMsg(data.error || "Gagal membuat proyek");
-        setIsSubmitting(false);
-        return;
+        throw new Error(data.error || "Gagal membuat proyek");
       }
 
       setSuccessData({
-        access_code: data.access_code,
-        school_name: schoolName,
-        pic_name: picName,
-        pic_whatsapp: picWhatsapp,
+        access_code: data.project.access_code,
+        school_name: data.project.school_name,
+        pic_name: data.project.pic_name,
+        pic_whatsapp: data.project.pic_whatsapp,
       });
 
-      // Reset form & reload
       setSchoolName("");
       setCustomCode("");
       setPicName("");
       setPicWhatsapp("");
+      setIsModalOpen(false);
       fetchProjects();
     } catch (err: any) {
-      setErrorMsg("Terjadi kegagalan koneksi server.");
+      setErrorMsg(err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -184,10 +182,13 @@ export function MOUProjectManager() {
       const res = await fetch(`/api/admin/projects/${projectId}/stage`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stage: newStage }),
+        body: JSON.stringify({ current_stage: newStage }),
       });
+
       if (res.ok) {
-        fetchProjects();
+        setProjects((prev) =>
+          prev.map((p) => (p.id === projectId ? { ...p, current_stage: newStage } : p))
+        );
       }
     } catch (e) {
       console.error("Gagal update stage:", e);
@@ -197,9 +198,9 @@ export function MOUProjectManager() {
   const handleToggleInstallment = async (
     projectId: string,
     installmentId: string,
-    currentStatus: string
+    currentStatus: "paid" | "pending"
   ) => {
-    const nextStatus = currentStatus === "paid" ? "pending" : "paid";
+    const nextStatus: "paid" | "pending" = currentStatus === "paid" ? "pending" : "paid";
     try {
       const res = await fetch(`/api/admin/projects/${projectId}/installment`, {
         method: "PATCH",
@@ -209,8 +210,26 @@ export function MOUProjectManager() {
           status: nextStatus,
         }),
       });
+
       if (res.ok) {
-        fetchProjects();
+        const json = await res.json();
+        setProjects((prev) =>
+          prev.map((p) => {
+            if (p.id === projectId) {
+              const updatedInstallments = (p.payment_installments || []).map((inst) =>
+                inst.id === installmentId
+                  ? {
+                      ...inst,
+                      status: nextStatus,
+                      receipt_number: json.receipt_number || inst.receipt_number,
+                    }
+                  : inst
+              );
+              return { ...p, payment_installments: updatedInstallments };
+            }
+            return p;
+          })
+        );
       }
     } catch (e) {
       console.error("Gagal toggle installment:", e);
@@ -223,50 +242,58 @@ export function MOUProjectManager() {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  const copyWhatsAppShare = (project: AdminProject) => {
-    const text = `
-*KODE AKSES RESMI BUKU TAHUNAN FOURJECTIVE*
-Halo Kak ${project.pic_name || "Panitia"}!
-Proyek buku tahunan untuk *${project.school_name}* (${project.graduation_year}) telah resmi terdaftar di sistem kami setelah MOU.
+  const copyWhatsAppShare = (proj: AdminProject) => {
+    const message =
+      `Halo Kak ${proj.pic_name || "Panitia"} (${proj.school_name})! 🎓\n\n` +
+      `Portal resmi Buku Tahunan Angkatan ${proj.graduation_year} Fourjective sudah aktif.\n` +
+      `Seluruh proses (timeline, invoice, & review desain) dapat dipantau di link berikut:\n\n` +
+      `🌐 Link Tracking: https://fourjectiv.com/track/${proj.access_code}\n` +
+      `🔑 Kode Akses: *${proj.access_code}*\n\n` +
+      `Status saat ini: Tahap ${proj.current_stage} / 6. Silakan simpan link ini ya kak. Terima kasih! 🙏`;
 
-📌 *KODE AKSES ANGKATAN*: ${project.access_code}
-🌐 *LINK PORTAL PEMANTAUAN*: https://fourjectiv.vercel.app/track/${project.access_code}
-
-Tahap saat ini: *Tahap ${project.current_stage}/6*
-Silakan bagikan tautan ini ke panitia untuk memantau alur foto, layout, dummy cetak, dan berkas Cloudflare R2 secara real-time. Terima kasih!
-    `.trim();
-
-    navigator.clipboard.writeText(text);
+    navigator.clipboard.writeText(message);
     setCopiedMsg(true);
     setTimeout(() => setCopiedMsg(false), 2000);
   };
 
+  const stageLabels = [
+    { step: 1, label: "MOU & DP" },
+    { step: 2, label: "Sesi Foto" },
+    { step: 3, label: "Layouting" },
+    { step: 4, label: "ACC Dummy" },
+    { step: 5, label: "Cetak & Jilid" },
+    { step: 6, label: "Distribusi" },
+  ];
+
+  const selectedProject = projects.find((p) => p.id === selectedProjectId) || projects[0];
+
   return (
     <div className="space-y-6">
-      {/* Header & Action Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-dark/10 p-5 rounded-2xl shadow-sm">
+      {/* Header Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-dark/15 p-5 sm:p-6 rounded-2xl shadow-sm">
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-[10px] font-black uppercase tracking-wider text-orange">
+            <span className="font-mono text-[11px] font-black uppercase tracking-wider text-orange">
               DATABASE SUPABASE TERHUBUNG
             </span>
-            <span className="inline-flex items-center gap-1 font-mono text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-              ● Live PostgreSQL
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md font-mono text-[10px] font-bold uppercase tracking-wider bg-zinc-900 text-white border border-zinc-800">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Live PostgreSQL
             </span>
           </div>
-          <h2 className="font-headline font-black text-xl text-dark mt-1">
+          <h2 className="font-headline font-black text-2xl text-dark mt-1">
             Manajemen Angkatan &amp; Kode Akses MOU
           </h2>
-          <p className="font-sans text-xs text-dark/65 mt-0.5">
-            Terbitkan token angkatan untuk sekolah yang sudah tanda tangan kontrak MOU &amp; DP.
+          <p className="font-sans text-xs font-semibold text-dark/70 mt-1">
+            Pilih sekolah di sebelah kiri untuk melihat dan mengatur status tahapan &amp; termin kas di panel kanan.
           </p>
         </div>
 
         <div className="flex items-center gap-2.5">
           <button
             onClick={fetchProjects}
-            className="p-2.5 rounded-xl border border-dark/15 hover:bg-slate-100 text-dark/70 hover:text-dark transition-colors cursor-pointer"
-            title="Refresh Data"
+            className="p-2.5 rounded-xl border border-dark/15 hover:bg-slate-100 text-dark/70 transition-colors cursor-pointer"
+            title="Segarkan Data"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin text-orange" : ""}`} />
           </button>
@@ -284,9 +311,9 @@ Silakan bagikan tautan ini ke panitia untuk memantau alur foto, layout, dummy ce
         </div>
       </div>
 
-      {/* Success Notification after Generation */}
+      {/* Success Banner */}
       {successData && (
-        <div className="p-5 rounded-2xl bg-emerald-950 text-white border-2 border-emerald-500 shadow-xl animate-in fade-in duration-300">
+        <div className="p-5 rounded-2xl bg-emerald-950 text-white border-2 border-emerald-500 shadow-xl">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-bold uppercase tracking-wider">
@@ -297,322 +324,385 @@ Silakan bagikan tautan ini ke panitia untuk memantau alur foto, layout, dummy ce
                 {successData.school_name} &rarr;{" "}
                 <span className="text-orange underline">{successData.access_code}</span>
               </div>
-              <p className="font-mono text-xs text-white/70 mt-1">
-                Tahap 1 (MOU &amp; DP 30%) otomatis tercatat lunas. 6 tahapan stepper &amp; kuitansi resmi siap diakses.
-              </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2">
               <Link
                 href={`/track/${successData.access_code}`}
                 target="_blank"
-                className="inline-flex items-center gap-1.5 bg-white text-dark hover:bg-orange hover:text-white font-mono text-xs font-black uppercase px-3.5 py-2 rounded-xl transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 bg-white text-dark hover:bg-orange hover:text-white font-mono text-xs font-black uppercase px-3.5 py-2 rounded-xl transition-colors"
               >
-                <span>Buka Tracker Klien</span>
+                <span>Buka Portal Siswa</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </Link>
-
-              <button
-                onClick={() =>
-                  copyWhatsAppShare({
-                    ...successData,
-                    graduation_year: 2026,
-                    current_stage: 2,
-                  } as any)
-                }
-                className="inline-flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-dark font-mono text-xs font-black uppercase px-3.5 py-2 rounded-xl transition-colors cursor-pointer"
-              >
-                {copiedMsg ? <Check className="w-3.5 h-3.5" /> : <MessageCircle className="w-3.5 h-3.5" />}
-                <span>{copiedMsg ? "Tersalin!" : "Salin Pesan WA PIC"}</span>
-              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* List of Active Angkatan from Supabase */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="font-headline font-black text-sm uppercase text-dark tracking-wide">
-            Daftar Sekolah &amp; Status Alur ({projects.length} Terdaftar)
-          </h3>
-          <span className="font-mono text-[10px] text-dark/50">
-            Klik nomor tahap 1–6 untuk memajukan status secara instan
-          </span>
-        </div>
-
-        {isLoading ? (
-          <div className="p-12 text-center bg-white rounded-2xl border border-dark/10 font-mono text-xs text-dark/50">
-            Memuat daftar angkatan dari Supabase...
+      {/* SIDE BY SIDE LAYOUT: LIST DI KIRI (5 Kolom), PREVIEW DI KANAN (7 Kolom) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        {/* KOLOM KIRI: DAFTAR KARTU SEKOLAH (5 Kolom) */}
+        <div className="lg:col-span-5 space-y-3">
+          <div className="flex items-center justify-between px-1">
+            <span className="font-headline font-bold text-xs uppercase text-dark/70 tracking-wider">
+              Daftar Sekolah ({projects.length})
+            </span>
+            <span className="font-mono text-[10px] text-dark/50">
+              Pilih untuk preview
+            </span>
           </div>
-        ) : projects.length === 0 ? (
-          <div className="p-12 text-center bg-white rounded-2xl border border-dark/10 font-mono text-xs text-dark/50">
-            Belum ada data proyek angkatan di database. Klik tombol di atas untuk membuat angkatan pertama.
-          </div>
-        ) : (
-          <div className="grid gap-4">
-            {projects.map((proj) => {
-              const milestones = proj.project_milestones || [];
-              const installments = proj.payment_installments || [];
 
-              return (
-                <div
-                  key={proj.id}
-                  className="bg-white border border-dark/15 hover:border-dark/30 rounded-2xl p-5 sm:p-6 shadow-sm transition-all"
-                >
-                  {/* Top Bar: School & Access Code */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-dark/10 pb-4">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-black bg-orange text-white px-2 py-0.5 rounded shadow-sm">
-                          {proj.access_code}
-                        </span>
-                        <span className="font-mono text-[11px] text-dark/50 font-bold uppercase">
-                          {proj.city || "Indonesia"} • {proj.graduation_year}
-                        </span>
-                        {proj.status === "prospect" && (
-                          <span className="font-mono text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.2 rounded-full border border-amber-300">
-                            Prospect / Guest
+          {isLoading ? (
+            <div className="p-8 text-center bg-white rounded-2xl border border-dark/15 font-mono text-xs text-dark/50">
+              Memuat data sekolah...
+            </div>
+          ) : projects.length === 0 ? (
+            <div className="p-8 text-center bg-white rounded-2xl border border-dark/15 font-mono text-xs text-dark/50">
+              Belum ada data sekolah.
+            </div>
+          ) : (
+            <div className="space-y-2.5 max-h-[720px] overflow-y-auto pr-1">
+              {projects.map((proj) => {
+                const isSelected = selectedProject?.id === proj.id;
+                const installments = proj.payment_installments || [];
+                const paidCount = installments.filter((i) => i.status === "paid").length;
+                const currentLabel = stageLabels.find((s) => s.step === proj.current_stage)?.label || `Tahap ${proj.current_stage}`;
+
+                return (
+                  <div
+                    key={proj.id}
+                    onClick={() => setSelectedProjectId(proj.id)}
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer text-left relative ${
+                      isSelected
+                        ? "bg-white border-orange shadow-md shadow-orange/10 ring-2 ring-orange/20"
+                        : "bg-white border-dark/15 hover:border-dark/30 hover:bg-[#FAF6F0]/40"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className={`font-mono text-[11px] font-black px-2 py-0.5 rounded shadow-sm ${
+                            isSelected ? "bg-orange text-white" : "bg-dark text-white"
+                          }`}>
+                            {proj.access_code}
                           </span>
-                        )}
+                          <span className="font-mono text-[10px] text-dark/60 font-bold uppercase">
+                            {proj.city || "Indonesia"} • {proj.graduation_year}
+                          </span>
+                        </div>
+
+                        <h4 className="font-headline font-black text-base text-dark leading-snug">
+                          {proj.school_name}
+                        </h4>
+
+                        <div className="font-sans text-[11px] text-dark/60 font-semibold">
+                          PIC: {proj.pic_name || "Panitia"} • {proj.student_count || 150} Siswa
+                        </div>
                       </div>
 
-                      <h4 className="font-headline font-black text-lg sm:text-xl text-dark mt-1">
-                        {proj.school_name}
-                      </h4>
-                      <p className="font-sans text-xs text-dark/60">
-                        PIC: <strong className="text-dark">{proj.pic_name || "Panitia"}</strong> ({proj.pic_whatsapp || "-"}) • PM: {proj.pm_assigned}
-                      </p>
+                      <ChevronRight className={`w-4 h-4 shrink-0 transition-transform ${
+                        isSelected ? "text-orange translate-x-0.5" : "text-dark/30"
+                      }`} />
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => copyToClipboard(proj.access_code, proj.id)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-dark font-mono text-xs font-bold transition-colors cursor-pointer border border-dark/10"
-                        title="Salin Kode Akses"
-                      >
-                        {copiedCode === proj.id ? (
-                          <Check className="w-3.5 h-3.5 text-emerald-600" />
-                        ) : (
-                          <Copy className="w-3.5 h-3.5 text-dark/60" />
-                        )}
-                        <span>{copiedCode === proj.id ? "Disalin" : "Salin Kode"}</span>
-                      </button>
-
-                      <button
-                        onClick={() => copyWhatsAppShare(proj)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-mono text-xs font-bold transition-colors cursor-pointer border border-emerald-300"
-                        title="Salin Template WhatsApp"
-                      >
-                        <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>Format WA</span>
-                      </button>
-
-                      <Link
-                        href={`/track/${proj.access_code}`}
-                        target="_blank"
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-dark hover:bg-orange text-white font-mono text-xs font-bold transition-colors cursor-pointer"
-                      >
-                        <span>Buka Portal</span>
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </Link>
+                    <div className="mt-3 pt-2.5 border-t border-dark/10 flex items-center justify-between text-[10px] font-mono font-bold">
+                      <span className="text-dark/70 bg-[#FAF6F0] px-2 py-0.5 rounded border border-dark/10">
+                        {currentLabel} ({proj.current_stage}/6)
+                      </span>
+                      <span className={paidCount === installments.length && installments.length > 0 ? "text-dark font-black" : "text-orange"}>
+                        Kas: {paidCount}/{installments.length} Termin
+                      </span>
                     </div>
                   </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
-                  {/* Middle: Stepper Stages Switcher (1-click to update in DB) */}
-                  <div className="py-4 border-b border-dark/10">
-                    <div className="flex items-center justify-between mb-2.5">
-                      <span className="font-mono text-[10px] font-black uppercase text-dark/50">
-                        PENGUBAH TAHAPAN PRODUKSI (KLIK TAHAP UNTUK GESER DI DATABASE):
-                      </span>
-                      <span className="font-mono text-xs font-black text-orange bg-orange/10 px-2 py-0.5 rounded border border-orange/20">
-                        Saat ini: Tahap {proj.current_stage} / 6
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-6 gap-2">
-                      {[
-                        { step: 1, label: "MOU & DP" },
-                        { step: 2, label: "Photoshoot" },
-                        { step: 3, label: "Layout" },
-                        { step: 4, label: "Proof Dummy" },
-                        { step: 5, label: "Cetak & Jilid" },
-                        { step: 6, label: "Pengiriman" },
-                      ].map((st) => {
-                        const isCurrent = proj.current_stage === st.step;
-                        const isPassed = proj.current_stage > st.step;
-
-                        return (
-                          <button
-                            key={st.step}
-                            onClick={() => handleUpdateStage(proj.id, st.step)}
-                            className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                              isCurrent
-                                ? "bg-orange text-white border-orange shadow-md shadow-orange/20 font-black scale-[1.02]"
-                                : isPassed
-                                ? "bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100 font-bold"
-                                : "bg-[#FAF6F0] text-dark/60 border-dark/10 hover:border-dark/30 hover:text-dark font-medium"
-                            }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="font-mono text-[10px] opacity-75">
-                                #{st.step}
-                              </span>
-                              {isPassed && <Check className="w-3 h-3 stroke-[3]" />}
-                              {isCurrent && <span className="w-2 h-2 rounded-full bg-white animate-pulse" />}
-                            </div>
-                            <div className="font-headline text-xs mt-1 truncate">
-                              {st.label}
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
+        {/* KOLOM KANAN: PREVIEW & PENGATURAN TAHAPAN / KAS SEKOLAH TERPILIH (7 Kolom) */}
+        <div className="lg:col-span-7 sticky top-20">
+          {selectedProject ? (
+            <div className="bg-white border-2 border-dark/15 rounded-2xl p-5 sm:p-6 shadow-sm space-y-5">
+              {/* Header Preview */}
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b border-dark/10">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-black bg-orange text-white px-2.5 py-0.5 rounded shadow-sm">
+                      {selectedProject.access_code}
+                    </span>
+                    <span className="font-mono text-xs text-dark/60 font-bold uppercase">
+                      {selectedProject.city} • Angkatan {selectedProject.graduation_year}
+                    </span>
                   </div>
 
-                  {/* Bottom: Payment Installments Table with 1-click Verify */}
-                  <div className="pt-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-mono text-[10px] font-black uppercase text-dark/50">
-                        STATUS TERMIN KAS PEMBAYARAN:
-                      </span>
-                      <span className="font-mono text-[10px] text-dark/50">
-                        Klik tombol untuk toggle status LUNAS / PENDING
-                      </span>
-                    </div>
+                  <h3 className="font-headline font-black text-2xl text-dark mt-1.5">
+                    {selectedProject.school_name}
+                  </h3>
+                  <p className="font-sans text-xs font-semibold text-dark/70 mt-0.5">
+                    PIC: <strong className="text-dark">{selectedProject.pic_name || "Panitia"}</strong> ({selectedProject.pic_whatsapp || "-"}) • Target Wisuda: {selectedProject.target_graduation || "2026"}
+                  </p>
+                </div>
 
-                    <div className="grid sm:grid-cols-3 gap-3">
-                      {installments.map((inst) => {
-                        const isPaid = inst.status === "paid";
-                        return (
-                          <div
-                            key={inst.id}
-                            className={`p-3 rounded-xl border flex flex-col justify-between ${
-                              isPaid
-                                ? "bg-emerald-50/70 border-emerald-300 text-emerald-950"
-                                : "bg-[#FAF6F0] border-dark/10 text-dark"
-                            }`}
-                          >
-                            <div>
-                              <div className="flex items-center justify-between">
-                                <span className="font-mono text-[10px] font-bold uppercase">
-                                  {inst.title}
-                                </span>
-                                <span
-                                  className={`font-mono text-[9px] font-black uppercase px-1.5 py-0.2 rounded ${
-                                    isPaid
-                                      ? "bg-emerald-600 text-white"
-                                      : "bg-dark/10 text-dark/60"
-                                  }`}
-                                >
-                                  {isPaid ? "Lunas" : "Pending"}
-                                </span>
-                              </div>
-                              <div className="font-headline font-black text-base mt-1">
-                                Rp {inst.amount.toLocaleString("id-ID")}
-                              </div>
-                              <div className="font-mono text-[9px] text-dark/50 mt-0.5 truncate">
-                                {inst.receipt_number || "Belum ada kuitansi"}
-                              </div>
-                            </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    onClick={() => copyToClipboard(selectedProject.access_code, selectedProject.id)}
+                    className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-dark font-mono text-xs font-bold transition-colors cursor-pointer border border-dark/10 flex items-center gap-1"
+                    title="Salin Kode Akses"
+                  >
+                    {copiedCode === selectedProject.id ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-dark/60" />}
+                    <span>{copiedCode === selectedProject.id ? "Disalin" : "Kode"}</span>
+                  </button>
 
-                            <button
-                              onClick={() =>
-                                handleToggleInstallment(proj.id, inst.id, inst.status)
-                              }
-                              className={`mt-2.5 py-1 px-2.5 rounded-lg font-mono text-[10px] font-bold transition-all cursor-pointer border ${
+                  <button
+                    onClick={() => copyWhatsAppShare(selectedProject)}
+                    className="p-2 rounded-xl bg-[#FAF6F0] hover:bg-dark hover:text-white text-dark font-mono text-xs font-bold transition-all border border-dark/20 flex items-center gap-1.5 cursor-pointer"
+                    title="Format WhatsApp"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span>WA</span>
+                  </button>
+
+                  <Link
+                    href={`/track/${selectedProject.access_code}`}
+                    target="_blank"
+                    className="px-3 py-2 rounded-xl bg-dark hover:bg-orange text-white font-mono text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+                  >
+                    <span>Buka Portal Siswa</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+
+              {/* Live Stepper Geser Tahap */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-mono text-[11px] font-black uppercase text-dark/60 tracking-wider">
+                    PENGUBAH TAHAPAN PRODUKSI:
+                  </span>
+                  <span className="font-mono text-xs font-black text-orange bg-orange/10 px-2 py-0.5 rounded border border-orange/20">
+                    Saat ini: Tahap {selectedProject.current_stage} / 6
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-6 gap-2">
+                  {stageLabels.map((st) => {
+                    const isCurrent = selectedProject.current_stage === st.step;
+                    const isPassed = selectedProject.current_stage > st.step;
+
+                    return (
+                      <button
+                        key={st.step}
+                        onClick={() => handleUpdateStage(selectedProject.id, st.step)}
+                        className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                          isCurrent
+                            ? "bg-orange text-white border-orange shadow-md shadow-orange/20 font-black scale-[1.02]"
+                            : isPassed
+                            ? "bg-dark text-white border-dark font-bold hover:bg-dark/90"
+                            : "bg-[#FAF6F0] text-dark/60 border-dark/10 hover:border-dark/30 hover:text-dark font-medium"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-[10px] opacity-75">#{st.step}</span>
+                          {isPassed && <Check className="w-3 h-3 stroke-[3]" />}
+                          {isCurrent && <span className="w-2 h-2 rounded-full bg-white animate-pulse" />}
+                        </div>
+                        <div className="font-headline text-xs mt-1 truncate">
+                          {st.label}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Status Termin Kas Pembayaran */}
+              <div className="pt-2">
+                <div className="flex items-center justify-between mb-2.5">
+                  <span className="font-mono text-[11px] font-black uppercase text-dark/60 tracking-wider">
+                    STATUS TERMIN KAS PEMBAYARAN:
+                  </span>
+                  <span className="font-mono text-[10px] text-dark/50">
+                    Klik tombol untuk verifikasi kas masuk
+                  </span>
+                </div>
+
+                <div className="grid sm:grid-cols-3 gap-3">
+                  {(selectedProject.payment_installments || []).map((inst) => {
+                    const isPaid = inst.status === "paid";
+                    return (
+                      <div
+                        key={inst.id}
+                        className={`rounded-2xl p-4 border transition-all flex flex-col justify-between ${
+                          isPaid
+                            ? "bg-white border-dark/15 shadow-sm"
+                            : "bg-[#FAF6F0] border-dark/15 text-dark"
+                        }`}
+                      >
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-[10px] font-black uppercase tracking-wider text-dark/70">
+                              {inst.title}
+                            </span>
+                            <span
+                              className={`font-mono text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${
                                 isPaid
-                                  ? "bg-white hover:bg-amber-50 text-amber-800 border-amber-300"
-                                  : "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-700 shadow-sm"
+                                  ? "bg-dark text-white border-dark"
+                                  : "bg-dark/5 text-dark/60 border-dark/10"
                               }`}
                             >
-                              {isPaid ? "Batalkan Lunas" : "✓ Tandai Lunas (Terbitkan Kuitansi)"}
-                            </button>
+                              {isPaid ? "Lunas" : "Pending"}
+                            </span>
                           </div>
-                        );
-                      })}
-                    </div>
-                  </div>
+                          <div className="font-headline font-black text-lg text-dark mt-1.5">
+                            Rp {inst.amount.toLocaleString("id-ID")}
+                          </div>
+                          <div className="font-mono text-[9px] text-dark/50 mt-0.5 truncate">
+                            {inst.receipt_number || "Belum ada kuitansi"}
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() =>
+                            handleToggleInstallment(selectedProject.id, inst.id, inst.status)
+                          }
+                          className={`mt-3 py-1.5 px-2 rounded-lg font-mono text-[10px] font-bold transition-all cursor-pointer border text-center ${
+                            isPaid
+                              ? "bg-white hover:bg-zinc-100 text-dark/80 border-dark/20"
+                              : "bg-dark hover:bg-orange text-white border-dark shadow-sm"
+                          }`}
+                        >
+                          {isPaid ? "Batalkan Lunas" : "✓ Verifikasi Lunas"}
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
-          </div>
-        )}
+              </div>
+
+              {/* Ringkasan Spesifikasi Buku */}
+              <div className="p-3.5 rounded-xl bg-[#FAF6F0] border border-dark/10 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+                <div>
+                  <span className="text-dark/50 font-bold uppercase">Spesifikasi Buku: </span>
+                  <span className="font-bold text-dark">{selectedProject.student_count || 180} Siswa • {selectedProject.page_count || 80} Halaman • {selectedProject.cover_type?.toUpperCase() || "HARDCOVER"}</span>
+                </div>
+                <Link
+                  href={`/track/${selectedProject.access_code}`}
+                  target="_blank"
+                  className="text-orange hover:underline font-bold inline-flex items-center gap-1"
+                >
+                  <span>Lihat Tampilan Siswa</span>
+                  <ExternalLink className="w-3 h-3" />
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white border border-dark/15 rounded-2xl p-12 text-center font-mono text-xs text-dark/40">
+              Pilih salah satu sekolah di sebelah kiri untuk melihat detail preview.
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* ================= MODAL GENERATE KODE AKSES MOU ================= */}
+      {/* Modal Form Tambah Sekolah Baru */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="max-w-xl w-full bg-white rounded-3xl border-4 border-dark shadow-[8px_10px_0px_#FF4D00] p-6 sm:p-7 space-y-5 my-8">
-            <div className="flex items-center justify-between border-b border-dark/10 pb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-dark/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white border-3 border-dark rounded-2xl max-w-xl w-full p-6 shadow-[6px_6px_0px_#14161C] max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-dark/10 pb-3">
               <div>
-                <span className="font-mono text-[10px] font-black uppercase tracking-wider text-orange">
-                  FORM ANGKATAN RESMI FOURJECTIVE
-                </span>
-                <h3 className="font-headline font-black text-2xl text-dark mt-0.5">
-                  Generate Akses Token MOU
+                <h3 className="font-headline font-black text-xl text-dark">
+                  Daftarkan Sekolah Baru &amp; Kunci MOU
                 </h3>
+                <p className="font-sans text-xs text-dark/60">
+                  Terbitkan kode akses angkatan dan buat tracker pengerjaan otomatis.
+                </p>
               </div>
               <button
-                type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-dark font-black flex items-center justify-center cursor-pointer"
+                className="text-dark/40 hover:text-dark text-sm font-bold cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
             {errorMsg && (
-              <div className="p-3 rounded-xl bg-red-100 border border-red-300 text-red-800 text-xs font-mono font-bold flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
-                <span>{errorMsg}</span>
+              <div className="mt-3 p-3 rounded-xl bg-red-50 text-red-700 text-xs font-mono border border-red-200">
+                {errorMsg}
               </div>
             )}
 
-            <form onSubmit={handleCreateProject} className="space-y-4">
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-mono text-[11px] font-bold uppercase text-dark/70 mb-1">
-                    Nama Sekolah *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Contoh: SMA Negeri 2 Kuningan"
-                    value={schoolName}
-                    onChange={(e) => setSchoolName(e.target.value)}
-                    className="w-full bg-[#FAF6F0] border-2 border-dark/20 focus:border-orange rounded-xl px-3.5 py-2 text-xs font-sans text-dark outline-none transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-mono text-[11px] font-bold uppercase text-dark/70 mb-1">
-                    Kode Akses Klien (Auto / Custom) *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="SMAN2-2026"
-                    value={customCode}
-                    onChange={(e) => setCustomCode(e.target.value.toUpperCase())}
-                    className="w-full bg-[#FAF6F0] border-2 border-dark/20 focus:border-orange rounded-xl px-3.5 py-2 text-xs font-mono font-black uppercase text-orange outline-none transition-colors"
-                  />
-                </div>
+            <form onSubmit={handleCreateProject} className="space-y-4 mt-4">
+              <div>
+                <label className="block font-mono text-[11px] font-bold uppercase text-dark/70 mb-1">
+                  Nama Sekolah
+                </label>
+                <input
+                  type="text"
+                  value={schoolName}
+                  onChange={(e) => setSchoolName(e.target.value)}
+                  placeholder="Contoh: SMA Negeri 1 Kuningan"
+                  className="w-full bg-[#FAF6F0] border-2 border-dark rounded-xl px-3.5 py-2 font-sans text-xs text-dark focus:outline-none focus:border-orange font-semibold"
+                  required
+                />
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-mono text-[11px] font-bold uppercase text-dark/70 mb-1">
-                    Tahun Lulus
+                    Kode Akses Siswa
+                  </label>
+                  <input
+                    type="text"
+                    value={customCode}
+                    onChange={(e) => setCustomCode(e.target.value.toUpperCase())}
+                    placeholder="SMAN1-2026"
+                    className="w-full bg-[#FAF6F0] border-2 border-dark rounded-xl px-3.5 py-2 font-mono text-xs font-bold text-dark focus:outline-none focus:border-orange"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block font-mono text-[11px] font-bold uppercase text-dark/70 mb-1">
+                    Tahun Kelulusan
                   </label>
                   <input
                     type="number"
                     value={gradYear}
                     onChange={(e) => setGradYear(Number(e.target.value))}
-                    className="w-full bg-[#FAF6F0] border-2 border-dark/20 focus:border-orange rounded-xl px-3 py-2 text-xs font-mono font-bold text-dark outline-none"
+                    className="w-full bg-[#FAF6F0] border-2 border-dark rounded-xl px-3.5 py-2 font-mono text-xs font-bold text-dark focus:outline-none focus:border-orange"
+                    required
                   />
                 </div>
+              </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-mono text-[11px] font-bold uppercase text-dark/70 mb-1">
+                    Nama PIC Panitia
+                  </label>
+                  <input
+                    type="text"
+                    value={picName}
+                    onChange={(e) => setPicName(e.target.value)}
+                    placeholder="Ketua Panitia / OSIS"
+                    className="w-full bg-[#FAF6F0] border-2 border-dark rounded-xl px-3.5 py-2 font-sans text-xs text-dark focus:outline-none focus:border-orange"
+                  />
+                </div>
+                <div>
+                  <label className="block font-mono text-[11px] font-bold uppercase text-dark/70 mb-1">
+                    Nomor WhatsApp PIC
+                  </label>
+                  <input
+                    type="text"
+                    value={picWhatsapp}
+                    onChange={(e) => setPicWhatsapp(e.target.value)}
+                    placeholder="08123456789"
+                    className="w-full bg-[#FAF6F0] border-2 border-dark rounded-xl px-3.5 py-2 font-mono text-xs text-dark focus:outline-none focus:border-orange"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
                 <div>
                   <label className="block font-mono text-[11px] font-bold uppercase text-dark/70 mb-1">
                     Jumlah Siswa
@@ -621,121 +711,47 @@ Silakan bagikan tautan ini ke panitia untuk memantau alur foto, layout, dummy ce
                     type="number"
                     value={studentCount}
                     onChange={(e) => setStudentCount(Number(e.target.value))}
-                    className="w-full bg-[#FAF6F0] border-2 border-dark/20 focus:border-orange rounded-xl px-3 py-2 text-xs font-mono font-bold text-dark outline-none"
+                    className="w-full bg-[#FAF6F0] border-2 border-dark rounded-xl px-3 py-2 font-mono text-xs text-dark focus:outline-none focus:border-orange"
                   />
                 </div>
-
                 <div>
                   <label className="block font-mono text-[11px] font-bold uppercase text-dark/70 mb-1">
-                    Jml Halaman
+                    Halaman
                   </label>
                   <input
                     type="number"
                     value={pageCount}
                     onChange={(e) => setPageCount(Number(e.target.value))}
-                    className="w-full bg-[#FAF6F0] border-2 border-dark/20 focus:border-orange rounded-xl px-3 py-2 text-xs font-mono font-bold text-dark outline-none"
+                    className="w-full bg-[#FAF6F0] border-2 border-dark rounded-xl px-3 py-2 font-mono text-xs text-dark focus:outline-none focus:border-orange"
                   />
                 </div>
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block font-mono text-[11px] font-bold uppercase text-dark/70 mb-1">
-                    Nama PIC Panitia *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Contoh: Reza Pratama (Ketua OSIS)"
-                    value={picName}
-                    onChange={(e) => setPicName(e.target.value)}
-                    className="w-full bg-[#FAF6F0] border-2 border-dark/20 focus:border-orange rounded-xl px-3.5 py-2 text-xs font-sans text-dark outline-none transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-mono text-[11px] font-bold uppercase text-dark/70 mb-1">
-                    No. WhatsApp PIC *
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    placeholder="+62 812-xxxx-xxxx"
-                    value={picWhatsapp}
-                    onChange={(e) => setPicWhatsapp(e.target.value)}
-                    className="w-full bg-[#FAF6F0] border-2 border-dark/20 focus:border-orange rounded-xl px-3.5 py-2 text-xs font-mono text-dark outline-none transition-colors"
-                  />
-                </div>
-              </div>
-
-              <div className="grid sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block font-mono text-[11px] font-bold uppercase text-dark/70 mb-1">
-                    Jenis Cover
-                  </label>
-                  <select
-                    value={coverType}
-                    onChange={(e) => setCoverType(e.target.value as any)}
-                    className="w-full bg-[#FAF6F0] border-2 border-dark/20 focus:border-orange rounded-xl px-3 py-2 text-xs font-sans text-dark outline-none cursor-pointer"
-                  >
-                    <option value="hardcover">Hardcover</option>
-                    <option value="leather">Leather Emboss</option>
-                    <option value="acrylic">Acrylic Luxury</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-mono text-[11px] font-bold uppercase text-dark/70 mb-1">
-                    Kota / Kab
+                    Kota
                   </label>
                   <input
                     type="text"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full bg-[#FAF6F0] border-2 border-dark/20 focus:border-orange rounded-xl px-3 py-2 text-xs font-sans text-dark outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-mono text-[11px] font-bold uppercase text-dark/70 mb-1">
-                    Target Wisuda
-                  </label>
-                  <input
-                    type="text"
-                    value={targetGraduation}
-                    onChange={(e) => setTargetGraduation(e.target.value)}
-                    className="w-full bg-[#FAF6F0] border-2 border-dark/20 focus:border-orange rounded-xl px-3 py-2 text-xs font-sans text-dark outline-none"
+                    className="w-full bg-[#FAF6F0] border-2 border-dark rounded-xl px-3 py-2 font-sans text-xs text-dark focus:outline-none focus:border-orange"
                   />
                 </div>
               </div>
 
-              {/* Automatic Calculation Preview */}
-              <div className="p-3.5 bg-[#FAF6F0] rounded-xl border border-dark/15 font-mono text-xs text-dark/80 space-y-1">
-                <div className="flex justify-between">
-                  <span>Estimasi Total Kontrak:</span>
-                  <strong>Rp {(studentCount * pricePerStudent).toLocaleString("id-ID")}</strong>
-                </div>
-                <div className="flex justify-between text-emerald-700">
-                  <span>Termin 1 (DP 30%):</span>
-                  <strong>Rp {Math.round(studentCount * pricePerStudent * 0.3).toLocaleString("id-ID")} (LUNAS)</strong>
-                </div>
-              </div>
-
-              <div className="pt-2 flex items-center justify-end gap-3">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-dark/10">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl border border-dark/20 text-xs font-mono font-bold text-dark hover:bg-slate-100 transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl text-xs font-mono font-bold text-dark/60 hover:text-dark cursor-pointer"
                 >
                   Batal
                 </button>
-
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2.5 rounded-xl bg-orange hover:bg-orange/90 text-white font-headline font-black text-xs uppercase tracking-wider shadow-md shadow-orange/30 transition-all cursor-pointer disabled:opacity-50"
+                  className="bg-orange hover:bg-orange/90 text-white font-headline font-black text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl border-2 border-dark shadow-[3px_3px_0px_#14161C] transition-all cursor-pointer"
                 >
-                  {isSubmitting ? "Menerbitkan Kode..." : "Terbitkan Kode & Kunci MOU"}
+                  {isSubmitting ? "Menerbitkan..." : "Terbitkan Kode Akses"}
                 </button>
               </div>
             </form>

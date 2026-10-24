@@ -61,13 +61,13 @@ export function OverviewCards({ portfolios }: { portfolios: Portfolio[] }) {
             key={i}
             className="rounded-xl border border-dark/10 bg-white p-5 shadow-sm"
           >
-            <p className="font-mono text-[10px] font-bold text-dark/40 uppercase tracking-wider">
+            <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-dark/50">
               {m.label}
             </p>
             <h3 className="mt-1 text-2xl font-headline font-black tracking-tight text-dark">
               {m.value}
             </h3>
-            <p className="mt-1 font-mono text-[11px] text-dark/60 font-medium">
+            <p className="mt-1 font-sans text-xs font-semibold text-dark/70">
               {m.caption}
             </p>
           </div>

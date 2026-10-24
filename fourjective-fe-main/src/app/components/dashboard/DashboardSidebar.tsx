@@ -11,13 +11,14 @@ import {
   LogOut,
   FolderGit2,
   CalendarDays,
+  Layout,
 } from "lucide-react";
 
 export function DashboardSidebar() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const currentTab = searchParams.get("tab") || "mou";
+  const currentTab = searchParams.get("tab") || "overview";
 
   const handleLogout = async () => {
     try {
@@ -28,29 +29,42 @@ export function DashboardSidebar() {
   };
 
   const navItems: Array<{
-    key: "mou" | "timeline" | "portfolios" | "prospects" | "quotation";
+    key: "overview" | "mou" | "handoff" | "prospects" | "timeline" | "portfolios" | "quotation";
     title: string;
     icon: any;
+    badge?: string;
   }> = [
     {
+      key: "overview",
+      title: "Ringkasan Studio",
+      icon: Layout,
+    },
+    {
       key: "mou",
-      title: "Proyek MOU & Token",
+      title: "Proyek Sekolah & Token",
       icon: Sparkles,
     },
     {
-      key: "timeline",
-      title: "Jadwal Timeline 2026",
-      icon: CalendarDays,
-    },
-    {
-      key: "portfolios",
-      title: "Katalog Portofolio",
-      icon: BookOpen,
+      key: "handoff",
+      title: "Kirim Berkas Akhir",
+      icon: FolderGit2,
+      badge: "R2",
     },
     {
       key: "prospects",
       title: "Permohonan Masuk",
       icon: Inbox,
+    },
+    {
+      key: "timeline",
+      title: "Jadwal Produksi 2026",
+      icon: CalendarDays,
+    },
+    {
+      key: "portfolios",
+      title: "Katalog & Tambah Buku",
+      icon: BookOpen,
+      badge: "Master",
     },
     {
       key: "quotation",
@@ -64,7 +78,7 @@ export function DashboardSidebar() {
       {/* Brand Header */}
       <div className="border-b border-white/10 p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange text-white font-headline font-black text-base shadow-[2px_2px_0px_#000] border border-white/20">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange text-white font-headline font-black text-base shadow-sm border border-white/20">
             4J
           </div>
           <div className="overflow-hidden">
@@ -103,8 +117,13 @@ export function DashboardSidebar() {
                 >
                   <div className="flex items-center gap-2.5">
                     <Icon className="h-4 w-4 shrink-0" />
-                    <span className="font-headline">{item.title}</span>
+                    <span className="font-headline tracking-wide">{item.title}</span>
                   </div>
+                  {item.badge && (
+                    <span className="font-mono text-[9px] font-black uppercase tracking-wider bg-white/15 px-1.5 py-0.5 rounded text-white/90">
+                      {item.badge}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -125,57 +144,40 @@ export function DashboardSidebar() {
                   : "text-white/70 hover:bg-white/5 hover:text-white"
               }`}
             >
-              <PlusCircle className="h-4 w-4 text-orange" />
-              <span>Upload Buku Baru</span>
+              <PlusCircle className="h-4 w-4 shrink-0 text-orange" />
+              <span className="font-headline">Tambah Buku Baru</span>
             </a>
             <a
               href="/portofolio"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-white/70 hover:bg-white/5 hover:text-white transition-colors"
+              className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-white/70 transition-colors hover:bg-white/5 hover:text-white"
             >
               <div className="flex items-center gap-2.5">
-                <BookOpen className="h-4 w-4 text-white/40" />
-                <span>Katalog Publik</span>
+                <ExternalLink className="h-4 w-4 shrink-0" />
+                <span className="font-headline">Lihat Portofolio</span>
               </div>
-              <ExternalLink className="h-3.5 w-3.5 text-white/30" />
-            </a>
-            <a
-              href="/portal"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-white/70 hover:bg-white/5 hover:text-white transition-colors"
-            >
-              <div className="flex items-center gap-2.5">
-                <FolderGit2 className="h-4 w-4 text-white/40" />
-                <span>Portal Siswa</span>
-              </div>
-              <ExternalLink className="h-3.5 w-3.5 text-white/30" />
             </a>
           </nav>
         </div>
       </div>
 
-      {/* Admin Profile & Logout */}
-      <div className="border-t border-white/10 p-4 bg-[#0E0F13]">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-orange text-white flex items-center justify-center font-headline font-black text-xs">
+      {/* User / Logout Footer */}
+      <div className="border-t border-white/10 p-3">
+        <div className="flex items-center justify-between rounded-xl bg-white/5 p-2.5">
+          <div className="flex items-center gap-2.5 overflow-hidden">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-orange/20 text-orange text-xs font-headline font-black">
               AD
             </div>
             <div className="overflow-hidden">
-              <div className="text-xs font-bold text-white truncate font-headline">
-                Admin Studio
-              </div>
-              <div className="text-[10px] font-mono text-emerald-400">
-                ● Master Live
-              </div>
+              <p className="truncate text-xs font-headline font-bold text-white">Studio Admin</p>
+              <p className="truncate text-[10px] font-mono text-white/40">Internal Root</p>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            title="Keluar Sesi Admin"
-            className="p-1.5 rounded-lg hover:bg-white/10 text-white/50 hover:text-white transition-colors cursor-pointer"
+            title="Keluar Akun"
+            className="rounded-lg p-1.5 text-white/50 hover:bg-white/10 hover:text-rose-400 transition-colors cursor-pointer"
           >
             <LogOut className="h-4 w-4" />
           </button>
