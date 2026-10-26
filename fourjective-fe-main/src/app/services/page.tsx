@@ -88,61 +88,64 @@ function ServiceRow({
   num,
   title,
   kicker,
+  media,
   children,
-  highlight = false,
+  flip = false,
 }: {
   num: string;
   title: string;
   kicker: string;
+  media: { src: string; alt: string };
   children: React.ReactNode;
-  highlight?: boolean;
+  flip?: boolean;
 }) {
   return (
     <div data-service-row className="border-t-[3px] border-dark">
-      <div
-        className={`max-w-7xl mx-auto px-4 sm:px-8 ${
-          highlight ? "bg-orange text-[#FAF6F0] -mx-4 sm:-mx-8 px-8 sm:px-16" : ""
-        }`}
-      >
-        <div className="grid lg:grid-cols-12 gap-x-10 gap-y-6 py-12 sm:py-16">
-          {/* Nomor + Nama Pilar (kolom kiri) */}
-          <div className="lg:col-span-4 flex lg:block items-start gap-4">
-            {/* Nomor raksasa — ghost outline (High-Voltage signature) */}
-            <span
-              aria-hidden
-              className={`font-headline font-black leading-[0.8] tracking-tighter select-none text-7xl sm:text-8xl lg:text-[7.5rem] ${
-                highlight
-                  ? "text-[#FAF6F0]/95"
-                  : "text-transparent"
-              }`}
-              style={
-                highlight
-                  ? undefined
-                  : { WebkitTextStroke: "3px #FF4D00", paintOrder: "stroke fill" }
-              }
-            >
-              {num}
-            </span>
-            <div className="lg:mt-5">
-              <h2
-                className={`font-playtimes leading-[1.02] tracking-tight text-3xl sm:text-5xl ${
-                  highlight ? "text-[#FAF6F0]" : "text-dark"
-                }`}
-              >
-                {title}
-              </h2>
-              <p
-                className={`font-mono text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em] mt-2 ${
-                  highlight ? "text-[#FAF6F0]/60" : "text-dark/35"
-                }`}
-              >
-                {kicker}
-              </p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-8">
+        <div className="grid lg:grid-cols-12 gap-x-10 gap-y-10 py-12 sm:py-16 items-center">
+          {/* Ilustrasi layanan — zigzag: baris genap dibalik ke kanan */}
+          <div
+            data-row-fx
+            className={`lg:col-span-5 ${flip ? "lg:order-2" : ""}`}
+          >
+            <div className="relative border-3 border-dark bg-[#FAF6F0] shadow-[8px_9px_0_0_#FF4D00]">
+              <span className="absolute -top-4 -left-3 bg-dark text-[#FAF6F0] font-mono text-[9px] font-bold uppercase tracking-[0.3em] px-3 py-1.5">
+                <span className="text-orange">{num}</span>
+                <span className="mx-1.5 text-[#FAF6F0]/40">·</span>
+                FOURJECTIV
+              </span>
+              <img
+                src={media.src}
+                alt={media.alt}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-auto"
+              />
             </div>
           </div>
 
-          {/* Konten mengalir (kolom kanan) */}
-          <div className={`lg:col-span-8 lg:border-l-[3px] lg:pl-10 ${highlight ? "border-[#FAF6F0]/25" : "border-dark/15"}`}>{children}</div>
+          {/* Konten editorial */}
+          <div className="lg:col-span-7">
+            <div data-row-fx className="flex items-start gap-4 lg:gap-6">
+              {/* Nomor raksasa — ghost outline oranye (High-Voltage signature) */}
+              <span
+                aria-hidden
+                className="font-headline font-black leading-[0.8] tracking-tighter select-none text-6xl sm:text-8xl text-transparent"
+                style={{ WebkitTextStroke: "3px #FF4D00", paintOrder: "stroke fill" }}
+              >
+                {num}
+              </span>
+              <div>
+                <h2 className="font-playtimes leading-[1.02] tracking-tight text-3xl sm:text-5xl text-dark">
+                  {title}
+                </h2>
+                <p className="font-mono text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em] mt-2 text-dark/35">
+                  {kicker}
+                </p>
+              </div>
+            </div>
+            <div data-row-fx className="mt-7 sm:mt-9">{children}</div>
+          </div>
         </div>
       </div>
     </div>
@@ -278,7 +281,7 @@ export default function ServicesPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-paper text-dark flex flex-col selection:bg-orange selection:text-[#FAF6F0]">
+    <div className="min-h-screen bg-paper text-dark flex flex-col selection:bg-orange selection:text-[#FAF6F0] overflow-x-clip">
       <Header />
 
       {/* Grid paper texture */}
@@ -347,14 +350,25 @@ export default function ServicesPage() {
         </div>
 
         {/* ===== 01 VIDEO ===== */}
-        <ServiceRow num="01" title="Video Service" kicker="Film · Drone · BTS · Trend">
+        <ServiceRow
+          num="01"
+          title="Video Service"
+          kicker="Film · Drone · BTS · Trend"
+          media={{ src: "/images/services/service-type/video.svg", alt: "Ilustrasi produksi video Fourjective" }}
+        >
           <div data-row-fx>
             <EditorialList items={VIDEO_ITEMS} />
           </div>
         </ServiceRow>
 
         {/* ===== 02 PHOTO ===== */}
-        <ServiceRow num="02" title="Photo Service" kicker="Studio · Outdoor · Delivery">
+        <ServiceRow
+          num="02"
+          title="Photo Service"
+          kicker="Studio · Outdoor · Delivery"
+          media={{ src: "/images/services/service-type/photo.svg", alt: "Ilustrasi sesi foto Fourjective" }}
+          flip
+        >
           <div data-row-fx className="grid sm:grid-cols-2 gap-x-10 gap-y-8 items-start">
             <div>
               <SubLabel>Cakupan Sesi</SubLabel>
@@ -378,14 +392,25 @@ export default function ServicesPage() {
         </ServiceRow>
 
         {/* ===== 03 EDITING ===== */}
-        <ServiceRow num="03" title="Editing Service" kicker="Photo · Video">
+        <ServiceRow
+          num="03"
+          title="Editing Service"
+          kicker="Photo · Video"
+          media={{ src: "/images/services/service-type/editing.svg", alt: "Ilustrasi editing foto & video" }}
+        >
           <div data-row-fx>
             <EditorialList items={EDITING_ITEMS} />
           </div>
         </ServiceRow>
 
         {/* ===== 04 BOOK ===== */}
-        <ServiceRow num="04" title="Book Service" kicker="Cover · Layout · Spec">
+        <ServiceRow
+          num="04"
+          title="Book Service"
+          kicker="Cover · Layout · Spec"
+          media={{ src: "/images/services/service-type/book.svg", alt: "Ilustrasi buku tahunan hardcover" }}
+          flip
+        >
           <div data-row-fx>
             <SubLabel>Design Cover — 3 Tier</SubLabel>
             <EditorialList items={COVER_TIERS} cols={1} />
@@ -413,18 +438,28 @@ export default function ServicesPage() {
           </div>
         </ServiceRow>
 
-        {/* ===== 05 AR (highlight band oranye) ===== */}
-        <ServiceRow num="05" title="AR Reality" kicker="Cover · Packaging · Video" highlight>
+        <ServiceRow
+          num="05"
+          title="AR Reality"
+          kicker="Cover · Packaging · Video"
+          media={{ src: "/images/services/service-type/augmented.svg", alt: "Ilustrasi AR Reality di cover buku tahunan" }}
+        >
           <div data-row-fx>
-            <p className="text-sm sm:text-base text-[#FAF6F0]/95 leading-relaxed font-medium mb-5">
+            <p className="text-sm sm:text-base text-dark/85 leading-relaxed font-medium mb-5">
               Cover atau packaging bisa langsung memunculkan video, animasi, atau pesan khusus lewat kamera smartphone.
             </p>
-            <PointsList points={AR_POINTS} dark />
+            <PointsList points={AR_POINTS} />
           </div>
         </ServiceRow>
 
         {/* ===== 06 YEARBOOK DIGITAL ===== */}
-        <ServiceRow num="06" title="Yearbook Digital" kicker="Flipbook · Lifetime">
+        <ServiceRow
+          num="06"
+          title="Yearbook Digital"
+          kicker="Flipbook · Lifetime"
+          media={{ src: "/images/services/service-type/yearbook.svg", alt: "Ilustrasi yearbook digital flipbook" }}
+          flip
+        >
           <div data-row-fx>
             <p className="text-xs sm:text-[13px] text-dark/70 leading-relaxed font-medium mb-4 max-w-2xl">
               Buku tahunan kamu juga kita sediain versi digital (E-Book) yang bisa diakses kapan aja &amp; di mana aja. Gak perlu takut file hilang — arsip seumur hidup.
@@ -434,7 +469,12 @@ export default function ServicesPage() {
         </ServiceRow>
 
         {/* ===== 07 MERCH ===== */}
-        <ServiceRow num="07" title="Merchandise" kicker="Medali · Totebag · Photobooth · Baju">
+        <ServiceRow
+          num="07"
+          title="Merchandise"
+          kicker="Medali · Totebag · Photobooth · Baju"
+          media={{ src: "/images/services/service-type/merch.svg", alt: "Ilustrasi merchandise angkatan" }}
+        >
           <div data-row-fx>
             <EditorialList items={MERCH_ITEMS} />
           </div>

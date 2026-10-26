@@ -123,12 +123,54 @@ const TESTIMONIALS: TestimonialItem[] = [
   },
 ];
 
+/* Visual real per testimoni — potret konsep yearbook & cover buku hasil produksi sudah dikirim di /galeri */
+const TSTI_PHOTOS: Record<string, string> = {
+  "al-azhar": "/images/gallery/yearbook-result/new/result/result-1-optimized.png",
+  penabur: "/images/gallery/yearbook-result/barbie-optimized.png",
+  tarnus: "/images/gallery/yearbook-result/new/result/result-2-optimized.png",
+  sman1: "/images/gallery/yearbook-result/black-optimized.png",
+  labschool: "/images/gallery/yearbook-result/new/result/result-3-optimized.png",
+  petra: "/images/gallery/yearbook-result/downtown-optimized.png",
+};
+
+/* Index baris untuk nomor raksasa tiap kartu */
+const TSTI_INDEX: Record<string, string> = {
+  "al-azhar": "01",
+  penabur: "02",
+  tarnus: "03",
+  sman1: "04",
+  labschool: "05",
+  petra: "06",
+};
+
 export default function TestimoniPage() {
   const [filter, setFilter] = useState<"all" | "photoshoot" | "cetak" | "pelayanan">("all");
   const trackRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
+  const [hovering, setHovering] = useState(false);
+  const activeIdxRef = useRef(0);
 
   const filtered = filter === "all" ? TESTIMONIALS : TESTIMONIALS.filter((t) => t.category === filter);
+  const filterCount = filtered.length;
+
+  /* Simpan index aktif terakhir untuk interval autoplay */
+  useEffect(() => {
+    activeIdxRef.current = activeIdx;
+  }, [activeIdx]);
+
+  /* AUTO-SLIDE: maju tiap 5 detik + wrap ke awal; pause saat user hover kartu */
+  useEffect(() => {
+    if (hovering) return;
+    const timer = setInterval(() => {
+      const next = (activeIdxRef.current + 1) % Math.max(filterCount, 1);
+      const track = trackRef.current;
+      const child = track?.children[next] as HTMLElement | undefined;
+      if (track && child) {
+        track.scrollTo({ left: child.offsetLeft, behavior: "smooth" });
+      }
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [hovering, filterCount, filter]);
 
   /* Geser track ke index kartu tertentu */
   const scrollToIdx = (i: number) => {
@@ -340,52 +382,87 @@ export default function TestimoniPage() {
             id="tsti-track"
             ref={trackRef}
             onScroll={onTrackScroll}
+            onMouseEnter={() => setHovering(true)}
+            onMouseLeave={() => setHovering(false)}
+            onTouchStart={() => setHovering(true)}
+            onTouchEnd={() => setHovering(false)}
             className="relative flex gap-5 overflow-x-auto snap-x snap-mandatory pb-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
           >
             {filtered.map((t) => (
               <article
                 key={t.id}
                 data-tsti-card
-                className="w-[calc(100vw-2.25rem)] sm:w-[440px] lg:w-[460px] shrink-0 snap-start bg-white border-3 border-dark rounded-xl p-6 sm:p-7 flex flex-col justify-between shadow-[6px_8px_0px_#14161C] transition-all"
+                className="group w-[calc(100vw-3rem)] sm:w-[880px] lg:w-[920px] shrink-0 snap-start bg-[#FAF6F0] border-3 border-dark shadow-[8px_9px_0px_#14161C] overflow-hidden grid sm:grid-cols-12"
               >
-                <div>
-                  <div className="flex items-center justify-between gap-2 border-b-2 border-dark/10 pb-3 mb-4">
-                    <span className="font-mono text-[9px] font-black uppercase tracking-wider text-orange bg-orange/10 px-2.5 py-0.5 rounded border border-orange/20">
-                      {t.categoryLabel}
-                    </span>
-                    <span className="font-mono text-[10px] font-bold text-dark/50">
-                      {t.city}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-1 mb-3">
-                    {[...Array(t.rating)].map((_, s) => (
-                      <Star key={s} className="w-3.5 h-3.5 fill-orange text-orange" />
-                    ))}
-                  </div>
-
-                  <Quote className="w-8 h-8 text-orange/30 mb-2 -ml-1" />
-
-                  <p className="font-sans text-xs sm:text-sm text-dark/85 leading-relaxed font-medium">
-                    &ldquo;{t.quote}&rdquo;
-                  </p>
-
-                  <div className="mt-4 pt-3 border-t border-dark/15 flex items-start gap-1.5 text-emerald-700 font-mono text-[10px] font-bold">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-px" />
-                    <span>{t.highlight}</span>
-                  </div>
+                {/* ===== PANEL FOTO — potret konsep yearbook / cover hasil produksi ===== */}
+                <div className="relative sm:col-span-5 lg:col-span-5 h-64 sm:h-auto overflow-hidden border-b-3 sm:border-b-0 sm:border-r-3 border-dark">
+                  <img
+                    src={t.id ? TSTI_PHOTOS[t.id] : ""}
+                    alt={`Potret angkatan ${t.school}`}
+                    loading="lazy"
+                    decoding="async"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                  />
+                  {/* Nomor raksasa ghost outline di atas foto */}
+                  <span
+                    aria-hidden
+                    className="absolute top-3 left-4 font-headline font-black text-6xl sm:text-7xl leading-none text-transparent select-none pointer-events-none"
+                    style={{ WebkitTextStroke: "3px #FF4D00", paintOrder: "stroke fill" }}
+                  >
+                    {t.id ? TSTI_INDEX[t.id] : ""}
+                  </span>
+                  {/* Chip verified bawah kiri */}
+                  <span className="absolute bottom-3 left-4 flex items-center gap-1.5 bg-dark text-[#FAF6F0] font-mono text-[9px] font-black uppercase tracking-[0.25em] px-2.5 py-1.5">
+                    <CheckCircle2 className="w-3 h-3 text-orange" />
+                    Ulasan Asli
+                  </span>
                 </div>
 
-                <div className="mt-6 pt-4 border-t-2 border-dark/10">
-                  <h3 className="font-headline font-black text-sm uppercase text-dark">
-                    {t.name}
-                  </h3>
-                  <p className="font-mono text-[10px] font-bold text-dark/60 uppercase">
-                    {t.role} • {t.school}
-                  </p>
-                  <span className="inline-block font-mono text-[9px] font-black text-orange mt-0.5">
-                    {t.year}
-                  </span>
+                {/* ===== KONTEN ===== */}
+                <div className="sm:col-span-7 lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between gap-5">
+                  <div>
+                    <div className="flex items-center justify-between gap-2 pb-3 border-b-3 border-dark">
+                      <span className="font-mono text-[9px] font-black uppercase tracking-widest text-orange">
+                        {t.categoryLabel}
+                      </span>
+                      <span className="font-mono text-[10px] font-bold text-dark/50">
+                        {t.city}
+                      </span>
+                    </div>
+
+                    <div className="mt-5">
+                      <Quote className="w-9 h-9 text-orange -ml-1 mb-3" />
+                      <p className="font-sans text-sm sm:text-base text-dark leading-relaxed font-medium">
+                        &ldquo;{t.quote}&rdquo;
+                      </p>
+                    </div>
+
+                    <div className="mt-5 pt-4 border-t border-dark/15 flex items-start gap-2 text-dark/75 font-mono text-[10px] sm:text-[11px] font-bold">
+                      <span className="mt-px w-1.5 h-1.5 bg-orange shrink-0 translate-y-[3px]" aria-hidden />
+                      <span className="uppercase tracking-wide">{t.highlight}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-end justify-between gap-3 pt-3">
+                    <div>
+                      <div className="font-headline font-black text-lg sm:text-xl uppercase text-dark leading-tight">
+                        {t.name}
+                      </div>
+                      <p className="font-mono text-[10px] font-bold text-dark/60 uppercase mt-0.5">
+                        {t.role} • {t.school}
+                      </p>
+                      <span className="inline-block font-mono text-[9px] font-black text-orange mt-1">
+                        {t.year}
+                      </span>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <div className="flex items-center gap-0.5 justify-end">
+                        {[...Array(t.rating)].map((_, s) => (
+                          <Star key={s} className="w-3.5 h-3.5 fill-orange text-orange" />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </article>
             ))}
